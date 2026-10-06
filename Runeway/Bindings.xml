@@ -1,0 +1,3 @@
+<Bindings>
+    <Binding name="RUNEWAY_TOGGLE" header="RUNEWAY">Runeway_Toggle()</Binding>
+</Bindings>

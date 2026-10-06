@@ -1,0 +1,17 @@
+# wow.export – Rohexport (zu groß fürs Repo, wird separat gepflegt)
+Wow export files/
+
+# Archiv-Kopien des Projekts
+*.zip
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS / Editor
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/

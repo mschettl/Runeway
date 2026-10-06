@@ -1,0 +1,5 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\kalimdor\feralas\passivedoodads\tree\feralastree02.m2;18997.12109375;85.86713409423828;29629.609375;0;25.81878662109375;0;;1.2890625;349272;m2;201936;0;
+..\..\world\kalimdor\feralas\passivedoodads\tree\feralastree02.m2;19153.490234375;141.3928985595703;29505.9453125;0;76.81878662109375;0;;0.51953125;24645709;m2;201936;0;
+..\..\world\kalimdor\hyjal\passivedoodads\rocks\hyjalrock04.m2;19532.494140625;2.4057252407073975;29333.76953125;0;30.00457763671875;0;;1.6982421875;575571;m2;201990;0;
+..\..\world\kalimdor\hyjal\passivedoodads\rocks\hyjalrock04.m2;19557.294921875;2.3397772312164307;29333.447265625;-3.500000238418579;73.70953369140625;-12.499999046325684;;1.2333984375;575548;m2;201990;0;

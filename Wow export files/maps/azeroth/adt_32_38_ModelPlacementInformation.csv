@@ -1,0 +1,2 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\wmo\khazmodan\collidabledoodads\menethildocks\menethildocks.wmo;17735.814453125;-9.451322555541992;20910.279296875;0;255;0;0;1;552156;wmo;114117;0;Set_$DefaultGlobal

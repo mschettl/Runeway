@@ -1,0 +1,8 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\lordaeron\aeriepeaks\passivedoodads\trees\aerietree03.m2;21870.650390625;11.249338150024414;16658.861328125;0;28.620269775390625;0;;0.8291015625;566766;m2;203589;0;
+..\..\world\lordaeron\aeriepeaks\passivedoodads\trees\aerietree02.m2;21880.740234375;11.350272178649902;16658.490234375;0;1.68096923828125;0;;0.5693359375;566767;m2;203588;0;
+..\..\world\lordaeron\aeriepeaks\passivedoodads\trees\aerietree05.m2;21874.654296875;11.825700759887695;16661.294921875;0;217.26129150390625;0;;1;566768;m2;203591;0;
+..\..\world\lordaeron\aeriepeaks\passivedoodads\bushes\aeriepeaksbush02.m2;21873.98046875;12.16327953338623;16662.294921875;0;246.50775146484375;0;;1.0595703125;566769;m2;203566;0;
+..\..\world\lordaeron\aeriepeaks\passivedoodads\bushes\aeriepeaksbush02.m2;21865.48828125;10.587276458740234;16659.10546875;0;6.52606201171875;0;;1.1494140625;566771;m2;203566;0;
+..\..\world\lordaeron\aeriepeaks\passivedoodads\bushes\aeriepeaksbush02.m2;21875.951171875;12.146849632263184;16660.765625;0;104.76882934570312;0;;1;566770;m2;203566;0;
+..\..\world\lordaeron\aeriepeaks\passivedoodads\bushes\aeriepeaksbush02.m2;21882.23828125;11.82172679901123;16659.1484375;0;197.07876586914062;0;;0.939453125;566772;m2;203566;0;

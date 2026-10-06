@@ -1,0 +1,3 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\azeroth\stranglethorn\passivedoodads\diamondminewalllantern\diamondminewalllantern.m2;13870.8271484375;-509.2302551269531;28754.109375;0;330.5;0;;1;57300;m2;190246;0;
+..\..\world\azeroth\stranglethorn\passivedoodads\diamondminewalllantern\diamondminewalllantern.m2;13875.6708984375;-509.0080261230469;28757.15234375;3.499999761581421;320;0.5000000596046448;;1;57301;m2;190246;0;

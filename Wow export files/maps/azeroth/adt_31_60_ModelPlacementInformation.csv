@@ -1,0 +1,9 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\generic\passivedoodads\lights\generaltorch01.m2;16757.845703125;1.9330580234527588;32037.69140625;6.5;333.5;-5;;1.1796875;552252;m2;199820;0;
+..\..\world\generic\passivedoodads\lights\generaltorch01.m2;16770.787109375;1.6972707509994507;32041.7734375;2;334;1.5;;1.1796875;222033;m2;199820;0;
+..\..\world\generic\passivedoodads\lights\generaltorch01.m2;16757.830078125;2.1489648818969727;32037.71484375;3.5000009536743164;126.5;14.5;;1;552254;m2;199820;0;
+..\..\world\generic\passivedoodads\lights\generaltorch01.m2;16757.8984375;2.1589982509613037;32037.734375;-7.500000476837158;317;-3.500000476837158;;1;552253;m2;199820;0;
+..\..\world\generic\passivedoodads\lights\generaltorch01.m2;16770.806640625;1.628814697265625;32041.84375;-7.499999523162842;317.5;-3.500000238418579;;1;222032;m2;199820;0;
+..\..\world\wmo\dungeon\md_pirateship\pirateship_plank.wmo;16720.439453125;7.777587890625;32030.984375;0;195.5;0;0;1;552250;wmo;111424;0;Set_$DefaultGlobal
+..\..\world\wmo\dungeon\md_pirateship\pirateship_plank.wmo;16799.970703125;7.754979610443115;32052.65625;0;0;0;0;1;552251;wmo;111424;0;Set_$DefaultGlobal
+..\..\world\wmo\dungeon\md_pirateship\pirateship_plank.wmo;16982.67578125;7.756715774536133;31987.65234375;0;274;0;0;1;552256;wmo;111424;0;Set_$DefaultGlobal

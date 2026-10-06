@@ -1,0 +1,2 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\wmo\lorderon\collidabledoodads\arathihighlands\humanruinedbuildings\huruinedbuildingssm01_winecellar.wmo;14614.009765625;133.51400756835938;15223.083984375;0;185.78363037109375;0;0;1;68463626;wmo;114572;0;Set_$DefaultGlobal

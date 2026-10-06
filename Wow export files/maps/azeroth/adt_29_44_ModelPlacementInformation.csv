@@ -1,0 +1,2 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\wmo\azeroth\collidabledoodads\wetlands\wetlandshumandock01\wetlandshumandock01.wmo;15803.13671875;7.187540054321289;23439.42578125;0;40.5;0;0;1;69626906;wmo;108193;0;Set_$DefaultGlobal

@@ -1,0 +1,5 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\khazmodan\wetlands\passivedoodads\trees\wetlandtree02.m2;17075.376953125;6.8215813636779785;21352.990234375;0;62.7926025390625;0;;0.9228515625;334438;m2;203544;0;
+..\..\world\khazmodan\wetlands\passivedoodads\trees\wetlandtree05.m2;17010.875;16.3756046295166;21305.57421875;0;135.070068359375;0;;1.099609375;334440;m2;203547;0;
+..\..\world\khazmodan\wetlands\passivedoodads\trees\wetlandtree05.m2;17089.916015625;13.068999290466309;21363.50390625;0;31.696533203125;0;;1.01171875;334437;m2;203547;0;
+..\..\world\azeroth\elwynn\passivedoodads\bush\elwynnbush09.m2;17069.2109375;9.52763843536377;21347.58984375;0;335.4667663574219;0;;0.8876953125;334468;m2;189700;0;

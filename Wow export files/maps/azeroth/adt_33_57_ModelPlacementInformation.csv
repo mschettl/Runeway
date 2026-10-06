@@ -1,0 +1,8 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\azeroth\stranglethorn\passivedoodads\trees\stranglethorntree01\stranglethorntree01.m2;17599.09765625;85.50672149658203;30399.166015625;0;90.7384033203125;0;;2.1435546875;355290;m2;190316;0;
+..\..\world\azeroth\stranglethorn\passivedoodads\trees\stranglethorntree01\stranglethorntree01.m2;17556.962890625;46.55335235595703;30488.544921875;0;228.93333435058594;0;;1.466796875;355286;m2;190316;0;
+..\..\world\azeroth\stranglethorn\passivedoodads\trees\stranglethorntree01\stranglethorntree01.m2;17572.33984375;87.74617767333984;30373.2421875;0;350.5;0;;1.4892578125;119049;m2;190316;0;
+..\..\world\azeroth\stranglethorn\passivedoodads\trees\bootybaytree01.m2;17754.41796875;71.34781646728516;30449.18359375;0;274.31549072265625;0;;1.716796875;355285;m2;190311;0;
+..\..\world\azeroth\stranglethorn\passivedoodads\trees\stranglethorntree01\stranglethorntree01.m2;17649.828125;117.9047622680664;30392.666015625;0;343.318603515625;0;;1.1767578125;355288;m2;190316;0;
+..\..\world\azeroth\stranglethorn\passivedoodads\trees\stranglethorntree01\stranglethorntree01.m2;17652.427734375;55.48607635498047;30434.294921875;0;334.51202392578125;0;;0.7529296875;355289;m2;190316;0;
+..\..\world\wmo\dungeon\md_mountaincave\md_mushroomcave03.wmo;17509.314453125;23.748146057128906;30369.99609375;0;280;0;0;1;100387;wmo;111194;2;set_DefaultMushroom

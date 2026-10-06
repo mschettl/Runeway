@@ -1,0 +1,3 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\azeroth\duskwood\passivedoodads\rocks\duskwoodboulder01.m2;23448.365234375;-6.437594890594482;15075.8583984375;26.334285736083984;167.3804931640625;53.89401626586914;;2.1396484375;67551602;m2;189499;0;
+..\..\world\azeroth\duskwood\passivedoodads\rocks\duskwoodboulder01.m2;23457.96875;-1.2425768375396729;15065.947265625;0;102;0;;1;67551258;m2;189499;0;

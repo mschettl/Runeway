@@ -1,0 +1,7 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\khazmodan\lochmodan\passivedoodads\trees\lochmodantree09.m2;21314.3359375;398.16448974609375;22421.931640625;0;141.46429443359375;1.5000001192092896;;0.9697265625;83232;m2;203355;0;
+..\..\world\khazmodan\lochmodan\passivedoodads\trees\lochmodantree09.m2;21311.2265625;373.39886474609375;22041.33984375;0;320.1856689453125;1.5;;0.966796875;83802;m2;203355;0;
+..\..\world\khazmodan\lochmodan\passivedoodads\trees\lochmodantree09.m2;21319.765625;399.66754150390625;22316.67578125;0;301.4740295410156;1.5;;0.9560546875;83237;m2;203355;0;
+..\..\world\khazmodan\lochmodan\passivedoodads\trees\lochmodantree03.m2;21348.68359375;391.0263366699219;22150.677734375;0;87.651611328125;-4;;1.0146484375;83801;m2;203349;0;
+..\..\world\khazmodan\lochmodan\passivedoodads\trees\lochmodantree03.m2;21319.193359375;406.05194091796875;22263.80859375;-2.5;63.535888671875;1.5;;0.9716796875;83238;m2;203349;0;
+..\..\world\khazmodan\lochmodan\passivedoodads\trees\lochmodantree03.m2;21342.81640625;404.63690185546875;22381.09375;0.4999997913837433;216.085693359375;2.000000238418579;;0.9580078125;83233;m2;203349;0;

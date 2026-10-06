@@ -1,0 +1,7 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\azeroth\redridge\passivedoodads\docks\redridgedocks03.m2;15476.572265625;-1.3416000604629517;25134.255859375;-0.04279989004135132;327.0000305175781;-9.623801231384277;;0.6591796875;66885753;m2;190096;0;
+..\..\world\azeroth\redridge\passivedoodads\dockpieces\redridgedockspylon01.m2;15459.4140625;-3.6549839973449707;25109.537109375;0;34;0;;1;66886323;m2;190093;0;
+..\..\world\azeroth\redridge\passivedoodads\rowboat\rowboat01.m2;15462.7509765625;1.637619972229004;25113.42578125;21.822874069213867;122.98361206054688;-12.064027786254883;;1;66885982;m2;190104;0;
+..\..\world\generic\human\passivedoodads\cargonetboxes\deadminecargonetboxes.m2;15457.005859375;4.3553338050842285;25124.28125;0;356.9999694824219;0;;1;66886317;m2;198086;0;
+..\..\world\azeroth\westfall\passivedoodads\tombstones\tombstone02.m2;15444.26171875;4.173755168914795;25105.28515625;0;228.49996948242188;0;;1;66885853;m2;190634;0;
+..\..\world\wmo\azeroth\buildings\stormwind\sw_harbor_lighthouse.wmo;15414.0166015625;3.099311113357544;25131.107421875;0;337;0;0;1;66885762;wmo;219588;0;Set_$DefaultGlobal

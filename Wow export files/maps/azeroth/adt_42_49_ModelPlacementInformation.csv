@@ -1,0 +1,3 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\expansion03\doodads\vashjir\seamonster\vj_seamonster_bonesskull_02.m2;22634.01953125;-19.12434959411621;26137.076171875;0.35082489252090454;152.3961181640625;3.9514148235321045;;1;67904615;m2;334485;0;
+..\..\world\wmo\dungeon\md_shipwreck\transport_shipwreck_sunkenship.wmo;22717.701171875;-43.65903091430664;26182.197265625;0;276.5;0;0;1;67711172;wmo;348887;0;Set_$DefaultGlobal

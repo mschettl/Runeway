@@ -1,0 +1,2 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\wmo\dungeon\kz_gnomeragon\kz_gnomeragon.wmo;16460.017578125;410.0280456542969;22250.119140625;0;265.5;0;0;1;324550;wmo;109593;0;Set_$DefaultGlobal

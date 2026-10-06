@@ -1,0 +1,2 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\wmo\transports\undead\ship_ud_transport.wmo;13872.416015625;-886.3220825195312;18407.845703125;0;303.4999694824219;0;0;1;67151765;wmo;249066;0;Set_$DefaultGlobal

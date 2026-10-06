@@ -1,0 +1,2 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\wmo\dungeon\md_shipwreck\transport_shipwreck.wmo;14580.3447265625;-254.7848358154297;27209.12109375;-6.000000953674316;34;45.000003814697266;0;1;332168;wmo;111526;0;Set_$DefaultGlobal

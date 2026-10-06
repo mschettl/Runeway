@@ -1,0 +1,10 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\lordaeron\aeriepeaks\passivedoodads\trees\aerietree01.m2;22958.974609375;198.7099151611328;14278.388671875;0;0;0;;1;67551703;m2;203587;0;
+..\..\world\generic\passivedoodads\deadtreelogs\deadtreelog02.m2;22960.248046875;198.8643341064453;14287.935546875;0;41;0;;0.69921875;67551722;m2;199653;0;
+..\..\world\skillactivated\tradeskillenablers\tradeskill_alchemyset_01.m2;22964.06640625;185.67433166503906;14261.7900390625;0;345.5000305175781;0;;1;67551688;m2;219399;0;
+..\..\world\azeroth\bootybay\passivedoodad\fishingbox\fishingbox.m2;22962.037109375;185.7008056640625;14260.9111328125;0;38;0;;1;67551687;m2;189092;0;
+..\..\world\azeroth\bootybay\passivedoodad\fishingbox\fishingbox.m2;22960.806640625;185.7040557861328;14260.3857421875;0;65.50003051757812;0;;1;67551709;m2;189092;0;
+..\..\world\azeroth\bootybay\passivedoodad\fishingbox\fishingbox.m2;22961.5234375;186.30812072753906;14260.8076171875;0;355.5000305175781;0;;1;67551695;m2;189092;0;
+..\..\world\generic\human\passivedoodads\bookstacks\generalbookstackshort01.m2;22965.6875;187.40614318847656;14261.2705078125;0;12.5;0;;1;67551693;m2;198055;0;
+..\..\world\wmo\azeroth\buildings\scarlet_monestary\scarlet_monestary.wmo;22822.75390625;158.2380828857422;14383.8349609375;0;188;0;0;1;67551706;wmo;107218;0;Set_$DefaultGlobal
+..\..\world\wmo\dungeon\md_shipwreck\shipwreck_b.wmo;23296.76171875;16.674121856689453;14351.3115234375;8.4283447265625;28.8935546875;1.5081557035446167;0;1;67551725;wmo;111516;0;Set_$DefaultGlobal

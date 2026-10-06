@@ -1,0 +1,4 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\azeroth\elwynn\passivedoodads\trees\elwynntreecanopy03.m2;16458.388671875;85.13360595703125;25094.74609375;0;116;0;;1.12890625;69626457;m2;189929;0;
+..\..\world\azeroth\elwynn\passivedoodads\trees\elwynntreecanopy02.m2;16681.548828125;141.21766662597656;25106.39453125;0;158;0;;1.50390625;69626369;m2;189928;0;
+..\..\world\wmo\autogen-names\stormwindcity\21138.wmo;16527.376953125;101.9570083618164;25998.30078125;0;38.5;0;0;1;10047;wmo;7962574;0;DefaultGlobal

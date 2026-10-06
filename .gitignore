@@ -18,3 +18,6 @@ desktop.ini
 
 # Community listfile (FileDataID -> path), downloaded by the build
 listfile.csv
+
+# Build cache and previews
+build/

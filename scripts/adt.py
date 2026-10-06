@@ -144,3 +144,14 @@ def layer_weights(layers):
             w[lst[0][0]] = w.get(lst[0][0], 0) + np.clip(1 - rest, 0, 1)
         res.append(w)
     return res
+
+
+def read_area(path):
+    """Area IDs (16x16 chunks) only; fast scan of a root ADT."""
+    b = open(path, 'rb').read()
+    area = np.zeros((16, 16), np.int32)
+    for tag, o, n in chunks(b):
+        if tag == 'MCNK':
+            ix, iy = struct.unpack_from('<2I', b, o + 4)
+            area[iy, ix] = struct.unpack_from('<I', b, o + 0x34)[0]
+    return area

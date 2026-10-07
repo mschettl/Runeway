@@ -57,7 +57,7 @@ end
 local function Slider(label, x, y, width, min, max, step, fmt, get, set)
     local s = CreateFrame("Slider", nil, panel, "UISliderTemplateWithLabels")
     s:SetPoint("TOPLEFT", x, y)
-    s:SetWidth(width)
+    s:SetSize(width, 17)          -- the template has no height: without it the slider is not drawn at all
     s:SetMinMaxValues(min, max)
     s:SetValueStep(step)
     s:SetObeyStepOnDrag(true)

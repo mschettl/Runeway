@@ -1,5 +1,7 @@
 # Runeway – working conventions
 
+Current state, decisions and open tasks: `Runeway_Status_v1.md`. Original goals: `Runeway_Prompt_v1.md`.
+
 - Communication with Mario: German, short and technically precise.
 - Development language: English. Code, identifiers, comments, file names, commit messages,
   chat output, slash commands and UI texts are English.

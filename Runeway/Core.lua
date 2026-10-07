@@ -576,7 +576,8 @@ SlashCmdList.RUNEWAY = function(msg)
             Print("/rnw color fill|hatch|shade|terrain|water|roads|questareas R G B [A]   (0-1)")
         end
     elseif cmd == "probe" then
-        Runeway_Probe(arg)
+        -- dev tool, not part of the release: add tools/Probe.lua to the .toc to use it
+        if Runeway_Probe then Runeway_Probe(arg) else Print("probe is a dev tool (tools/Probe.lua), not loaded") end
     elseif cmd == "pos" then
         local pn, pw, _, inst = UnitPosition("player")
         local mapID = C_Map.GetBestMapForUnit("player")
@@ -594,6 +595,6 @@ SlashCmdList.RUNEWAY = function(msg)
         ApplyLock()
         Print("settings reset")
     else
-        Print("/rnw [toggle] | lock | unlock | alpha 5-100 | zoom 0.08-5 | size N | rotate | layer NAME | color NAME R G B [A] | probe [show] [RES] | pos | reset")
+        Print("/rnw [toggle] | lock | unlock | alpha 5-100 | zoom 0.08-5 | size N | rotate | layer NAME | color NAME R G B [A] | pos | reset")
     end
 end

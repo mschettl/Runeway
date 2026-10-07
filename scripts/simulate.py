@@ -15,7 +15,7 @@ LAYERS = ('fill', 'hatch', 'shade', 'terrain', 'water', 'roads')
 COLORS = dict(fill=(0.80, 0.64, 0.44, 0.07), hatch=(0.80, 0.84, 0.88, 0.22), shade=(0.05, 0.05, 0.06, 0.45),
               terrain=(0.82, 0.86, 0.89, 0.85), water=(0.82, 0.86, 0.89, 0.85),
               roads=(0.82, 0.86, 0.89, 0.4))     # defaults in Core.lua
-W, H, k = 700, 450, 1.5
+W, H, k = 600, 600, 1.5
 pN, pW = (float(sys.argv[1]), float(sys.argv[2])) if len(sys.argv) > 2 else (1917.6, 84.9)
 
 tiles = dict(re.findall(r'\["(\d+_\d+)"\] = "(\w+)"', open(os.path.join(ROOT, 'Runeway', 'Tiles.lua')).read()))

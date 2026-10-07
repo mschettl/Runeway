@@ -236,7 +236,68 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 
 ## 8. Offene Punkte und nächste Schritte
 
-### Nächstes Paket (neue Session): weitere Zonen + Questbereiche angrenzender Zonen
+### Roadmap (Langfristziel)
+
+**Ziel:** Alles, was sich kartieren lässt, in dieser Darstellung: alle Gebiete der Östlichen Königreiche, Kalimdor, Städte, Höhlen und Minen, Dungeons und Raids.
+
+**Architektur-Grundsätze:**
+- **Laufzeit bleibt kachelbasiert:** Kacheln in Weltkoordinaten, geladen nach Sichtfeld, keine Zonen im Addon. Zonen-Maps zur Laufzeit zusammenzusetzen ist ausdrücklich verworfen (doppelte Texturen und Überblend-Artefakte an Grenzen).
+- **Pro Karten-ID ein Kachelsatz:** `tiles/<mapID>/…` (heute `tiles/0` = Östliche Königreiche). Die Instanz-ID kommt aus `UnitPosition` (4. Wert); `Tiles.lua` führt die Kachelliste pro Karten-ID.
+- **Bauen als logische Gesamtkarte, gerechnet in Blöcken:** z. B. 8×8 Kacheln mit 1–2 Kacheln Überlappungsrand, geschrieben wird nur das Innere. Das Ergebnis ist identisch zu einem Gesamtbau, der RAM-Bedarf bleibt konstant. Schraffur-Phase an Weltkoordinaten statt am Mosaik-Ursprung ausrichten. Nicht-lokal und deshalb mit breitem Rand oder global auf grobem Raster: das Entfernen kleiner Inseln (`MIN_WALK`, `MIN_ISLAND`) und das Zusammensetzen der Wegstücke.
+- **Zwei Pipelines, ein Kachelformat:**
+
+  | Art | Quelle | Pipeline |
+  |---|---|---|
+  | Kontinente (Östliche Königreiche, Kalimdor) | ADT-Gelände | RAW-Pipeline (`build_raw.py`), in Blöcken |
+  | Städte, Höhlen, Minen | WMO in oder unter dem Gelände | WMO-Grundriss (Ansatz wie Undercity, `structures.py`) |
+  | Dungeons, Raids | meist reine WMO-Karten, oft mehrstöckig | WMO-Grundriss mit Etagen |
+- **Etagen und Innenräume:** umschaltbare Ebenen. Erkennung über `C_Map.GetBestMapForUnit`: Minen, Höhlen und Dungeon-Etagen haben eigene uiMap-IDs. Verallgemeinerung des Undercity-Prototyps.
+- **Daten-Addons nach Bedarf laden:** Kern-Addon `Runeway` (Code) plus Datenpakete mit `## LoadOnDemand: 1`, z. B. `Runeway_EasternKingdoms`, `Runeway_Kalimdor`, `Runeway_Dungeons`, geladen beim Betreten per `C_AddOns.LoadAddOn`. Gesamtgröße für alles grob 1 GB oder mehr.
+- **Rohdaten:** Kalimdor-ADTs, Instanz-WDTs und WMO-Exporte etappenweise per wow.export auf `data`. Größe des `data`-Branchs im Blick behalten (heute ~1,6 GB).
+
+**Reihenfolge:**
+1. **Fundament:** Block-Build mit Überlappung, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID im Addon.
+2. **Östliche Königreiche:** alle Gebiete in Etappen (Tabelle unten), plus Questbereiche angrenzender Zonen.
+3. **Daten-Addons:** Aufteilung in Pakete, die beim Betreten geladen werden.
+4. **Kalimdor:** dieselbe Pipeline.
+5. **WMO-Grundriss-Pipeline mit Etagen:** zuerst Städte (Ironforge, Stormwind), Undercity unterirdisch, dann Höhlen und Minen.
+6. **Dungeons und Raids.**
+7. **Version 2:** Route zum Questziel (A* auf dem Begehbarkeitsraster).
+
+**Gebiete der Östlichen Königreiche** (AreaTable-Hauptzonen mit Gelände-Chunks im ADT-Export; 1 Chunk ≈ 33 × 33 yd). 27 Gebiete, Tirisfal fertig, 26 offen. Fläche gesamt ≈ 9 × Tirisfal, hochgerechnet ~200–300 MB Kacheln.
+
+| Chunks | Gebiet | | Chunks | Gebiet |
+|---:|---|---|---:|---|
+| 20 505 | Stranglethorn Vale (inkl. Meer) | | 3 298 | Burning Steppes |
+| 19 206 | Tirisfal Glades (**fertig**) | | 2 920 | Loch Modan |
+| 18 845 | Wetlands (inkl. Meer) | | 2 698 | Searing Gorge |
+| 16 097 | Eastern Plaguelands | | 2 643 | Duskwood |
+| 11 790 | Westfall | | 2 347 | Badlands |
+| 11 498 | Riverglades (Forever-spezifisch) | | 2 270 | Gilneas (Forever-spezifisch) |
+| 9 972 | Silverpine Forest | | 2 197 | Alterac Mountains |
+| 7 836 | The Hinterlands | | 2 082 | Blasted Lands |
+| 7 631 | Swamp of Sorrows | | 2 081 | Redridge Mountains |
+| 6 294 | Arathi Highlands | | 1 754 | Stormwind City (Stadt) |
+| 6 096 | Dun Morogh | | 1 536 | Gillijim's Isle |
+| 4 276 | Hillsbrad Foothills | | 855 | Deadwind Pass |
+| 3 672 | Elwynn Forest | | 295 | Ruins of Gilneas |
+| 3 616 | Western Plaguelands | | | |
+
+- Ironforge und Undercity sind eigene Hauptzonen ohne Gelände-Chunks (reine WMO-Innenräume) → WMO-Pipeline.
+- Eversong Woods, Ghostlands und Isle of Quel'Danas liegen auf einer eigenen Karte und sind nicht im ADT-Export.
+- Nicht gezählt: Chunks ohne Gebiet (ID 0) und „Shark-Infested Waters“ (Meer).
+- Neu erzeugen: AreaTable-Hauptzonen (`ParentAreaID` 0, `ContinentID` 0) gegen `build/area_index.npz` zählen, siehe `zone_of_area()`/`area_index()` in `build_raw.py`.
+
+**Retail (mögliche spätere Erweiterung):**
+- **Code:** Forever ist ein Retail-Ableger mit praktisch identischer UI-API. Der Addon-Code läuft weitgehend unverändert; nötig sind die Interface-Version für Retail in der `.toc` und eine Erkennung des Spieltyps (z. B. `WOW_PROJECT_ID`, `GetBuildInfo`), um das passende Datenpaket zu laden.
+- **Daten:** Kacheln sind spielversionsabhängig, weil sich Gebiete geändert haben (z. B. Brachland durch Cataclysm geteilt, Tausend Nadeln geflutet, Dunkelküste, Undercity in Retail zerstört). Gleiche Karten-ID heißt nicht gleiches Gelände. Daher je Spielversion eigene Datenpakete (z. B. `Runeway_Forever_EasternKingdoms`, `Runeway_Retail_EasternKingdoms`) und auf `data` getrennte Ordner je Version.
+- **Phasen:** Retail hat phasenabhängiges Gelände (z. B. Kriegsfronten, Chromiezeit), teils als eigene Karten-IDs. Die Kachelliste pro Karten-ID deckt das ab, solange jede Phase ihre eigene ID hat.
+- **Pipeline:** unverändert nutzbar (gleiches Split-ADT- und WMO-Format), Eingabe ist der wow.export-Export des jeweiligen Clients. Die Parameter (Steigung, Wege-Texturen) brauchen eventuell Feinjustierung für neuere Gebiete.
+- **Konsequenz schon jetzt:** Datenpfade und Paketnamen nicht fest an „Forever“ binden, sondern über Spielversion und Karten-ID auflösen; dann ist Retail nur ein weiterer Datensatz.
+
+### Nächstes Paket (neue Session): Fundament + weitere Zonen + Questbereiche angrenzender Zonen
+
+**Reihenfolge in der Session:** zuerst das Fundament (Roadmap Schritt 1: Block-Build, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID), dann Etappe 1.
 
 **Ziel:** Die Karte wächst über Tirisfal hinaus, nahtlos über Zonengrenzen. Questbereiche benachbarter Zonen erscheinen, sobald sie im Sichtfeld liegen.
 
@@ -252,8 +313,8 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 4. Weitere Etappen danach: restliche Östliche Königreiche.
 
 **Risiken / offene Fragen:**
-- **Speicher beim Bauen:** Das Mosaik hat 512 px pro Kachel und mehrere Ebenen. Für viele Zonen auf einmal wird das groß (ganze Östliche Königreiche ≈ mehrere GB RAM). Bei Bedarf `build_raw.py` regional mit Überlappungsrand bauen lassen.
-- **Addon-Größe:** Tirisfal sind ~22 MB, alle Östlichen Königreiche grob 300–500 MB. Größe je Etappe messen (Ausgabe von `build_raw.py`). Sparmöglichkeiten: Schraffur über offenem Meer auf einen Küstenstreifen begrenzen, Fläche und Schraffur nicht in 512 px speichern.
+- **Speicher beim Bauen:** Das Mosaik hat 512 px pro Kachel und mehrere Ebenen. Für viele Zonen auf einmal wird das groß (ganze Östliche Königreiche ≈ mehrere GB RAM). Gelöst durch den Block-Build (Roadmap Schritt 1).
+- **Addon-Größe:** Tirisfal sind ~22 MB, alle Östlichen Königreiche hochgerechnet ~200–300 MB. Größe je Etappe messen (Ausgabe von `build_raw.py`). Sparmöglichkeiten: Schraffur über offenem Meer auf einen Küstenstreifen begrenzen, Fläche und Schraffur nicht in 512 px speichern.
 - **`Tiles.lua`:** wird bei jedem Lauf komplett neu geschrieben; Kacheln nicht mehr gebauter Zonen bleiben sonst als Dateien liegen (vor einem Lauf `Runeway/tiles/0` leeren).
 - **Städte:** Undercity bzw. Ruinen von Lordaeron bleiben über `structures.py` erhalten. Andere Städte (z. B. Ironforge, Stormwind) brauchen eigene WMO-Exporte, siehe unten „Weitere Städte“.
 
@@ -273,7 +334,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
   - Die Ausrichtung je Stadt gegen die Minimap prüfen, weil die Drehrichtung erst nahe 0° kalibriert ist.
 - **Undercity unterirdisch (optional):** Ein Prototyp des Grundrisses aus den 197 Innen-Gruppen ist gezeigt, aber nicht eingebaut. Dafür bräuchte es eine eigene Ebene, die über die Karten-ID umschaltet; die ID per `/rnw pos` in Undercity ermitteln.
 - **Questbereiche (optional):** Innenschein bzw. Schraffur wie auf der Minimap. Mit Linien gab es Artefakte an den Stoßstellen, das bräuchte gefüllte Flächen, z. B. Dreiecks-Texturen.
-- **Prompt Version 2:** Route zum Questziel (A* auf dem Begehbarkeitsraster), Kalimdor, Instanzen.
+- **Version 2, Kalimdor, Instanzen:** siehe Roadmap oben.
 
 ### Bekannte Einschränkungen
 - **Feldwege:** Erdwege mit Dirt-Texturen werden nicht erkannt, weil Dirt in Tirisfal normaler Untergrund ist.
@@ -321,7 +382,9 @@ cd <repo> && zip -r build/Runeway-1.1.zip Runeway
 Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch claude/dreamy-lovelace-efolxg.
 Lies zuerst CLAUDE.md, Runeway_Status_v1.md und Runeway_Prompt_v1.md.
 Version 1.1 ist abgeschlossen und in main gemergt (PR #2).
-Aufgabe dieser Session: weitere Zonen der Östlichen Königreiche (Etappe 1: Nachbarzonen von Tirisfal)
-und Questbereiche angrenzender Zonen, siehe Runeway_Status_v1.md, Abschnitt 8 „Nächstes Paket“.
+Langfristziel und Architektur: Runeway_Status_v1.md, Abschnitt 8 „Roadmap“.
+Aufgabe dieser Session: Fundament (Block-Build, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID),
+danach weitere Zonen der Östlichen Königreiche (Etappe 1: Nachbarzonen von Tirisfal) und Questbereiche
+angrenzender Zonen, siehe Abschnitt 8 „Nächstes Paket“.
 Rohdaten liegen auf dem Branch data (git fetch origin data, siehe Abschnitt 2). Kommunikation Deutsch, Code Englisch.
 ```

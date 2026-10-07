@@ -7,7 +7,8 @@ local function Print(msg)
 end
 
 local frame, sampler
-local RES_DEFAULT, PER_FRAME = 64, 400
+local RES_DEFAULT, PER_FRAME = 64, 1000
+local FINE_STEP, FINE_MAX, FINE_WINDOW = 1 / 1024, 200, 0.06   -- fine pass: map units, max cells per axis
 
 local function QuestTitle(questID)
     if C_QuestLog.GetTitleForQuestID then return C_QuestLog.GetTitleForQuestID(questID) end
@@ -45,19 +46,19 @@ local function GetFrame()
     return f
 end
 
--- Samples one quest; calls done(result) when finished (spread over several frames)
-local function SampleQuest(f, mapID, questID, res, done)
-    f:DrawNone()
-    f:DrawBlob(questID, true)
+-- Samples a map rectangle (normalized x0, y0 .. x1, y1) on an nx x ny grid for the blob currently drawn;
+-- calls done(result) when finished (spread over several frames)
+local function SampleRect(f, questID, x0, y0, x1, y1, nx, ny, done)
     local rows, hits, other, errors = {}, 0, 0, 0
-    local minX, minY, maxX, maxY = res, res, -1, -1
+    local minX, minY, maxX, maxY = nx, ny, -1, -1
+    local dx, dy = (x1 - x0) / nx, (y1 - y0) / ny
     local i, wait = 0, 0.2           -- give the engine a moment to build the blob
     sampler:SetScript("OnUpdate", function(self, e)
         if wait > 0 then wait = wait - e return end
         for _ = 1, PER_FRAME do
-            local row, col = math.floor(i / res), i % res
+            local row, col = math.floor(i / nx), i % nx
             if col == 0 then rows[row + 1] = {} end
-            local ok, a, b = pcall(f.UpdateMouseOverTooltip, f, (col + 0.5) / res, (row + 0.5) / res)
+            local ok, a, b = pcall(f.UpdateMouseOverTooltip, f, x0 + (col + 0.5) * dx, y0 + (row + 0.5) * dy)
             local c = "0"
             if not ok then
                 errors = errors + 1
@@ -75,15 +76,40 @@ local function SampleQuest(f, mapID, questID, res, done)
             end
             rows[row + 1][col + 1] = c
             i = i + 1
-            if i >= res * res then
+            if i >= nx * ny then
                 self:SetScript("OnUpdate", nil)
                 for r = 1, #rows do rows[r] = table.concat(rows[r]) end
-                done({ questID = questID, title = QuestTitle(questID), mapID = mapID, res = res,
-                       hits = hits, other = other, errors = errors, rows = rows,
-                       bbox = hits > 0 and { minX, minY, maxX, maxY } or nil })
+                done({ rect = { x0, y0, x1, y1 }, nx = nx, ny = ny, hits = hits, other = other, errors = errors,
+                       rows = rows,
+                       bbox = hits > 0 and { x0 + minX * dx, y0 + minY * dy, x0 + (maxX + 1) * dx, y0 + (maxY + 1) * dy } or nil })
                 return
             end
         end
+    end)
+end
+
+-- Coarse pass over the whole map, then a fine pass around the hits (or around the quest pin if the
+-- coarse grid missed a small area)
+local function SampleQuest(f, q, res, done)
+    f:DrawNone()
+    f:DrawBlob(q.questID, true)
+    SampleRect(f, q.questID, 0, 0, 1, 1, res, res, function(coarse)
+        local x0, y0, x1, y1
+        if coarse.bbox then
+            local m = 2 / res
+            x0, y0, x1, y1 = coarse.bbox[1] - m, coarse.bbox[2] - m, coarse.bbox[3] + m, coarse.bbox[4] + m
+        elseif (GetQuestPOIBlobCount and GetQuestPOIBlobCount(q.questID) or 0) > 0 and q.x then
+            x0, y0, x1, y1 = q.x - FINE_WINDOW, q.y - FINE_WINDOW, q.x + FINE_WINDOW, q.y + FINE_WINDOW
+        end
+        local r = { questID = q.questID, title = QuestTitle(q.questID), pin = { q.x, q.y }, coarse = coarse }
+        if not x0 then return done(r) end
+        x0, y0, x1, y1 = math.max(0, x0), math.max(0, y0), math.min(1, x1), math.min(1, y1)
+        local step = math.max(FINE_STEP, (x1 - x0) / FINE_MAX, (y1 - y0) / FINE_MAX)
+        local nx, ny = math.max(1, math.ceil((x1 - x0) / step)), math.max(1, math.ceil((y1 - y0) / step))
+        SampleRect(f, q.questID, x0, y0, x0 + nx * step, y0 + ny * step, nx, ny, function(fine)
+            r.fine = fine
+            done(r)
+        end)
     end)
 end
 
@@ -158,10 +184,13 @@ function Runeway_ProbeSample(mapID, quests, res, visible, prevMap)
             end
             return
         end
-        SampleQuest(f, mapID, q.questID, res, function(r)
+        SampleQuest(f, q, res, function(r)
             RunewayDB.probe.quests[#RunewayDB.probe.quests + 1] = r
-            Print(("  quest %d: %d hits, %d other, %d errors, bbox %s"):format(r.questID, r.hits, r.other, r.errors,
-                r.bbox and table.concat(r.bbox, ",") or "-"))
+            local c, fi = r.coarse, r.fine
+            Print(("  quest %d: coarse %d hits%s, fine %s"):format(r.questID, c.hits,
+                c.errors > 0 and (" (" .. c.errors .. " errors)") or "",
+                fi and ("%d x %d, %d hits, bbox %.3f,%.3f - %.3f,%.3f"):format(fi.nx, fi.ny, fi.hits,
+                    unpack(fi.bbox or { 0, 0, 0, 0 })) or "-"))
             Next()
         end)
     end

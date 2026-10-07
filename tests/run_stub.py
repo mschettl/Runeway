@@ -34,15 +34,16 @@ L.execute('''
     upd(RunewayFrame, 0.05)
     SlashCmdList.RUNEWAY("help")
     SlashCmdList.RUNEWAY("probe 16")
-    for _ = 1, 30 do
+    for _ = 1, 120 do
         for _, f in ipairs(FRAMES) do
             local h = f:GetScript("OnUpdate")
             if h and f ~= RunewayFrame then h(f, 0.25) end
         end
     end
     local p = RunewayDB.probe.quests[1]
-    print("probe rows:")
-    for _, r in ipairs(p.rows) do print("  " .. r) end
+    print("coarse rows:")
+    for _, r in ipairs(p.coarse.rows) do print("  " .. r) end
+    print("fine grid", p.fine.nx, p.fine.ny, "hits", p.fine.hits)
 ''')
 
 # every referenced texture file must exist

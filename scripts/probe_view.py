@@ -14,17 +14,42 @@ os.makedirs(out, exist_ok=True)
 print('map', probe.mapID, 'time', probe.time,
       'corners (north/west at map 0,0 and 1,1):', list(probe.corners.values()) if probe.corners else None)
 colours = {'0': (30, 30, 30), '1': (60, 200, 255), '2': (255, 120, 60)}
+
+
+def mask_img(g, size=384):
+    rows = list(g.rows.values())
+    img = np.array([[colours[c] for c in r] for r in rows], np.uint8)
+    h, w = img.shape[:2]
+    s = size / max(h, w)
+    return cv2.resize(img, (max(1, int(w * s)), max(1, int(h * s))), interpolation=cv2.INTER_NEAREST)
+
+
+def world(x, y):
+    """Normalized map position -> (north, west) using the map corners."""
+    n0, w0, n1, w1 = list(probe.corners.values())
+    return n0 + (n1 - n0) * y, w0 + (w1 - w0) * x
+
+
 tiles = []
 for q in probe.quests.values():
-    rows = list(q.rows.values())
-    img = np.array([[colours[c] for c in r] for r in rows], np.uint8)
-    img = cv2.resize(img, (384, 384), interpolation=cv2.INTER_NEAREST)
-    cv2.putText(img, f'{q.questID} {q.title or ""}'[:40], (6, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1)
-    tiles.append(img)
-    print(f'quest {q.questID} {q.title}: hits {q.hits}, other {q.other}, errors {q.errors}')
+    c, f = q.coarse, q.fine
+    print(f'quest {q.questID} {q.title}: coarse {c.hits} hits, fine {f.nx}x{f.ny} {f.hits} hits' if f else
+          f'quest {q.questID} {q.title}: coarse {c.hits} hits, no fine pass')
+    if f and f.bbox and probe.corners:
+        b = list(f.bbox.values())
+        (na, wa), (nb, wb) = world(b[0], b[1]), world(b[2], b[3])
+        print(f'    world bbox north {nb:.0f}..{na:.0f}, west {wb:.0f}..{wa:.0f} ({abs(wa - wb):.0f} x {abs(na - nb):.0f} yd)')
+    for g, tag in ((c, 'coarse'), (f, 'fine')):
+        if not g:
+            continue
+        img = np.zeros((384, 384, 3), np.uint8)
+        m = mask_img(g)
+        img[:m.shape[0], :m.shape[1]] = m
+        cv2.putText(img, f'{q.questID} {tag} {q.title or ""}'[:44], (6, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1)
+        tiles.append(img)
 if tiles:
-    while len(tiles) % 3:
+    while len(tiles) % 4:
         tiles.append(np.zeros_like(tiles[0]))
-    sheet = np.vstack([np.hstack(tiles[i:i + 3]) for i in range(0, len(tiles), 3)])
+    sheet = np.vstack([np.hstack(tiles[i:i + 4]) for i in range(0, len(tiles), 4)])
     cv2.imwrite(os.path.join(out, 'probe.png'), sheet)
     print('build/probe.png written')

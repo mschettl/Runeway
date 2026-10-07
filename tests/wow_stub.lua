@@ -1,4 +1,5 @@
 -- Minimal WoW API stub to load and exercise the addon outside the game (lupa / Lua 5.x)
+unpack = unpack or table.unpack
 local function obj(name)
     local o = { _name = name, _shown = false, _scripts = {} }
     return setmetatable(o, { __index = function(t, k)

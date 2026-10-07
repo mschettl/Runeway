@@ -34,7 +34,9 @@ CREATED = {}
 DRAWN = {}
 BLOBS = { [4242] = { 0.4, 0.6, 0.2 }, [4243] = { 0.55, 0.6, 0.15 } }
 function InCombatLockdown() return false end
-function GetQuestPOIBlobCount() return 1 end
+local clock = 0
+function debugprofilestop() clock = clock + 0.01 return clock end
+function GetQuestPOIBlobCount(q) return BLOBS[q] and 1 or 0 end
 UIParent = obj("UIParent")
 WorldMapFrame = obj("WorldMapFrame")
 FRAMES = {}
@@ -50,7 +52,8 @@ function HideUIPanel() end
 C_Map = { GetBestMapForUnit = function() return 1420 end,
           GetPlayerMapPosition = function() return { GetXY = function() return 0.4, 0.6 end } end }
 C_Minimap = { IsInsideQuestBlob = function() return true end }
-C_QuestLog = { GetQuestsOnMap = function() return { { questID = 4242, x = 0.4, y = 0.6 }, { questID = 4243, x = 0.55, y = 0.6 } } end,
+C_QuestLog = { GetQuestsOnMap = function() return { { questID = 4242, x = 0.4, y = 0.6 }, { questID = 4243, x = 0.55, y = 0.6 }, { questID = 4244, x = 0.45, y = 0.5 } } end,
+               IsComplete = function(q) return q == 4244 end,
                GetTitleForQuestID = function(id) return "Test quest " .. id end }
 function CreateVector2D(x, y) return { x = x, y = y } end
 C_Map.GetWorldPosFromMapPos = function(_, v) return 0, { x = 3000 - v.y * 4000, y = 2000 - v.x * 6000 } end

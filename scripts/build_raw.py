@@ -222,7 +222,7 @@ def write_tiles(layers, cols, rows, tiles):
 
 
 # RGBA as the defaults in Core.lua (drawn in LAYERS order)
-COLORS = dict(fill=(1, 1, 1, 0.06), hatch=(0.80, 0.84, 0.88, 0.22), shade=(0.05, 0.05, 0.06, 0.45),
+COLORS = dict(fill=(1, 1, 1, 0.09), hatch=(0.80, 0.84, 0.88, 0.22), shade=(0.05, 0.05, 0.06, 0.45),
               terrain=(0.82, 0.86, 0.89, 0.85), water=(0.82, 0.86, 0.89, 0.85), roads=(0.82, 0.86, 0.89, 0.4))
 
 

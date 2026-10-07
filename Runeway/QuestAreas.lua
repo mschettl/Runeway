@@ -5,11 +5,11 @@
 
 local _, ns = ...
 
-local COARSE = 64                 -- coarse grid over the whole map
-local FINE_STEP = 1 / 1024        -- fine grid step in map units (~4 yd in a 4000 yd zone)
-local FINE_MAX = 160              -- max fine cells per axis
+local COARSE = 48                 -- coarse grid over the whole map
+local FINE_STEP = 1 / 640         -- fine grid step in map units (~6 yd in a 4000 yd zone; the outline is interpolated)
+local FINE_MAX = 112              -- max fine cells per axis
 local FINE_WINDOW = 0.06          -- fine window around the quest pin if the coarse grid missed the area
-local BUDGET = 600                -- samples per frame
+local BUDGET_MS = 3                -- sampling time per frame in milliseconds
 local SIMPLIFY = 0.35             -- outline simplification tolerance in fine cells
 local WARMUP_MAP, WARMUP_QUEST = 1.0, 0.2   -- seconds before sampling (first draw after SetMapID is slow)
 local THICKNESS = 14            -- glow line: bright core + soft halo (media/glow.tga)
@@ -24,7 +24,7 @@ local queue = {}          -- quests to sample: { questID = , x = , y = , sig = }
 local job                 -- quest being sampled
 local dirty = 0           -- > 0: refresh the quest list after this many seconds
 local lines, shownLines = {}, 0
-ns.questAreas, ns.questGroups = areas, groups   -- for tests
+ns.QuestAreaState = function() return areas, groups end   -- for tests
 
 ---------------------------------------------------------------------------
 -- Sampling
@@ -256,7 +256,8 @@ local function Step(e)
     end
     local f, qid, nx, ny = blobFrame, job.questID, job.nx, job.ny
     local total = nx * ny
-    for _ = 1, BUDGET do
+    local stop = debugprofilestop() + BUDGET_MS
+    while true do
         local i = job.i
         local r, c = math.floor(i / nx), i % nx
         local hit = IsHit(qid, job.x0 + (c + 0.5) * job.dx, job.y0 + (r + 0.5) * job.dy)
@@ -267,7 +268,7 @@ local function Step(e)
             job.maxC, job.maxR = math.max(job.maxC, c), math.max(job.maxR, r)
         end
         job.i = i + 1
-        if job.i >= total then break end
+        if job.i >= total or (i % 64 == 0 and debugprofilestop() > stop) then break end
     end
     if job.i < total then return end
 
@@ -375,9 +376,14 @@ local function Refresh()
     if not (m and C_QuestLog.GetQuestsOnMap and GetBlobFrame()) then return end
     if m ~= mapID then
         mapID = m
-        wipe(areas)
-        wipe(groups)
+        -- areas are kept per map in the saved variables, so they show up at once after /reload or relog
+        local cache = ns.db().questAreaCache
+        cache[m] = cache[m] or { areas = {}, groups = {} }
+        areas, groups = cache[m].areas, cache[m].groups
         wipe(inGroup)
+        for key, g in pairs(groups) do
+            for _, qid in ipairs(g.members) do inGroup[qid] = key end
+        end
         wipe(queue)
         job = nil
         local n0, w0 = ns.MapToWorld(m, 0, 0)
@@ -400,6 +406,15 @@ local function Refresh()
     end
     for qid in pairs(areas) do
         if not onMap[qid] then areas[qid] = nil end
+    end
+    -- nearest quests first
+    local mp = C_Map.GetPlayerMapPosition(m, "player")
+    local px, py
+    if mp then px, py = mp:GetXY() end
+    if px then
+        table.sort(queue, function(a, b)
+            return ((a.x or 0) - px) ^ 2 + ((a.y or 0) - py) ^ 2 < ((b.x or 0) - px) ^ 2 + ((b.y or 0) - py) ^ 2
+        end)
     end
     -- a group stays valid only while all members are unchanged and not queued
     local queued = {}
@@ -444,7 +459,7 @@ driver:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 driver:RegisterEvent("QUEST_LOG_UPDATE")
 driver:RegisterEvent("QUEST_POI_UPDATE")
 driver:SetScript("OnEvent", function()
-    dirty = 0.5               -- debounce: QUEST_LOG_UPDATE fires in bursts
+    dirty = 0.3               -- debounce: QUEST_LOG_UPDATE fires in bursts
 end)
 ns.view:HookScript("OnShow", function() dirty = 0.1 end)
 
@@ -478,6 +493,12 @@ end
 function ns.HideQuestAreas()
     for i = 1, shownLines do lines[i]:Hide() end
     shownLines = 0
+end
+
+-- true if the quest has an outline (its pin is then hidden)
+function ns.HasQuestArea(questID)
+    local a, g = areas[questID], groups[inGroup[questID] or ""]
+    return (a and #a.loops > 0) or (g and #g.loops > 0) or false
 end
 
 local function DrawArea(a, n, pN, pW, reach, W2, H2)

@@ -38,7 +38,8 @@ L.execute('''
     end
     upd(RunewayFrame, 0.05)
     print("lines created for quest areas:", CREATED.CreateLine or 0)
-    local a = NS.questAreas[4242]
+    local A, G = NS.QuestAreaState()
+    local a = A[4242]
     local loop = a.loops[1]
     local emin, emax = 9, 0
     for m = 1, #loop, 2 do
@@ -47,8 +48,9 @@ L.execute('''
     end
     print(("quest area: %d loop(s), %d points, ellipse error %.3f .. %.3f (1 = exact)"):format(#a.loops, #loop / 2, emin, emax))
     local ng, gl = 0, 0
-    for key, g in pairs(NS.questGroups) do ng = ng + 1; gl = #g.loops; print("group", key, "loops", gl) end
+    for key, g in pairs(G) do ng = ng + 1; gl = #g.loops; print("group", key, "loops", gl) end
     print("groups:", ng)
+    print("pins textures:", (function() local n = 0 for _, t in ipairs(TEXTURES) do if t:find("Gossip") then n = n + 1 end end return n end)())
     SlashCmdList.RUNEWAY("layer questareas")
     SlashCmdList.RUNEWAY("color questareas 1 0.5 0")
     SlashCmdList.RUNEWAY("color fill 1 1 1 0.1")
@@ -71,6 +73,6 @@ L.execute('''
 ''')
 
 # every referenced texture file must exist
-missing = [p for p in L.globals().TEXTURES.values()
-           if not os.path.exists(os.path.join(ROOT, p.replace('Interface\\AddOns\\', '').replace('\\', os.sep)))]
+missing = [p for p in L.globals().TEXTURES.values() if p.startswith('Interface\\AddOns\\Runeway')
+           and not os.path.exists(os.path.join(ROOT, p.replace('Interface\\AddOns\\', '').replace('\\', os.sep)))]
 print('missing texture files:', missing or 'none')

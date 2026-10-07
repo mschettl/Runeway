@@ -20,7 +20,7 @@ local defaults = {
     x = nil, y = nil, w = 700, h = 450,
     zoom = 1.5, alpha = 0.7, rotate = true, locked = false, shown = false,
     colors = {
-        fill    = { r = 1, g = 1, b = 1, a = 0.06 },
+        fill    = { r = 1, g = 1, b = 1, a = 0.09 },
         hatch   = { r = 0.80, g = 0.84, b = 0.88, a = 0.22 },
         shade   = { r = 0.05, g = 0.05, b = 0.06, a = 0.45 },
         terrain = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
@@ -29,6 +29,7 @@ local defaults = {
         questAreas = { r = 0.35, g = 0.60, b = 1.00, a = 1 },
     },
     layers = { fill = true, hatch = true, shade = true, terrain = true, water = true, roads = true, questAreas = true },
+    questAreaCache = {},     -- [mapID] = { areas = {}, groups = {} }, see QuestAreas.lua
 }
 local db
 
@@ -221,26 +222,49 @@ local function RefreshQuests()
     if not (mapID and C_QuestLog and C_QuestLog.GetQuestsOnMap) then return end
     for _, q in ipairs(C_QuestLog.GetQuestsOnMap(mapID) or {}) do
         local n, w = MapToWorld(mapID, q.x, q.y)
-        if n then quests[#quests + 1] = { n, w } end
+        if n then
+            local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
+                or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
+            quests[#quests + 1] = { n, w, questID = q.questID, done = done and true or false }
+        end
+    end
+end
+
+-- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
+-- Classic quest marks: yellow "?" = ready to turn in, grey "?" = in progress.
+local function SetPinIcon(t, done)
+    if t.done == done then return end
+    t.done = done
+    local ok, res = false
+    if not done and t.SetAtlas then ok, res = pcall(t.SetAtlas, t, "SideInProgressquesticon") end
+    if done or not ok or res == false then
+        t:SetTexture("Interface\\GossipFrame\\ActiveQuestIcon")
+        t:SetDesaturated(not done)
+    else
+        t:SetDesaturated(false)
     end
 end
 
 local function UpdateQuestPins()
-    for i, q in ipairs(quests) do
-        local t = qpins[i]
-        if not t then
-            t = top:CreateTexture(nil, "ARTWORK")
-            t:SetSize(14, 14)
-            t:SetTexture(MEDIA .. "dot.tga")
-            Fade(t)
-            qpins[i] = t
+    local n = 0
+    for _, q in ipairs(quests) do
+        if not (ns.HasQuestArea and ns.HasQuestArea(q.questID)) then
+            n = n + 1
+            local t = qpins[n]
+            if not t then
+                t = top:CreateTexture(nil, "ARTWORK")
+                t:SetSize(18, 18)
+                Fade(t)
+                qpins[n] = t
+            end
+            SetPinIcon(t, q.done)
+            local x, y = ToScreen(q[1], q[2])
+            t:ClearAllPoints()
+            t:SetPoint("CENTER", view, "CENTER", x, y)
+            t:Show()
         end
-        local x, y = ToScreen(q[1], q[2])
-        t:ClearAllPoints()
-        t:SetPoint("CENTER", view, "CENTER", x, y)
-        t:Show()
     end
-    for i = #quests + 1, #qpins do qpins[i]:Hide() end
+    for i = n + 1, #qpins do qpins[i]:Hide() end
 end
 
 ---------------------------------------------------------------------------

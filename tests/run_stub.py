@@ -34,7 +34,7 @@ L.execute('''
     upd(RunewayFrame, 0.05)
     SlashCmdList.RUNEWAY("help")
     SlashCmdList.RUNEWAY("probe 16")
-    for _ = 1, 10 do
+    for _ = 1, 30 do
         for _, f in ipairs(FRAMES) do
             local h = f:GetScript("OnUpdate")
             if h and f ~= RunewayFrame then h(f, 0.25) end

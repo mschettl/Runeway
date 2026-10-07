@@ -12,15 +12,15 @@ local FINE_WINDOW = 0.06          -- fine window around the quest pin if the coa
 local BUDGET_MS = 3                -- sampling time per frame in milliseconds
 local SIMPLIFY = 0.35             -- outline simplification tolerance in fine cells
 local WARMUP_MAP, WARMUP_QUEST = 1.0, 0.2   -- seconds before sampling (first draw after SetMapID is slow)
-local MIN_SEG = 5                 -- minimum drawn segment length in screen pixels
-local OVERLAP = 1                 -- px the solid lines are extended at both ends: closes the gaps at the joints
+local MIN_SEG = 5                 -- minimum drawn segment length in screen pixels (shorter ones WoW drops)
+local SUB_SEG = 6                 -- zoomed in, the outline is subdivided (Catmull-Rom) into pieces of ~this px
 -- Outline like the minimap quest blobs: a bright solid edge with a soft glow fading into the area.
 -- The glow is built from thin solid lines offset inwards (thin solid lines hide the segment joints).
 -- Line textures fade to 0 at their borders: WoW does not anti-alias line quads, the texture does.
 local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
-local EDGE = 4                    -- edge line thickness (media/edge.tga: ~2 px core + soft borders)
-local SOFT = 8                    -- inner glow line thickness (media/softline.tga)
-local INNER = { { 3.5, 0.35 } }   -- inner glow: offset px into the area, opacity (scaled down for small areas)
+-- Widths follow the zoom like the terrain lines in the tiles: edge = tile size on screen / EDGE_DIV px
+local EDGE_DIV, EDGE_MIN, EDGE_MAX = 170, 1.5, 6   -- edge line (media/edge.tga: core = half the width)
+local INNER = { { 0.9, 0.35 } }   -- inner glow (media/softline.tga, 2 x edge width): offset in edge widths, opacity
 local GLOW_SIZE = 90              -- areas smaller than this on screen (px) get a proportionally weaker glow
 
 local blobFrame, mapID, corners
@@ -502,12 +502,10 @@ local function GetLine(i)
     local l = lines[i]
     if not l then
         l = lineParent:CreateLine(nil, "ARTWORK", nil, 1)
-        l:SetThickness(EDGE)
         l:SetTexture(MEDIA .. "edge.tga")
         l.inner = {}
         for k = 1, #INNER do
             local g = lineParent:CreateLine(nil, "ARTWORK", nil, 0)
-            g:SetThickness(SOFT)
             g:SetTexture(MEDIA .. "softline.tga")
             l.inner[k] = g
         end
@@ -534,16 +532,17 @@ function ns.HasQuestArea(questID)
     return (a and #a.loops > 0) or (g and #g.loops > 0) or false
 end
 
-local px, py, nx, ny = {}, {}, {}, {}   -- screen points and inward normals of the loop being drawn (reused)
+local px, py, qx, qy, nx, ny = {}, {}, {}, {}, {}, {}   -- reused buffers: screen points, subdivided, normals
 
-local function DrawArea(a, n, pN, pW, reach, W2, H2)
+local function DrawArea(a, n, pN, pW, reach, W2, H2, ew)
     local b = a.box
     if not (b[1] < pN + reach and b[2] > pN - reach and b[3] < pW + reach and b[4] > pW - reach) then return n end
     local view, ToScreen = ns.view, ns.ToScreen
     local c = ns.db().colors.questAreas
     local er, eg, eb = 0.5 + 0.5 * c.r, 0.5 + 0.5 * c.g, 0.5 + 0.5 * c.b   -- edge: lighter than the glow
+    local gw, ov = 2 * ew, ew / 2         -- glow width; segments overlap by half a width (no notches at joints)
     for _, loop in ipairs(a.loops) do
-        -- screen points; zoomed out, segments get shorter than a pixel and WoW drops them: keep >= MIN_SEG
+        -- screen points, at least MIN_SEG apart (zoomed out)
         local cnt, k = #loop, 0
         for m = 1, cnt, 2 do
             local x, y = ToScreen(loop[m], loop[m + 1])
@@ -553,34 +552,52 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2)
             end
         end
         if k >= 3 then
+            -- zoomed in: Catmull-Rom subdivision, so the curve stays round instead of showing straight pieces
+            local q = 0
+            for i = 1, k do
+                local h, j, l = (i - 2) % k + 1, i % k + 1, (i + 1) % k + 1
+                local len = math.sqrt((px[j] - px[i]) ^ 2 + (py[j] - py[i]) ^ 2)
+                local steps = math.min(12, math.max(1, math.floor(len / SUB_SEG)))
+                for st = 0, steps - 1 do
+                    local t = st / steps
+                    local t2, t3 = t * t, t * t * t
+                    local w0, w1 = -0.5 * t3 + t2 - 0.5 * t, 1.5 * t3 - 2.5 * t2 + 1
+                    local w2, w3 = -1.5 * t3 + 2 * t2 + 0.5 * t, 0.5 * t3 - 0.5 * t2
+                    q = q + 1
+                    qx[q] = w0 * px[h] + w1 * px[i] + w2 * px[j] + w3 * px[l]
+                    qy[q] = w0 * py[h] + w1 * py[i] + w2 * py[j] + w3 * py[l]
+                end
+            end
             local inward = loop.inward
             if not inward then                      -- areas cached before the side was stored: assume outer loop
                 local area2 = 0
-                for i = 1, k do
-                    local j = i % k + 1
-                    area2 = area2 + px[i] * py[j] - px[j] * py[i]
+                for i = 1, q do
+                    local j = i % q + 1
+                    area2 = area2 + qx[i] * qy[j] - qx[j] * qy[i]
                 end
                 inward = area2 > 0 and -1 or 1
             end
-            -- small areas on screen (zoomed out) get a narrower, weaker glow so it does not fill them
+            -- small areas on screen get a weaker glow so it does not fill them
             local x0b, x1b, y0b, y1b = math.huge, -math.huge, math.huge, -math.huge
-            for i = 1, k do
-                x0b, x1b = math.min(x0b, px[i]), math.max(x1b, px[i])
-                y0b, y1b = math.min(y0b, py[i]), math.max(y1b, py[i])
+            for i = 1, q do
+                x0b, x1b = math.min(x0b, qx[i]), math.max(x1b, qx[i])
+                y0b, y1b = math.min(y0b, qy[i]), math.max(y1b, qy[i])
             end
-            local gs = math.min(1, math.max(0, (math.min(x1b - x0b, y1b - y0b) - 12) / GLOW_SIZE))
+            local gs = math.min(1, math.max(0, (math.min(x1b - x0b, y1b - y0b) - 4 * ew) / GLOW_SIZE))
             -- vertex normals (average of the two neighbouring segments), pointing into the area
-            for i = 1, k do
-                local h, j = (i - 2) % k + 1, i % k + 1
-                local ax, ay, bx, by = px[i] - px[h], py[i] - py[h], px[j] - px[i], py[j] - py[i]
+            for i = 1, q do
+                local h, j = (i - 2) % q + 1, i % q + 1
+                local ax, ay, bx, by = qx[i] - qx[h], qy[i] - qy[h], qx[j] - qx[i], qy[j] - qy[i]
                 local la, lb = math.sqrt(ax * ax + ay * ay), math.sqrt(bx * bx + by * by)
-                local vx, vy = ay / la + by / lb, -ax / la - bx / lb
+                local vx, vy = 0, 0
+                if la > 0 then vx, vy = ay / la, -ax / la end
+                if lb > 0 then vx, vy = vx + by / lb, vy - bx / lb end
                 local lv = math.sqrt(vx * vx + vy * vy)
                 if lv > 0 then nx[i], ny[i] = inward * vx / lv, inward * vy / lv else nx[i], ny[i] = 0, 0 end
             end
-            for i = 1, k do
-                local j = i % k + 1
-                local x0, y0, x1, y1 = px[i], py[i], px[j], py[j]
+            for i = 1, q do
+                local j = i % q + 1
+                local x0, y0, x1, y1 = qx[i], qy[i], qx[j], qy[j]
                 local dx, dy = x1 - x0, y1 - y0
                 local len = math.sqrt(dx * dx + dy * dy)
                 -- soft edge of the map: same oval fade as the tile mask (lines do not take mask textures)
@@ -590,16 +607,21 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2)
                     t = t >= 1 and 1 or t * t * (3 - 2 * t)
                     n = n + 1
                     local l = GetLine(n)
-                    local ex, ey = dx / len * OVERLAP, dy / len * OVERLAP
+                    local ex, ey = dx / len * ov, dy / len * ov
+                    if l.w ~= ew then
+                        l.w = ew
+                        l:SetThickness(ew)
+                        for _, g in ipairs(l.inner) do g:SetThickness(gw) end
+                    end
                     l:SetStartPoint("CENTER", view, x0 - ex, y0 - ey)
                     l:SetEndPoint("CENTER", view, x1 + ex, y1 + ey)
                     l:SetVertexColor(er, eg, eb, c.a * t)   -- not SetAlpha: it overwrites the vertex alpha
                     l:Show()
-                    for q, g in ipairs(l.inner) do
-                        local d = INNER[q][1] * (0.4 + 0.6 * gs)
+                    for k2, g in ipairs(l.inner) do
+                        local d = INNER[k2][1] * ew * (0.4 + 0.6 * gs)
                         g:SetStartPoint("CENTER", view, x0 + nx[i] * d - ex, y0 + ny[i] * d - ey)
                         g:SetEndPoint("CENTER", view, x1 + nx[j] * d + ex, y1 + ny[j] * d + ey)
-                        g:SetVertexColor(c.r, c.g, c.b, INNER[q][2] * c.a * t * gs)
+                        g:SetVertexColor(c.r, c.g, c.b, INNER[k2][2] * c.a * t * gs)
                         g:SetShown(gs > 0)
                     end
                 end
@@ -615,12 +637,13 @@ function ns.DrawQuestAreas()
         local pN, pW, k = ns.Player()
         local W, H = ns.view:GetSize()
         local reach = math.sqrt(W * W + H * H) / 2 / k
+        local ew = math.min(EDGE_MAX, math.max(EDGE_MIN, (1600 / 3) * k / EDGE_DIV))   -- edge width follows the zoom
         for _, g in pairs(groups) do
-            if #g.loops > 0 then n = DrawArea(g, n, pN, pW, reach, W / 2, H / 2) end
+            if #g.loops > 0 then n = DrawArea(g, n, pN, pW, reach, W / 2, H / 2, ew) end
         end
         for qid, a in pairs(areas) do
             local g = groups[inGroup[qid] or ""]
-            if not (g and #g.loops > 0) then n = DrawArea(a, n, pN, pW, reach, W / 2, H / 2) end
+            if not (g and #g.loops > 0) then n = DrawArea(a, n, pN, pW, reach, W / 2, H / 2, ew) end
         end
     end
     for i = n + 1, shownLines do HideLine(lines[i]) end

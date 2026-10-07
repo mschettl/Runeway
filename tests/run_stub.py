@@ -30,7 +30,7 @@ L.execute('''
     upd(RunewayFrame, 0.05)
     print("textures after zoom out:", #TEXTURES, TEXTURES[#TEXTURES])
     -- quest areas: let the background sampler run, then draw
-    for _ = 1, 400 do
+    for _ = 1, 1200 do
         for _, f in ipairs(FRAMES) do
             local h = f:GetScript("OnUpdate")
             if h and f ~= RunewayFrame then h(f, 0.05) end
@@ -46,6 +46,9 @@ L.execute('''
         emin, emax = math.min(emin, e), math.max(emax, e)
     end
     print(("quest area: %d loop(s), %d points, ellipse error %.3f .. %.3f (1 = exact)"):format(#a.loops, #loop / 2, emin, emax))
+    local ng, gl = 0, 0
+    for key, g in pairs(NS.questGroups) do ng = ng + 1; gl = #g.loops; print("group", key, "loops", gl) end
+    print("groups:", ng)
     SlashCmdList.RUNEWAY("layer questareas")
     SlashCmdList.RUNEWAY("color questareas 1 0.5 0")
     SlashCmdList.RUNEWAY("color fill 1 1 1 0.1")

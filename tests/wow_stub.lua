@@ -14,8 +14,14 @@ local function obj(name)
         if k == "GetSize" then return function() return 700, 450 end end
         if k == "GetCenter" then return function() return 500, 400 end end
         if k == "GetFrameLevel" then return function() return 1 end end
+        if k == "DrawNone" then return function() DRAWN = {} end end
+        if k == "DrawBlob" then return function(self, q) DRAWN[q] = true end end
         if k == "UpdateMouseOverTooltip" then return function(self, x, y)
-            if (x - 0.4) ^ 2 + (y - 0.6) ^ 2 < 0.04 then return 4242, 1 end end end
+            -- test blobs: circles; probe frame tests draw quest 4242 only
+            for q, c in pairs(BLOBS) do
+                if (DRAWN[q] or not next(DRAWN)) and (x - c[1]) ^ 2 + (y - c[2]) ^ 2 < c[3] ^ 2 then return q, 1 end
+            end
+        end end
         if k:match("^Create") then return function(self)
             CREATED[k] = (CREATED[k] or 0) + 1
             return obj(k)
@@ -25,6 +31,8 @@ local function obj(name)
 end
 TEXTURES = {}
 CREATED = {}
+DRAWN = {}
+BLOBS = { [4242] = { 0.4, 0.6, 0.2 }, [4243] = { 0.55, 0.6, 0.15 } }
 function InCombatLockdown() return false end
 function GetQuestPOIBlobCount() return 1 end
 UIParent = obj("UIParent")
@@ -42,7 +50,7 @@ function HideUIPanel() end
 C_Map = { GetBestMapForUnit = function() return 1420 end,
           GetPlayerMapPosition = function() return { GetXY = function() return 0.4, 0.6 end } end }
 C_Minimap = { IsInsideQuestBlob = function() return true end }
-C_QuestLog = { GetQuestsOnMap = function() return { { questID = 4242, x = 0.4, y = 0.6 } } end,
+C_QuestLog = { GetQuestsOnMap = function() return { { questID = 4242, x = 0.4, y = 0.6 }, { questID = 4243, x = 0.55, y = 0.6 } } end,
                GetTitleForQuestID = function(id) return "Test quest " .. id end }
 function CreateVector2D(x, y) return { x = x, y = y } end
 C_Map.GetWorldPosFromMapPos = function(_, v) return 0, { x = 3000 - v.y * 4000, y = 2000 - v.x * 6000 } end

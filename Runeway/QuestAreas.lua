@@ -15,12 +15,15 @@ local WARMUP_MAP, WARMUP_QUEST = 1.0, 0.2   -- seconds before sampling (first dr
 local THICKNESS = 2
 
 local blobFrame, mapID, corners
-local areas = {}          -- [questID] = { sig = string, loops = { {n1, w1, n2, w2, ...}, ... }, box = {n0, n1, w0, w1} }
+local areas = {}          -- [questID] = { sig = string, loops = { {n1, w1, n2, w2, ...}, ... }, box = {n0, n1, w0, w1},
+                          --               rect = {x0, y0, x1, y1} map units of the hits }
+local groups = {}         -- overlapping quests sampled together: [key] = { loops, box, members = {questID, ...} }
+local inGroup = {}        -- [questID] = group key (drawn by the group instead of on its own)
 local queue = {}          -- quests to sample: { questID = , x = , y = , sig = }
 local job                 -- quest being sampled
 local dirty = 0           -- > 0: refresh the quest list after this many seconds
 local lines, shownLines = {}, 0
-ns.questAreas = areas      -- for tests
+ns.questAreas, ns.questGroups = areas, groups   -- for tests
 
 ---------------------------------------------------------------------------
 -- Sampling
@@ -41,7 +44,8 @@ end
 
 local function IsHit(questID, x, y)
     local ok, a, b = pcall(blobFrame.UpdateMouseOverTooltip, blobFrame, x, y)
-    return ok and a ~= nil and (a == questID or (b ~= nil and b > 0))
+    -- questID nil: group job, any drawn blob counts
+    return ok and a ~= nil and (questID == nil or a == questID or (b ~= nil and b > 0))
 end
 
 -- Starts sampling rectangle x0, y0 .. x1, y1 (map units) on an nx x ny grid
@@ -176,8 +180,16 @@ local function Finish()
             local wl = ToWorldLoop(l[1], l[2], area.box)
             if wl then area.loops[#area.loops + 1] = wl end
         end
+        area.rect = { job.x0 + job.minC * job.dx, job.y0 + job.minR * job.dy,
+                      job.x0 + (job.maxC + 1) * job.dx, job.y0 + (job.maxR + 1) * job.dy }
     end
-    areas[job.questID] = area
+    if job.group then
+        area.members = job.members
+        groups[job.group] = area
+        for _, qid in ipairs(job.members) do inGroup[qid] = job.group end
+    else
+        areas[job.questID] = area
+    end
     job = nil
 end
 
@@ -204,7 +216,9 @@ local function Step(e)
     end
     if job.i < total then return end
 
-    if job.phase == "coarse" then
+    if job.group then
+        Finish()
+    elseif job.phase == "coarse" then
         local x0, y0, x1, y1
         if job.hits > 0 then
             x0, y0 = job.x0 + (job.minC - 2) * job.dx, job.y0 + (job.minR - 2) * job.dy
@@ -226,6 +240,58 @@ local function Step(e)
     else
         Finish()
     end
+end
+
+-- Overlapping quest areas are sampled once more with all their blobs drawn, so they get one outline
+local function NextGroupJob()
+    local ids = {}
+    for qid, a in pairs(areas) do
+        if a.rect then ids[#ids + 1] = qid end
+    end
+    table.sort(ids)
+    local parent = {}
+    local function root(q) while parent[q] do q = parent[q] end return q end
+    for i = 1, #ids do
+        for j = i + 1, #ids do
+            local a, b = areas[ids[i]].rect, areas[ids[j]].rect
+            if a[1] <= b[3] and b[1] <= a[3] and a[2] <= b[4] and b[2] <= a[4] then
+                local ri, rj = root(ids[i]), root(ids[j])
+                if ri ~= rj then parent[rj] = ri end
+            end
+        end
+    end
+    local sets = {}
+    for _, qid in ipairs(ids) do
+        local r = root(qid)
+        sets[r] = sets[r] or {}
+        table.insert(sets[r], qid)
+    end
+    for _, members in pairs(sets) do
+        if #members > 1 then
+            local key = {}
+            for _, qid in ipairs(members) do key[#key + 1] = qid .. "=" .. areas[qid].sig end
+            key = table.concat(key, ",")
+            if not groups[key] then
+                local x0, y0, x1, y1 = 1, 1, 0, 0
+                for _, qid in ipairs(members) do
+                    local r = areas[qid].rect
+                    x0, y0, x1, y1 = math.min(x0, r[1]), math.min(y0, r[2]), math.max(x1, r[3]), math.max(y1, r[4])
+                end
+                return key, members, x0, y0, x1, y1
+            end
+        end
+    end
+end
+
+local function StartGroupJob(key, members, x0, y0, x1, y1)
+    job = { group = key, members = members }
+    blobFrame:DrawNone()
+    for _, qid in ipairs(members) do blobFrame:DrawBlob(qid, true) end
+    local m = 2 * FINE_STEP
+    x0, y0, x1, y1 = math.max(0, x0 - m), math.max(0, y0 - m), math.min(1, x1 + m), math.min(1, y1 + m)
+    local step = math.max(FINE_STEP, (x1 - x0) / FINE_MAX, (y1 - y0) / FINE_MAX)
+    local fx, fy = math.max(1, math.ceil((x1 - x0) / step)), math.max(1, math.ceil((y1 - y0) / step))
+    StartPass("fine", x0, y0, x0 + fx * step, y0 + fy * step, fx, fy, WARMUP_QUEST)
 end
 
 local function StartJob(q, warmup)
@@ -255,6 +321,8 @@ local function Refresh()
     if m ~= mapID then
         mapID = m
         wipe(areas)
+        wipe(groups)
+        wipe(inGroup)
         wipe(queue)
         job = nil
         local n0, w0 = ns.MapToWorld(m, 0, 0)
@@ -278,6 +346,18 @@ local function Refresh()
     for qid in pairs(areas) do
         if not onMap[qid] then areas[qid] = nil end
     end
+    -- a group stays valid only while all members are unchanged and not queued
+    local queued = {}
+    for _, q in ipairs(queue) do queued[q.questID] = true end
+    for key, g in pairs(groups) do
+        for _, qid in ipairs(g.members) do
+            if not areas[qid] or queued[qid] then
+                for _, m in ipairs(g.members) do if inGroup[m] == key then inGroup[m] = nil end end
+                groups[key] = nil
+                break
+            end
+        end
+    end
 end
 
 local driver = CreateFrame("Frame")
@@ -291,6 +371,12 @@ driver:SetScript("OnUpdate", function(_, e)
         blobFrame:Show()
         StartJob(table.remove(queue, 1), mapWarm and WARMUP_QUEST or WARMUP_MAP)
         mapWarm = true
+    elseif not job and blobFrame then
+        local key, members, x0, y0, x1, y1 = NextGroupJob()
+        if key then
+            blobFrame:Show()
+            StartGroupJob(key, members, x0, y0, x1, y1)
+        end
     end
     if job then
         Step(e)
@@ -338,30 +424,45 @@ function ns.HideQuestAreas()
     shownLines = 0
 end
 
+local function DrawArea(a, n, pN, pW, reach, W2, H2)
+    local b = a.box
+    if not (b[1] < pN + reach and b[2] > pN - reach and b[3] < pW + reach and b[4] > pW - reach) then return n end
+    local view, ToScreen = ns.view, ns.ToScreen
+    for _, loop in ipairs(a.loops) do
+        local cnt = #loop
+        local x0, y0 = ToScreen(loop[cnt - 1], loop[cnt])
+        for m = 1, cnt, 2 do
+            local x1, y1 = ToScreen(loop[m], loop[m + 1])
+            -- soft edge: same oval fade as the tile mask (lines do not take mask textures)
+            local mx, my = (x0 + x1) / (2 * W2), (y0 + y1) / (2 * H2)
+            local t = (1 - math.sqrt(mx * mx + my * my)) / 0.38
+            if t > 0 then
+                t = t >= 1 and 1 or t * t * (3 - 2 * t)
+                n = n + 1
+                local l = GetLine(n)
+                l:SetStartPoint("CENTER", view, x0, y0)
+                l:SetEndPoint("CENTER", view, x1, y1)
+                l:SetAlpha(t)
+                l:Show()
+            end
+            x0, y0 = x1, y1
+        end
+    end
+    return n
+end
+
 function ns.DrawQuestAreas()
     local n = 0
-    if ns.db().layers.questAreas and next(areas) then
+    if ns.db().layers.questAreas and (next(areas) or next(groups)) then
         local pN, pW, k = ns.Player()
         local W, H = ns.view:GetSize()
         local reach = math.sqrt(W * W + H * H) / 2 / k
-        local view, ToScreen = ns.view, ns.ToScreen
-        for _, a in pairs(areas) do
-            local b = a.box
-            if b[1] < pN + reach and b[2] > pN - reach and b[3] < pW + reach and b[4] > pW - reach then
-                for _, loop in ipairs(a.loops) do
-                    local cnt = #loop
-                    local x0, y0 = ToScreen(loop[cnt - 1], loop[cnt])
-                    for m = 1, cnt, 2 do
-                        local x1, y1 = ToScreen(loop[m], loop[m + 1])
-                        n = n + 1
-                        local l = GetLine(n)
-                        l:SetStartPoint("CENTER", view, x0, y0)
-                        l:SetEndPoint("CENTER", view, x1, y1)
-                        l:Show()
-                        x0, y0 = x1, y1
-                    end
-                end
-            end
+        for _, g in pairs(groups) do
+            if #g.loops > 0 then n = DrawArea(g, n, pN, pW, reach, W / 2, H / 2) end
+        end
+        for qid, a in pairs(areas) do
+            local g = groups[inGroup[qid] or ""]
+            if not (g and #g.loops > 0) then n = DrawArea(a, n, pN, pW, reach, W / 2, H / 2) end
         end
     end
     for i = n + 1, shownLines do lines[i]:Hide() end

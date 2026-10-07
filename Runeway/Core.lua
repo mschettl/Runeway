@@ -76,6 +76,15 @@ if view.CreateMaskTexture then
 else
     view:SetClipsChildren(true)
 end
+-- Moving textures: no snapping to whole screen pixels, otherwise they jump pixel by pixel while walking
+local function NoSnap(t)
+    if t.SetSnapToPixelGrid then
+        t:SetSnapToPixelGrid(false)
+        t:SetTexelSnappingBias(0)
+    end
+end
+ns.NoSnap = NoSnap
+
 local function Fade(tex)
     if fade and tex.AddMaskTexture then tex:AddMaskTexture(fade) end
 end
@@ -151,6 +160,7 @@ local function GetTex(e, inst, key, lod)
     if not t then
         t = canvas:CreateTexture(nil, "ARTWORK", nil, LAYER_LEVEL[e.layer])
         Fade(t)
+        NoSnap(t)
         t:SetTexture(TilePath(inst, key, e.layer, lod))
         e[lod] = t
     end
@@ -328,6 +338,7 @@ local function UpdateQuestPins()
                 for _, t in ipairs({ p.back, p.icon }) do
                     t:SetSize(PIN_SIZE, PIN_SIZE)
                     Fade(t)
+                    NoSnap(t)
                 end
                 qpins[n] = p
             end

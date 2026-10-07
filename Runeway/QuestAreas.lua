@@ -501,6 +501,7 @@ local function GetLine(i)
     if not l then
         l = lineParent:CreateLine(nil, "ARTWORK")
         l:SetTexture(MEDIA .. "edge.tga")
+        ns.NoSnap(l)
         lines[i] = l
     end
     return l

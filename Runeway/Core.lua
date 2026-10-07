@@ -6,6 +6,9 @@ local T = 1600 / 3                 -- edge length of an ADT tile in yards (533.3
 local PATH = "Interface\\AddOns\\Runeway\\tiles\\"
 local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
 local ZOOM_MIN, ZOOM_MAX = 0.08, 5
+local SIZE_MIN, SIZE_MAX = 200, 1400
+-- Soft edge strength 1-5: width of the fade as a share of the radius (media/fade<N>.tga, scripts/make_masks.py)
+local FADE_WIDTH = { 0.12, 0.25, 0.38, 0.55, 0.75 }
 
 -- Tile layers, drawn bottom to top. Tiles are white; colours are applied with SetVertexColor.
 -- fill = walkable area, hatch = not walkable (mountains, water), lines on top.
@@ -19,6 +22,12 @@ local LINE = { 0.82, 0.86, 0.89 }
 local defaults = {
     x = nil, y = nil, w = 600,          -- square map (w = edge length)
     zoom = 1.5, alpha = 0.7, rotate = true, locked = false, shown = false,
+    mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
+    worldMapKey = nil,       -- mode "mapkey": key that still opens the world map
+    autoHide = { combat = false, instance = false, mounted = false, city = false },
+    hover = true,            -- unlocked: subtle frame while the mouse is over the map
+    edge = 3,                -- soft edge strength, index into FADE_WIDTH
+    arrowSize = 23, pinSize = 26, questEdge = 1,   -- quest edge = width factor of the quest area outline
     colors = {
         fill    = { r = 0.80, g = 0.64, b = 0.44, a = 0.07 },   -- warm brown like Diablo IV
         hatch   = { r = 0.80, g = 0.84, b = 0.88, a = 0.22 },
@@ -71,7 +80,6 @@ ns.db = function() return db end
 local fade
 if view.CreateMaskTexture then
     fade = view:CreateMaskTexture()
-    fade:SetTexture(MEDIA .. "fade.tga", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
     fade:SetAllPoints()
 else
     view:SetClipsChildren(true)
@@ -89,6 +97,14 @@ local function Fade(tex)
     if fade and tex.AddMaskTexture then tex:AddMaskTexture(fade) end
 end
 ns.Fade = Fade
+ns.FadeWidth = function() return FADE_WIDTH[db.edge] or FADE_WIDTH[3] end
+
+local function ApplyEdge()
+    if fade then
+        fade:SetTexture(MEDIA .. "fade" .. (FADE_WIDTH[db.edge] and db.edge or 3) .. ".tga",
+            "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    end
+end
 
 local canvas = CreateFrame("Frame", nil, view)
 canvas:SetAllPoints()
@@ -99,20 +115,66 @@ top:SetFrameLevel(canvas:GetFrameLevel() + 5)
 
 local editHint = top:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 editHint:SetPoint("TOP", 0, -4)
-editHint:SetText("Drag = move  |  Mouse wheel = zoom  |  Shift+wheel = size  |  /rnw lock")
+editHint:SetText("Drag = move  |  Wheel = zoom  |  Corner or Shift+wheel = size  |  /rnw config")
 
 local status = top:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 status:SetPoint("BOTTOM", 0, 6)
+
+-- Size and zoom readout while moving, sizing or zooming; fades out shortly after the last action
+local info = top:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+info:SetPoint("CENTER", 0, -40)
+info:Hide()
+local infoUntil, infoHold = 0, false
+
+-- Hover frame (unlocked only): 1 px lines along the edges
+local border = {}
+for i, pts in ipairs({ { "TOPLEFT", "TOPRIGHT" }, { "BOTTOMLEFT", "BOTTOMRIGHT" }, { "TOPLEFT", "BOTTOMLEFT" }, { "TOPRIGHT", "BOTTOMRIGHT" } }) do
+    local t = top:CreateTexture(nil, "BORDER")
+    t:SetColorTexture(1, 1, 1, 0.3)
+    t:SetPoint(pts[1])
+    t:SetPoint(pts[2])
+    if i <= 2 then t:SetHeight(1) else t:SetWidth(1) end
+    t:Hide()
+    border[i] = t
+end
+local function ShowBorder(on)
+    for _, t in ipairs(border) do t:SetShown(on) end
+end
+
+-- Resize grip, bottom right (unlocked only); changes the size only, the zoom stays
+local grip = CreateFrame("Button", nil, top)
+grip:SetSize(16, 16)
+grip:SetPoint("BOTTOMRIGHT", -2, 2)
+grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+grip:Hide()
+
+local function ShowInfo(hold)
+    local w, h = view:GetSize()
+    info:SetFormattedText("%d \195\151 %d   Zoom %.2f", w + 0.5, h + 0.5, db.zoom)
+    info:SetAlpha(1)
+    info:Show()
+    infoHold = hold or false
+    infoUntil = GetTime() + 1.5
+end
+
+local function UpdateInfo()
+    if infoHold then
+        ShowInfo(true)
+    elseif info:IsShown() then
+        local left = infoUntil - GetTime()
+        if left <= 0 then info:Hide() else info:SetAlpha(math.min(1, left / 0.5)) end
+    end
+end
 
 -- Player arrow, fixed in the centre
 local arrowShadow = top:CreateTexture(nil, "OVERLAY", nil, 0)   -- dark silhouette for contrast
 arrowShadow:SetTexture(MEDIA .. "arrow.tga")
 arrowShadow:SetVertexColor(0, 0, 0, 0.75)
-arrowShadow:SetSize(27, 27)
 arrowShadow:SetPoint("CENTER")
 local arrow = top:CreateTexture(nil, "OVERLAY", nil, 1)
 arrow:SetTexture(MEDIA .. "arrow.tga")
-arrow:SetSize(23, 23)
 arrow:SetPoint("CENTER")
 
 ---------------------------------------------------------------------------
@@ -320,7 +382,6 @@ end
 
 -- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
 -- Same look as the world map pins: dark round badge with gold rim, "?" for turn-in, yellow "..." in progress.
-local PIN_SIZE = 26
 local function SetAtlasOr(t, atlas, file)
     local ok, res = pcall(t.SetAtlas, t, atlas)
     if not ok or res == false then t:SetTexture(file) end
@@ -336,11 +397,15 @@ local function UpdateQuestPins()
                 p = { back = top:CreateTexture(nil, "ARTWORK", nil, 0), icon = top:CreateTexture(nil, "ARTWORK", nil, 1) }
                 SetAtlasOr(p.back, "UI-QuestPoi-QuestNumber", MEDIA .. "dot.tga")
                 for _, t in ipairs({ p.back, p.icon }) do
-                    t:SetSize(PIN_SIZE, PIN_SIZE)
                     Fade(t)
                     NoSnap(t)
                 end
                 qpins[n] = p
+            end
+            if p.size ~= db.pinSize then
+                p.size = db.pinSize
+                p.back:SetSize(p.size, p.size)
+                p.icon:SetSize(p.size, p.size)
             end
             if p.done ~= q.done then
                 p.done = q.done
@@ -369,6 +434,7 @@ view:SetScript("OnUpdate", function(self, e)
     elapsed = elapsed + e
     if elapsed < 0.025 then return end
     elapsed = 0
+    UpdateInfo()
 
     local n, w, _, inst = UnitPosition("player")
     if not n then
@@ -382,6 +448,8 @@ view:SetScript("OnUpdate", function(self, e)
     local facing = GetPlayerFacing() or 0
     local angle = db.rotate and -facing or 0
     cosA, sinA = math.cos(angle), math.sin(angle)
+    arrow:SetSize(db.arrowSize, db.arrowSize)
+    arrowShadow:SetSize(db.arrowSize + 4, db.arrowSize + 4)
     arrow:SetRotation(db.rotate and 0 or facing)
     arrowShadow:SetRotation(db.rotate and 0 or facing)
 
@@ -412,36 +480,75 @@ end
 
 local function ApplySize()
     db.h = nil
+    db.w = math.max(SIZE_MIN, math.min(SIZE_MAX, db.w))
     view:SetSize(db.w, db.w)
 end
 
+-- Mouse wheel zooms locked and unlocked; clicks only reach the map when unlocked (locked: they pass through)
 local function ApplyLock()
     local unlocked = not db.locked
-    view:EnableMouse(unlocked)          -- locked: clicks pass through
-    view:EnableMouseWheel(unlocked)
+    view:EnableMouse(unlocked)
+    view:EnableMouseWheel(true)
     editHint:SetShown(unlocked)
+    grip:SetShown(unlocked)
+    ShowBorder(unlocked and db.hover and view:IsMouseOver())
 end
 
 local function SetZoom(z)
     db.zoom = math.max(ZOOM_MIN, math.min(ZOOM_MAX, z))
 end
 
-view:SetScript("OnDragStart", function(self) self:StartMoving() end)
+view:SetScript("OnDragStart", function(self)
+    self:StartMoving()
+    ShowInfo(true)
+end)
 view:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
     if self.SetUserPlaced then self:SetUserPlaced(false) end
     SavePos()
     ApplyPos()
+    ShowInfo()
 end)
 view:SetScript("OnMouseWheel", function(_, delta)
-    if IsShiftKeyDown() then
-        db.w = math.max(200, math.min(1400, db.w + delta * 30))
+    if IsShiftKeyDown() and not db.locked then
+        db.w = db.w + delta * 30
         ApplySize()
     else
         SetZoom(db.zoom * (delta > 0 and 1.15 or 1 / 1.15))
     end
+    ShowInfo()
 end)
 view:SetScript("OnShow", RefreshQuests)
+
+local function UpdateBorder()
+    ShowBorder(not db.locked and db.hover and view:IsMouseOver())
+end
+view:SetScript("OnEnter", UpdateBorder)
+view:SetScript("OnLeave", UpdateBorder)
+grip:SetScript("OnEnter", UpdateBorder)
+grip:SetScript("OnLeave", UpdateBorder)
+
+-- Square sizing from the top left corner, follows the cursor
+local sizeLeft, sizeTop
+grip:SetScript("OnMouseDown", function()
+    sizeLeft, sizeTop = view:GetLeft(), view:GetTop()
+    view:ClearAllPoints()
+    view:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", sizeLeft, sizeTop)
+    grip:SetScript("OnUpdate", function()
+        local x, y = GetCursorPosition()
+        local s = view:GetEffectiveScale()
+        db.w = math.floor(math.max(x / s - sizeLeft, sizeTop - y / s) + 0.5)
+        ApplySize()
+        ShowInfo(true)
+    end)
+end)
+grip:SetScript("OnMouseUp", function()
+    grip:SetScript("OnUpdate", nil)
+    SavePos()
+    ApplyPos()
+    ShowInfo()
+    UpdateBorder()
+end)
 
 ---------------------------------------------------------------------------
 -- Show position as copyable text (/rnw pos)
@@ -463,12 +570,91 @@ local function ShowCopy(text)
 end
 
 ---------------------------------------------------------------------------
--- Toggle
+-- Visibility: mode, toggle, auto-hide
 ---------------------------------------------------------------------------
-function Runeway_Toggle()
-    db.shown = not db.shown
-    view:SetShown(db.shown)
+-- First active auto-hide condition, or nil
+local function AutoHideReason()
+    local a = db.autoHide
+    if a.combat and (InCombatLockdown() or UnitAffectingCombat("player")) then return "combat" end
+    if a.instance then
+        local inInstance, kind = IsInInstance()
+        if inInstance and kind ~= "none" then return "instance" end
+    end
+    if a.mounted and (IsMounted() or IsFlying() or UnitOnTaxi("player")) then return "mounted" end
+    if a.city and IsResting() then return "city" end
 end
+
+-- A toggle while auto-hidden (or in permanent mode) overrides until the auto-hide state changes
+local override, lastReason
+local function UpdateVisibility()
+    local reason = AutoHideReason()
+    if reason ~= lastReason then
+        override, lastReason = nil, reason
+    end
+    local want
+    if override ~= nil then
+        want = override
+    else
+        want = (db.mode == "permanent" or db.shown) and not reason
+    end
+    if view:IsShown() ~= want then view:SetShown(want) end
+end
+
+function Runeway_Toggle()
+    if lastReason or db.mode == "permanent" then
+        override = not view:IsShown()
+    else
+        db.shown = not db.shown
+    end
+    UpdateVisibility()
+end
+
+-- Key modes via override bindings (no taint: only binding commands, never protected calls)
+local bindOwner = CreateFrame("Frame")
+local bindPending = false
+local function ApplyBindings()
+    if InCombatLockdown() then bindPending = true return end
+    bindPending = false
+    ClearOverrideBindings(bindOwner)
+    if db.mode ~= "mapkey" then return end
+    local keys = { GetBindingKey("TOGGLEWORLDMAP") }
+    if #keys == 0 then keys = { "M" } end
+    for _, key in ipairs(keys) do
+        if key ~= db.worldMapKey then SetOverrideBinding(bindOwner, false, key, "RUNEWAY_TOGGLE") end
+    end
+    if db.worldMapKey then SetOverrideBinding(bindOwner, false, db.worldMapKey, "TOGGLEWORLDMAP") end
+end
+
+---------------------------------------------------------------------------
+-- Settings API (used by Options.lua and the slash commands)
+---------------------------------------------------------------------------
+local function ApplyAll()
+    ApplyColors()
+    canvas:SetAlpha(db.alpha)      -- map layers only; player arrow, quest marks and areas stay opaque
+    ApplyEdge()
+    ApplySize()
+    ApplyPos()
+    ApplyLock()
+    ApplyBindings()
+    UpdateVisibility()
+end
+
+local function ResetSettings()
+    local shown = db.shown
+    wipe(db)
+    ApplyDefaults(db, defaults)
+    db.shown = shown
+    ApplyAll()
+end
+
+ns.LAYER_KEYS = { "fill", "hatch", "shade", "terrain", "water", "roads", "questAreas" }
+ns.ZOOM_MIN, ns.ZOOM_MAX, ns.SIZE_MIN, ns.SIZE_MAX = ZOOM_MIN, ZOOM_MAX, SIZE_MIN, SIZE_MAX
+ns.Print = Print
+ns.SetZoom = SetZoom
+ns.ApplyAll = ApplyAll
+ns.ApplyColors = ApplyColors
+ns.ResetSettings = ResetSettings
+ns.UpdateVisibility = UpdateVisibility
 
 local function CreateWorldMapButton()
     if not WorldMapFrame then return end
@@ -479,8 +665,7 @@ local function CreateWorldMapButton()
     b:SetFrameLevel(WorldMapFrame:GetFrameLevel() + 20)
     b:SetScript("OnClick", function()
         HideUIPanel(WorldMapFrame)
-        db.shown = true
-        view:Show()
+        if not view:IsShown() then Runeway_Toggle() end
     end)
 end
 
@@ -502,6 +687,7 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         db.style = STYLE
         ApplyDefaults(db, defaults)
         canvas:SetAlpha(db.alpha)      -- map layers only; player arrow, quest marks and areas stay opaque
+        ApplyEdge()
         ApplySize()
         ApplyPos()
         ApplyLock()
@@ -511,14 +697,28 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         self:RegisterEvent("PLAYER_ENTERING_WORLD")
         self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
         self:RegisterEvent("QUEST_LOG_UPDATE")
+        self:RegisterEvent("PLAYER_REGEN_DISABLED")
+        self:RegisterEvent("PLAYER_REGEN_ENABLED")
     elseif event == "PLAYER_ENTERING_WORLD" then
         ApplySize()            -- again after WoW's layout restore
         ApplyPos()
-        view:SetShown(db.shown)
+        ApplyBindings()
+        UpdateVisibility()
         RefreshQuests()
+    elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
+        if bindPending and event == "PLAYER_REGEN_ENABLED" then ApplyBindings() end
+        UpdateVisibility()
     elseif view:IsShown() then
         RefreshQuests()
     end
+end)
+-- Auto-hide conditions without a reliable event (mounting, flying, resting, instances) are polled
+local visElapsed = 0
+ev:SetScript("OnUpdate", function(_, e)
+    visElapsed = visElapsed + e
+    if visElapsed < 0.25 or not db then return end
+    visElapsed = 0
+    UpdateVisibility()
 end)
 
 ---------------------------------------------------------------------------
@@ -539,6 +739,8 @@ SlashCmdList.RUNEWAY = function(msg)
 
     if cmd == "" or cmd == "toggle" then
         Runeway_Toggle()
+    elseif cmd == "config" or cmd == "options" then
+        if ns.OpenOptions then ns.OpenOptions() end
     elseif cmd == "lock" or cmd == "unlock" then
         db.locked = (cmd == "lock")
         ApplyLock()
@@ -552,13 +754,22 @@ SlashCmdList.RUNEWAY = function(msg)
         Print(("Zoom %.2f"):format(db.zoom))
     elseif cmd == "size" then
         if n then
-            db.w = math.max(200, math.min(1400, n))
+            db.w = n
             ApplySize()
         end
         Print(("Size %d x %d"):format(db.w, db.w))
     elseif cmd == "rotate" then
         db.rotate = not db.rotate
         Print(db.rotate and "map rotates with the player" or "north up")
+    elseif cmd == "edge" and n then
+        db.edge = math.max(1, math.min(#FADE_WIDTH, math.floor(n + 0.5)))
+        ApplyEdge()
+        Print(("Soft edge %d"):format(db.edge))
+    elseif cmd == "mode" and (arg == "key" or arg == "mapkey" or arg == "permanent") then
+        db.mode = arg
+        ApplyBindings()
+        UpdateVisibility()
+        Print("mode " .. arg)
     elseif cmd == "layer" and LayerKey(arg) then
         local key = LayerKey(arg)
         db.layers[key] = not db.layers[key]
@@ -584,17 +795,10 @@ SlashCmdList.RUNEWAY = function(msg)
         ShowCopy(("%s %s %s map=%s facing=%.3f"):format(
             tostring(pn), tostring(pw), tostring(inst), tostring(mapID), GetPlayerFacing() or -1))
     elseif cmd == "reset" then
-        local shown = db.shown
-        wipe(db)
-        ApplyDefaults(db, defaults)
-        db.shown = shown
-        ApplyColors()
-        canvas:SetAlpha(db.alpha)
-        ApplySize()
-        ApplyPos()
-        ApplyLock()
+        ResetSettings()
         Print("settings reset")
     else
-        Print("/rnw [toggle] | lock | unlock | alpha 5-100 | zoom 0.08-5 | size N | rotate | layer NAME | color NAME R G B [A] | pos | reset")
+        Print("/rnw [toggle] | config | lock | unlock | alpha 5-100 | zoom 0.08-5 | size N | rotate | edge 1-5"
+            .. " | mode key|mapkey|permanent | layer NAME | color NAME R G B [A] | pos | reset")
     end
 end

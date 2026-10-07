@@ -17,6 +17,8 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 
 Im Spiel getestet und für Version 1 abgenommen.
 
+**Stand 1.1 (in Arbeit, noch nicht im Spiel getestet):** Punkt 3.4 ist umgesetzt. Dazu gehören die Einstellungsseite (`Options.lua`), die Aufruf-Modi, das automatische Ausblenden und die Fensterbedienung laut Vorgabe. Die Testliste steht in Abschnitt 9.
+
 ---
 
 ## 2. Repository und Branches
@@ -47,12 +49,13 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 
 | Datei | Inhalt |
 |---|---|
-| `Runeway.toc` | Interface 16001, Version 1.0, SavedVariables `RunewayDB`; lädt `Tiles.lua`, `Core.lua`, `QuestAreas.lua` |
-| `Core.lua` | Fenster, Kacheln, Zoom, Drehung, Questmarker, Slash-Befehle, Einstellungen |
+| `Runeway.toc` | Interface 16001, Version 1.1, SavedVariables `RunewayDB`; lädt `Tiles.lua`, `Core.lua`, `QuestAreas.lua`, `Options.lua` |
+| `Core.lua` | Fenster, Kacheln, Zoom, Drehung, Questmarker, Sichtbarkeit und Aufruf-Modi, Slash-Befehle, Einstellungen |
+| `Options.lua` | Einstellungsseite unter Optionen → AddOns → Runeway (`Settings.RegisterCanvasLayoutCategory`), auch über `/rnw config` |
 | `QuestAreas.lua` | Questbereiche: Abtasten, Umriss, Zeichnen |
 | `Tiles.lua` | generiert: vorhandene Kacheln und Ebenen je Kachel, z. B. `["31_28"] = "fhstwr"` |
 | `Bindings.xml` | Tastenbelegung `RUNEWAY_TOGGLE` |
-| `media/` | `fade.tga` (runde Ausblendmaske), `arrow.tga` (Spielerpfeil), `edge.tga` (kantengeglättete Linientextur), `dot.tga` (Rückfall-Symbol) |
+| `media/` | `fade1.tga`–`fade5.tga` (runde Ausblendmasken je Randstärke, erzeugt mit `scripts/make_masks.py`), `arrow.tga` (Spielerpfeil), `edge.tga` (kantengeglättete Linientextur), `dot.tga` (Rückfall-Symbol) |
 | `tiles/0/[256/ \| 128/]<c>_<r>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Tirisfal: 42 Kacheln, ~22 MB |
 
 `tools/Probe.lua` ist ein Entwicklungswerkzeug und nicht im Release (siehe Abschnitt 6).
@@ -76,6 +79,12 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `colors.roads` | 0.82 / 0.86 / 0.89, a 0.4 |
 | `colors.questAreas` | 0.45 / 0.78 / 1.00, a 1 |
 | `layers.*` | alle true |
+| `mode` | `"key"` (eigene Taste), `"mapkey"` (Kartentaste M öffnet das Overlay), `"permanent"` |
+| `worldMapKey` | nil; im Modus `mapkey` die Taste für die normale Weltkarte |
+| `autoHide.combat/instance/mounted/city` | alle false (`city` = ausgeruht, also Städte und Gasthäuser) |
+| `hover` | true (Rahmen bei Mausüberfahrt, nur entsperrt) |
+| `edge` | 3 (Randstärke 1–5, Breite 0,12 / 0,25 / 0,38 / 0,55 / 0,75 des Radius) |
+| `arrowSize`, `pinSize`, `questEdge` | 23, 26, 1 (Faktor für die Breite der Questränder) |
 | `questAreaCache` | `[mapID] = { areas, groups }`, Version über `questAreaCacheVersion` (2) |
 | `style` | 6. Migrationszähler: setzt bei Stiländerungen einzelne Farben einmalig zurück (siehe `ADDON_LOADED` in `Core.lua`) |
 
@@ -83,11 +92,14 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | Befehl | Wirkung |
 |---|---|
 | `/rnw` oder `/rnw toggle` | Overlay ein/aus |
+| `/rnw config` | Einstellungsseite öffnen |
 | `/rnw lock` / `unlock` | gesperrt = klickdurchlässig |
 | `/rnw alpha 5-100` | Deckkraft der Kartenebenen |
 | `/rnw zoom 0.08-5` | Zoom setzen |
 | `/rnw size N` | Seitenlänge 200–1400 px |
 | `/rnw rotate` | mitdrehen oder Norden oben |
+| `/rnw edge 1-5` | Stärke des weichen Rands |
+| `/rnw mode key\|mapkey\|permanent` | Aufruf-Modus |
 | `/rnw layer NAME` | Ebene ein/aus (`fill`, `hatch`, `shade`, `terrain`, `water`, `roads`, `questareas`) |
 | `/rnw color NAME R G B [A]` | Farbe und optional Deckkraft (0–1) |
 | `/rnw pos` | Position, Instanz und Karten-ID zum Kopieren |
@@ -95,12 +107,28 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 
 Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 
-**Bedienung im entsperrten Zustand:** Ziehen verschiebt, Mausrad zoomt, Shift+Mausrad ändert die Größe. Im gesperrten Zustand ist das Mausrad ebenfalls aus (Abweichung von Vorgabe 3.4, siehe Abschnitt 8).
+**Bedienung:**
+- **Mausrad:** zoomt gesperrt wie entsperrt (`EnableMouseWheel` immer an, `EnableMouse` nur entsperrt).
+- **Nur entsperrt:**
+  - Ziehen verschiebt die Karte.
+  - Der Griff unten rechts ändert die Größe. Sie bleibt quadratisch, die obere linke Ecke bleibt stehen.
+  - Shift+Mausrad ändert die Größe.
+  - Beim Überfahren erscheint ein Rahmen, abschaltbar.
+- **Größenanzeige:** „B × H Zoom“ erscheint beim Verschieben, Größe ändern und Zoomen. Sie blendet nach 1,5 s aus.
+
+**Sichtbarkeit (`UpdateVisibility`):**
+- **Grundregel:** Angezeigt wird, wenn `mode == "permanent"` oder `shown` gesetzt ist und keine Bedingung zum automatischen Ausblenden greift.
+- **Ausblend-Bedingungen:** Sie werden alle 0,25 s abgefragt, Kampfbeginn und Kampfende zusätzlich per Event.
+- **Umschalten:** Während einer Ausblend-Bedingung oder im Modus „Permanent“ setzt das Umschalten eine Übersteuerung. Sie gilt, bis sich der Ausblend-Zustand ändert.
+
+**Tastenmodi (`ApplyBindings`):**
+- **Mechanik:** Nur Override-Bindings, damit kein Taint entsteht. Im Kampf wird die Anwendung bis `PLAYER_REGEN_ENABLED` verschoben.
+- **Modus `mapkey`:** Die Tasten von `TOGGLEWORLDMAP` (Rückfall `M`) lösen `RUNEWAY_TOGGLE` aus. `worldMapKey` löst `TOGGLEWORLDMAP` aus.
 
 ### Wichtige Laufzeit-Mechanik
 - **Weltkoordinaten:** `UnitPosition` liefert (Nord, West). Eine ADT-Kachel ist 1600/3 Yards groß. Kachelmitte: `nord = (32 - zeile) * T - T/2`, `west = (32 - spalte) * T - T/2`.
 - **Nahtloser Zoom:** Pro Kachel und Ebene gibt es eine Textur je Zoomstufe, einmal geladen und dann behalten. Um die Umschaltpunkte (Kachelgröße 160 / 360 px, ±25 %) werden zwei Stufen per Vertex-Alpha überblendet. Eine Stufe, die noch lädt (`IsObjectLoaded`), gibt ihr Gewicht an eine geladene ab. Texturen, die etwa 20 s unbenutzt sind, werden freigegeben.
-- **Ausblendrand:** Kacheln über eine `MaskTexture` (`fade.tga`). Linien nehmen keine Masken an, deshalb bekommen die Questlinien dieselbe ovale Ausblendung rechnerisch pro Segment.
+- **Ausblendrand:** Kacheln über eine `MaskTexture` (`fade<edge>.tga`). Linien nehmen keine Masken an, deshalb bekommen die Questlinien dieselbe ovale Ausblendung rechnerisch pro Segment.
 - **Pixelraster:** Bewegte Texturen und Linien rasten nicht ein (`SetSnapToPixelGrid(false)`, `SetTexelSnappingBias(0)`), sonst springen sie beim Gehen.
 - **Achsen:** Die Achsenreihenfolge von `C_Map.GetWorldPosFromMapPos` wird je Karte einmal gegen die Spielerposition geprüft (`MapToWorld` in `Core.lua`).
 
@@ -126,6 +154,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 | `roads.py` | `prune` (Skelett entgraten), von `build_raw.py` genutzt |
 | `simulate.py` | rendert die Lua-Darstellung aus den Kacheln (`build/sim.png`) |
 | `probe_view.py` | wertet `/rnw probe`-SavedVariables aus (Entwicklung) |
+| `make_masks.py` | erzeugt die Randmasken `media/fade1–5.tga` (Breiten wie `FADE_WIDTH` in `Core.lua`) |
 | `zones.txt` | zu bauende Zonen, wird etappenweise erweitert |
 | `update_data_branch.ps1` | lokale Rohdaten als Commit auf `data` |
 
@@ -199,7 +228,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 | 3.1 RAW-Daten (Begehbarkeit aus Steigung, Wasser aus MH2O, Wege aus Texturen, Zonen-Zuschnitt, Tirisfal) | **erledigt** für Tirisfal; weitere Zonen offen |
 | 3.2 Einfärbbare Ebenen | **erledigt**, erweitert um `fill` und `hatch` |
 | 3.3 Questgebiete | **erledigt**, über das Abtasten statt DB2 (die Tabellen sind leer) |
-| 3.4 Konfigurationsoberfläche und Bedienung | **offen**, nächste Session |
+| 3.4 Konfigurationsoberfläche und Bedienung | **umgesetzt** in 1.1, Test im Spiel offen (Abschnitt 9) |
 | 3.5 Abschluss (Lua-Prüfung, Simulation, Version 1.0, ZIP) | **erledigt** (Tests mit Lua 5.1, `simulate.py`, Release-ZIP) |
 | Zusätzlich | Diablo-IV-Stil, quadratische runde Karte, nahtloser Zoom, Ruinen von Lordaeron, Questmarker im Weltkarten-Stil |
 
@@ -207,27 +236,14 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 
 ## 8. Offene Punkte und nächste Schritte
 
-### Nächste Session: Konfiguration (3.4)
-- **Einhängen:** Optionen → AddOns → Runeway (`Settings.RegisterCanvasLayoutCategory`; Forever ist retail-basiert) und `/rnw config`.
-- **Darstellung:**
-  - Farbe pro Ebene (`ColorPickerFrame`) für `fill`, `hatch`, `terrain`, `water`, `roads`, `questAreas`, Questmarker optional;
-  - Deckkraft global und pro Ebene;
-  - Ebenen einzeln ein/aus;
-  - Stärke des weichen Rands;
-  - Mitdrehen ein/aus;
-  - Zoom als Wert.
-- **Aufruf-Modi:**
-  - „Taste M“: `SetOverrideBinding`, taint-sicher; die normale Weltkarte bleibt über eine eigene Taste erreichbar.
-  - „Eigene Taste“.
-  - „Permanent“.
-- **Automatisch ausblenden:** im Kampf, in Instanzen, beim Reiten/Fliegen, in Städten.
-- **Fensterbedienung laut Vorgabe:**
-  - Mausrad zoomt auch im gesperrten Zustand. Dafür `EnableMouseWheel` immer an und `EnableMouse` nur entsperrt. Aktuell ist das Mausrad gesperrt aus.
-  - Griff zur Größenänderung unten rechts, nur entsperrt, ändert nur die Größe.
-  - Hover-Rahmen im entsperrten Zustand, abschaltbar.
-  - Größenanzeige „B × H“ plus Zoom beim Ziehen und Zoomen, blendet danach aus.
-  - Die Karte ist jetzt quadratisch; Größe = eine Seitenlänge.
-- **Werte, die aktuell nur über `/rnw` oder Konstanten einstellbar sind:** Breite der Questränder (`EDGE_DIV` in `QuestAreas.lua`), Größe des Spielerpfeils (23 px) und der Questmarker (26 px).
+### Nächste Session: 1.1 im Spiel prüfen
+- **Spieltest:** Die Testliste 1.1 in Abschnitt 9 durchgehen und Auffälligkeiten korrigieren.
+- **Ungeprüft im Spiel:**
+  - Layout der Einstellungsseite.
+  - Ob `EnableMouseWheel` bei gesperrter Karte ohne `EnableMouse` das Mausrad bekommt.
+  - Die Tastenerfassung für die Weltkarten-Taste.
+  - Ob im Modus „Taste M“ die normale Weltkarte über die gewählte Taste aufgeht.
+- **Optional:** Farbe der Questmarker. Sie sind Atlas-Symbole und bisher nicht einfärbbar.
 
 ### Später
 - **Weitere Zonen der Östlichen Königreiche:** Zonen in `scripts/zones.txt` ergänzen und `build_raw.py` laufen lassen. Für jede Zone die Vorschau prüfen (Steigung, Wege, Wasser, Zonengrenze).
@@ -256,12 +272,22 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 python tests/run_stub.py                      # lädt das Addon (Lua 5.1) gegen einen WoW-API-Stub, prüft Kacheln/Questbereiche/Zoom-Laden
 python tests/render_quest_outlines.py <SavedVariables/Runeway.lua>   # Questumrisse aus Probe-Daten mit dem Addon-Code
 python scripts/simulate.py                    # Darstellung aus den Kacheln
-cd <repo> && zip -r build/Runeway-1.0.zip Runeway
+cd <repo> && zip -r build/Runeway-1.1.zip Runeway
 ```
 
 **Testwerkzeug `/rnw probe`:** Nur in Entwicklungsbuilds; dazu `tools/Probe.lua` in den Addon-Ordner kopieren und in der `.toc` eintragen. Es tastet die Questbereiche der aktuellen Zone ab und speichert sie in `RunewayDB.probe`. Die Auswertung macht `scripts/probe_view.py`.
 
-**Installation:** Alten Ordner `Interface\AddOns\Runeway` löschen, `Runeway-1.0.zip` dort entpacken und WoW komplett neu starten.
+**Installation:** Alten Ordner `Interface\AddOns\Runeway` löschen, `Runeway-1.1.zip` dort entpacken und WoW komplett neu starten. Wegen der neuen Masken `fade1–5.tga` reicht `/reload` nicht.
+
+**Testliste 1.1 (Punkt 3.4):**
+1. **Optionen:** Optionen → AddOns → Runeway und `/rnw config` öffnen die Seite. Alle Regler, Häkchen und Farbfelder wirken sofort. „Defaults“ setzt zurück.
+2. **Farbe:** Ein Farbfeld öffnet den Farbwähler. „Abbrechen“ stellt die alte Farbe wieder her.
+3. **Rand:** Die Stufen 1–5 sind sichtbar unterschiedlich. Die Questränder blenden passend dazu aus.
+4. **Mausrad gesperrt:** Über der Karte wird gezoomt, Klicks gehen durch die Karte hindurch.
+5. **Entsperrt:** Ziehen verschiebt. Der Griff unten rechts ändert die Größe, die Karte bleibt quadratisch. Die Größenanzeige blendet aus. Der Rahmen erscheint beim Überfahren.
+6. **Taste M:** M öffnet und schließt das Overlay, die gewählte Taste öffnet die Weltkarte. Auch nach einem Kampf und nach `/reload` prüfen.
+7. **Permanent:** Das Overlay ist nach dem Login sichtbar.
+8. **Ausblenden:** Kampf, Instanz, Reittier oder Flug und Stadt einzeln prüfen. Nach dem Ende der Bedingung erscheint das Overlay wieder.
 
 **Abnahme-Checkliste (für spätere Builds):**
 1. **Look:** Kartenstil wie im Diablo-Screenshot.
@@ -278,6 +304,6 @@ cd <repo> && zip -r build/Runeway-1.0.zip Runeway
 ```text
 Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch claude/dreamy-lovelace-efolxg.
 Lies zuerst CLAUDE.md, Runeway_Status_v1.md und Runeway_Prompt_v1.md.
-Version 1.0 ist abgeschlossen. Jetzt: Punkt 3.4 – Konfigurationsoberfläche und Fensterbedienung
-(siehe Runeway_Status_v1.md, Abschnitt 8 "Nächste Session"). Kommunikation Deutsch, Code Englisch.
+Version 1.0 ist abgeschlossen, 3.4 ist als 1.1 umgesetzt. Jetzt: 1.1 im Spiel prüfen und korrigieren
+(siehe Runeway_Status_v1.md, Abschnitte 8 und 9). Kommunikation Deutsch, Code Englisch.
 ```

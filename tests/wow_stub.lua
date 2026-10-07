@@ -20,6 +20,14 @@ local function obj(name)
         if k == "SetVertexColor" then return function(self, r, g, b, a) self._color = { r, g, b, a } end end
         if k == "GetSize" then return function() return 700, 450 end end
         if k == "GetCenter" then return function() return 500, 400 end end
+        if k == "GetLeft" then return function() return 150 end end
+        if k == "GetTop" then return function() return 750 end end
+        if k == "GetEffectiveScale" then return function() return 1 end end
+        if k == "GetChecked" then return function(self) return rawget(self, "_checked") end end
+        if k == "SetChecked" then return function(self, v) self._checked = v end end
+        if k == "SetValue" then return function(self, v) self._value = v end end
+        if k == "SetText" then return function(self, v) self._text = v end end
+        if k == "Text" or k == "Low" or k == "High" then local c = obj(k); rawset(t, k, c); return c end
         if k == "GetFrameLevel" then return function() return 1 end end
         if k == "DrawNone" then return function() DRAWN = {} end end
         if k == "DrawBlob" then return function(self, q) DRAWN[q] = true end end
@@ -74,3 +82,28 @@ C_QuestLog = { GetQuestsOnMap = function() return { { questID = 4242, x = 0.4, y
 function CreateVector2D(x, y) return { x = x, y = y } end
 C_Map.GetWorldPosFromMapPos = function(_, v) return 0, { x = 3000 - v.y * 4000, y = 2000 - v.x * 6000 } end
 function date() return "2026-10-07" end
+-- 3.4: visibility, bindings, settings
+function GetTime() return clock end
+STATE = { combat = false, instance = false, mounted = false, resting = false }
+function UnitAffectingCombat() return STATE.combat end
+function IsInInstance() return STATE.instance, STATE.instance and "party" or "none" end
+function IsMounted() return STATE.mounted end
+function IsFlying() return false end
+function UnitOnTaxi() return false end
+function IsResting() return STATE.resting end
+function IsAltKeyDown() return false end
+function IsControlKeyDown() return false end
+CURSOR = { 700, 300 }
+function GetCursorPosition() return CURSOR[1], CURSOR[2] end
+BINDINGS = {}
+function GetBindingKey(cmd) if cmd == "TOGGLEWORLDMAP" then return "M" end end
+function SetOverrideBinding(_, _, key, cmd) BINDINGS[key] = cmd end
+function ClearOverrideBindings() wipe(BINDINGS) end
+GameTooltip = obj("GameTooltip")
+function GameTooltip_Hide() end
+ColorPickerFrame = obj("ColorPickerFrame")
+function ColorPickerFrame:SetupColorPickerAndShow(info) self.info = info end
+function ColorPickerFrame:GetColorRGB() return 0.1, 0.2, 0.3 end
+Settings = { RegisterCanvasLayoutCategory = function(frame) SETTINGS_PANEL = frame; return { GetID = function() return 77 end } end,
+             RegisterAddOnCategory = function() end,
+             OpenToCategory = function(id) OPENED = id end }

@@ -99,11 +99,11 @@ status:SetPoint("BOTTOM", 0, 6)
 local arrowShadow = top:CreateTexture(nil, "OVERLAY", nil, 0)   -- dark silhouette for contrast
 arrowShadow:SetTexture(MEDIA .. "arrow.tga")
 arrowShadow:SetVertexColor(0, 0, 0, 0.75)
-arrowShadow:SetSize(54, 54)
+arrowShadow:SetSize(27, 27)
 arrowShadow:SetPoint("CENTER")
 local arrow = top:CreateTexture(nil, "OVERLAY", nil, 1)
 arrow:SetTexture(MEDIA .. "arrow.tga")
-arrow:SetSize(46, 46)
+arrow:SetSize(23, 23)
 arrow:SetPoint("CENTER")
 
 ---------------------------------------------------------------------------

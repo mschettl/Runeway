@@ -31,6 +31,7 @@ MAX_SLOPE = 50             # degrees; steeper terrain counts as not walkable
 MIN_BLOCK = 1500           # px; smaller steep patches are ignored (single rocks, bumps)
 BLOCK_CLOSE = 15           # px; merges rugged cliffs into one solid block
 MIN_WALK = 25000           # px; smaller walkable islands are merged into the surrounding block
+MIN_ISLAND = 300           # px; walkable islands / shore patches smaller than this are dropped
 MIN_WATER = 800            # px; smaller ponds are dropped
 ROAD_KEYS = ('road', 'path')   # texture name fragments that mark roads
 ROAD_MIN = 0.3             # texture weight threshold for road pixels
@@ -101,7 +102,14 @@ def build(cols, rows):
     steep = blobs(steep, MIN_BLOCK)
     walk = present & ~steep & ~water
     walk = smooth(walk, 4)
-    walk = blobs(walk, MIN_WALK)
+    # drop small walkable patches inside mountains, but keep islands and shore strips (they touch water)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(walk.astype(np.uint8), connectivity=8)
+    shore = np.zeros(n, bool)
+    shore[np.unique(lab[walk & (cv2.dilate(water.astype(np.uint8), np.ones((7, 7), np.uint8)) > 0)])] = True
+    area = st[:, cv2.CC_STAT_AREA]
+    keepc = (area >= MIN_WALK) | (shore & (area >= MIN_ISLAND))
+    keepc[0] = False
+    walk = keepc[lab]
     walk = ~blobs(~walk & present, MIN_BLOCK) & present        # fill small holes
 
     # Roads: road textures -> centre lines

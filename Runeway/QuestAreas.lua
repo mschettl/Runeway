@@ -12,7 +12,8 @@ local FINE_WINDOW = 0.06          -- fine window around the quest pin if the coa
 local BUDGET_MS = 3                -- sampling time per frame in milliseconds
 local SIMPLIFY = 0.35             -- outline simplification tolerance in fine cells
 local WARMUP_MAP, WARMUP_QUEST = 1.0, 0.2   -- seconds before sampling (first draw after SetMapID is slow)
-local MIN_SEG = 4                 -- minimum drawn segment length in screen pixels
+local MIN_SEG = 6                 -- minimum drawn segment length in screen pixels
+local OVERLAP = 4                 -- px each segment is extended at both ends: closes the gaps at the joints
 local THICKNESS = 16            -- glow line: bright core + soft halo (media/glow.tga)
 local UNDER = 12                -- dark underlay line
 local GLOW = "Interface\\AddOns\\Runeway\\media\\glow.tga"
@@ -484,7 +485,6 @@ local function GetLine(i)
         l = lineParent:CreateLine(nil, "ARTWORK", nil, 1)
         l:SetThickness(THICKNESS)
         l:SetTexture(GLOW)
-        l:SetBlendMode("ADD")
         local c = ns.db().colors.questAreas
         l:SetVertexColor(c.r, c.g, c.b, c.a)
         l.under = u
@@ -531,14 +531,18 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2)
                     t = t >= 1 and 1 or t * t * (3 - 2 * t)
                     n = n + 1
                     local l = GetLine(n)
-                    l:SetStartPoint("CENTER", view, x0, y0)
-                    l:SetEndPoint("CENTER", view, x1, y1)
+                    -- butt-ended segments leave a wedge at each bend: extend them a little into each other
+                    local len = math.sqrt(dx * dx + dy * dy)
+                    local ex, ey = 0, 0
+                    if len > 0 then ex, ey = dx / len * OVERLAP, dy / len * OVERLAP end
+                    l:SetStartPoint("CENTER", view, x0 - ex, y0 - ey)
+                    l:SetEndPoint("CENTER", view, x1 + ex, y1 + ey)
                     local c = ns.db().colors.questAreas
                     l:SetVertexColor(c.r, c.g, c.b, c.a * t)   -- not SetAlpha: it overwrites the vertex alpha
                     l:Show()
                     local u = l.under
-                    u:SetStartPoint("CENTER", view, x0, y0)
-                    u:SetEndPoint("CENTER", view, x1, y1)
+                    u:SetStartPoint("CENTER", view, x0 - ex, y0 - ey)
+                    u:SetEndPoint("CENTER", view, x1 + ex, y1 + ey)
                     u:SetVertexColor(0, 0, 0, 0.5 * t)
                     u:Show()
                 end

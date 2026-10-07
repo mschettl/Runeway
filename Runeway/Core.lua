@@ -12,7 +12,7 @@ local ZOOM_MIN, ZOOM_MAX = 0.08, 5
 local LAYERS = { "fill", "hatch", "shade", "terrain", "water", "roads" }
 local LAYER_CODE = { fill = "f", hatch = "h", shade = "s", terrain = "t", water = "w", roads = "r" }
 local LAYER_LEVEL = { fill = 0, hatch = 1, shade = 2, terrain = 3, water = 4, roads = 5 }   -- texture sublevel
-local STYLE = 4            -- bump when the default look changes (see migration in ADDON_LOADED)
+local STYLE = 5            -- bump when the default look changes (see migration in ADDON_LOADED)
 
 -- One calm colour for all lines (Diablo IV style); quest areas glow blue like the minimap blobs
 local LINE = { 0.82, 0.86, 0.89 }
@@ -26,7 +26,7 @@ local defaults = {
         terrain = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
         water   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
         roads   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.4 },
-        questAreas = { r = 0.35, g = 0.60, b = 1.00, a = 1 },
+        questAreas = { r = 0.45, g = 0.72, b = 1.00, a = 1 },
     },
     layers = { fill = true, hatch = true, shade = true, terrain = true, water = true, roads = true, questAreas = true },
     questAreaCache = {},     -- [mapID] = { areas = {}, groups = {} }, see QuestAreas.lua
@@ -96,9 +96,14 @@ local status = top:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 status:SetPoint("BOTTOM", 0, 6)
 
 -- Player arrow, fixed in the centre
-local arrow = top:CreateTexture(nil, "OVERLAY")
+local arrowShadow = top:CreateTexture(nil, "OVERLAY", nil, 0)   -- dark silhouette for contrast
+arrowShadow:SetTexture(MEDIA .. "arrow.tga")
+arrowShadow:SetVertexColor(0, 0, 0, 0.75)
+arrowShadow:SetSize(54, 54)
+arrowShadow:SetPoint("CENTER")
+local arrow = top:CreateTexture(nil, "OVERLAY", nil, 1)
 arrow:SetTexture(MEDIA .. "arrow.tga")
-arrow:SetSize(40, 40)
+arrow:SetSize(46, 46)
 arrow:SetPoint("CENTER")
 
 ---------------------------------------------------------------------------
@@ -310,25 +315,35 @@ local function UpdateQuestPins()
     for _, q in ipairs(quests) do
         if not (ns.HasQuestArea and ns.HasQuestArea(q.questID)) then
             n = n + 1
-            local t = qpins[n]
-            if not t then
-                t = top:CreateTexture(nil, "ARTWORK")
-                t:SetTexture("Interface\\GossipFrame\\ActiveQuestIcon")
-                t:SetSize(15, 15)
-                Fade(t)
-                qpins[n] = t
+            local p = qpins[n]
+            if not p then
+                -- dark silhouette of the "?" behind it: readable on any ground
+                p = { shadow = top:CreateTexture(nil, "ARTWORK", nil, 0), icon = top:CreateTexture(nil, "ARTWORK", nil, 1) }
+                for _, t in ipairs({ p.shadow, p.icon }) do
+                    t:SetTexture("Interface\\GossipFrame\\ActiveQuestIcon")
+                    Fade(t)
+                end
+                p.shadow:SetVertexColor(0, 0, 0, 0.85)
+                p.shadow:SetSize(23, 23)
+                p.icon:SetSize(18, 18)
+                qpins[n] = p
             end
-            if t.done ~= q.done then
-                t.done = q.done
-                t:SetDesaturated(not q.done)
+            if p.done ~= q.done then
+                p.done = q.done
+                p.icon:SetDesaturated(not q.done)
             end
             local x, y = ToScreen(q[1], q[2])
-            t:ClearAllPoints()
-            t:SetPoint("CENTER", view, "CENTER", x, y)
-            t:Show()
+            for _, t in ipairs({ p.shadow, p.icon }) do
+                t:ClearAllPoints()
+                t:SetPoint("CENTER", view, "CENTER", x, y)
+                t:Show()
+            end
         end
     end
-    for i = n + 1, #qpins do qpins[i]:Hide() end
+    for i = n + 1, #qpins do
+        qpins[i].shadow:Hide()
+        qpins[i].icon:Hide()
+    end
 end
 
 ---------------------------------------------------------------------------
@@ -353,6 +368,7 @@ view:SetScript("OnUpdate", function(self, e)
     local angle = db.rotate and -facing or 0
     cosA, sinA = math.cos(angle), math.sin(angle)
     arrow:SetRotation(db.rotate and 0 or facing)
+    arrowShadow:SetRotation(db.rotate and 0 or facing)
 
     if UpdateTiles(inst, angle) then
         status:SetText("")
@@ -467,9 +483,10 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         if style < 2 then db.colors = nil end                              -- 2: Diablo IV style
         if style < 3 and db.colors then db.colors.questAreas = nil end     -- 3: blue glow quest areas
         if style < 4 and db.colors then db.colors.fill = nil end           -- 4: brown fill
+        if style < 5 and db.colors then db.colors.questAreas = nil end     -- 5: brighter quest areas
         db.style = STYLE
         ApplyDefaults(db, defaults)
-        view:SetAlpha(db.alpha)
+        canvas:SetAlpha(db.alpha)      -- map layers only; player arrow, quest marks and areas stay opaque
         ApplySize()
         ApplyPos()
         ApplyLock()
@@ -513,7 +530,7 @@ SlashCmdList.RUNEWAY = function(msg)
         Print(db.locked and "locked (clicks pass through)" or "unlocked")
     elseif cmd == "alpha" and n then
         db.alpha = math.max(5, math.min(100, n)) / 100
-        view:SetAlpha(db.alpha)
+        canvas:SetAlpha(db.alpha)
         Print(("Opacity %d %%"):format(db.alpha * 100))
     elseif cmd == "zoom" and n then
         SetZoom(n)
@@ -556,7 +573,7 @@ SlashCmdList.RUNEWAY = function(msg)
         ApplyDefaults(db, defaults)
         db.shown = shown
         ApplyColors()
-        view:SetAlpha(db.alpha)
+        canvas:SetAlpha(db.alpha)
         ApplySize()
         ApplyPos()
         ApplyLock()

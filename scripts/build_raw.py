@@ -36,7 +36,8 @@ MIN_WATER = 800            # px; smaller ponds are dropped
 ROAD_KEYS = ('road', 'path')   # texture name fragments that mark roads
 ROAD_MIN = 0.3             # texture weight threshold for road pixels
 ROAD_MIN_LEN = 60          # px; shorter road skeleton pieces are dropped
-ZONE_SOFT = 12             # px; rounds the chunk-based (33 yd) zone border
+ZONE_SOFT = 32             # px; rounds the chunk-based (33 yd) zone border
+EDGE_FADE = 160            # px (~165 yd); everything fades out towards the edge of the built zones
 
 
 # --- zones ------------------------------------------------------------------
@@ -147,8 +148,11 @@ def line_layers(L, keep):
     edge = ~L['present']                                       # missing tiles and mosaic border
     edge[:3, :] = edge[-3:, :] = edge[:, :3] = edge[:, -3:] = True
     edge = cv2.dilate(edge.astype(np.uint8), np.ones((9, 9), np.uint8)) > 0
-    fade = cv2.GaussianBlur(keep.astype(np.float32), (0, 0), ZONE_SOFT / 2)  # soft zone border
-    zf = np.clip((fade - 0.3) / 0.4, 0, 1)
+    # soft map end: round the chunk border, then fade in over EDGE_FADE px from the edge of the built zones
+    inside = ((cv2.GaussianBlur(keep.astype(np.float32), (0, 0), ZONE_SOFT / 2) > 0.5) & ~edge).astype(np.uint8)
+    dist = cv2.distanceTransform(np.pad(inside, 1), cv2.DIST_L2, 5)[1:-1, 1:-1]
+    zf = np.clip(dist / EDGE_FADE, 0, 1)
+    zf = zf * zf * (3 - 2 * zf)
     fill = (L['walk'] * 255).astype(np.uint8)
     blocked = ((L['present'] & ~L['walk']) * 255).astype(np.uint8)
     for a in (terrain, water, roads, fill, blocked):
@@ -222,7 +226,7 @@ def write_tiles(layers, cols, rows, tiles):
 
 
 # RGBA as the defaults in Core.lua (drawn in LAYERS order)
-COLORS = dict(fill=(1, 1, 1, 0.09), hatch=(0.80, 0.84, 0.88, 0.22), shade=(0.05, 0.05, 0.06, 0.45),
+COLORS = dict(fill=(0.80, 0.64, 0.44, 0.07), hatch=(0.80, 0.84, 0.88, 0.22), shade=(0.05, 0.05, 0.06, 0.45),
               terrain=(0.82, 0.86, 0.89, 0.85), water=(0.82, 0.86, 0.89, 0.85), roads=(0.82, 0.86, 0.89, 0.4))
 
 

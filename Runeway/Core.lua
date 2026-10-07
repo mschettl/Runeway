@@ -12,7 +12,7 @@ local ZOOM_MIN, ZOOM_MAX = 0.08, 5
 local LAYERS = { "fill", "hatch", "shade", "terrain", "water", "roads" }
 local LAYER_CODE = { fill = "f", hatch = "h", shade = "s", terrain = "t", water = "w", roads = "r" }
 local LAYER_LEVEL = { fill = 0, hatch = 1, shade = 2, terrain = 3, water = 4, roads = 5 }   -- texture sublevel
-local STYLE = 3            -- bump when the default look changes (see migration in ADDON_LOADED)
+local STYLE = 4            -- bump when the default look changes (see migration in ADDON_LOADED)
 
 -- One calm colour for all lines (Diablo IV style); quest areas glow blue like the minimap blobs
 local LINE = { 0.82, 0.86, 0.89 }
@@ -20,7 +20,7 @@ local defaults = {
     x = nil, y = nil, w = 600,          -- square map (w = edge length)
     zoom = 1.5, alpha = 0.7, rotate = true, locked = false, shown = false,
     colors = {
-        fill    = { r = 1, g = 1, b = 1, a = 0.09 },
+        fill    = { r = 0.80, g = 0.64, b = 0.44, a = 0.07 },   -- warm brown like Diablo IV
         hatch   = { r = 0.80, g = 0.84, b = 0.88, a = 0.22 },
         shade   = { r = 0.05, g = 0.05, b = 0.06, a = 0.45 },
         terrain = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
@@ -266,18 +266,13 @@ local function RefreshQuests()
 end
 
 -- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
--- Classic quest marks: yellow "?" = ready to turn in, grey "?" = in progress.
+-- Classic "?" in the glow style of the quest areas: bright = ready to turn in, dimmed = in progress.
 local function SetPinIcon(t, done)
     if t.done == done then return end
     t.done = done
-    local ok, res = false
-    if not done and t.SetAtlas then ok, res = pcall(t.SetAtlas, t, "SideInProgressquesticon") end
-    if done or not ok or res == false then
-        t:SetTexture("Interface\\GossipFrame\\ActiveQuestIcon")
-        t:SetDesaturated(not done)
-    else
-        t:SetDesaturated(false)
-    end
+    local c = db.colors.questAreas
+    local k = done and 1 or 0.55
+    t:SetVertexColor(math.min(1, c.r + 0.25) * k, math.min(1, c.g + 0.2) * k, c.b * k, done and 1 or 0.8)
 end
 
 local function UpdateQuestPins()
@@ -288,8 +283,10 @@ local function UpdateQuestPins()
             local t = qpins[n]
             if not t then
                 t = top:CreateTexture(nil, "ARTWORK")
-                t:SetSize(12, 12)
-                t:SetAlpha(0.85)
+                t:SetSize(14, 14)
+                t:SetTexture("Interface\\GossipFrame\\ActiveQuestIcon")
+                t:SetDesaturated(true)
+                t:SetBlendMode("ADD")
                 Fade(t)
                 qpins[n] = t
             end
@@ -438,6 +435,7 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         local style = db.style or 0
         if style < 2 then db.colors = nil end                              -- 2: Diablo IV style
         if style < 3 and db.colors then db.colors.questAreas = nil end     -- 3: blue glow quest areas
+        if style < 4 and db.colors then db.colors.fill = nil end           -- 4: brown fill
         db.style = STYLE
         ApplyDefaults(db, defaults)
         view:SetAlpha(db.alpha)

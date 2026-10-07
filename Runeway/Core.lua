@@ -7,22 +7,28 @@ local PATH = "Interface\\AddOns\\Runeway\\tiles\\"
 local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
 local ZOOM_MIN, ZOOM_MAX = 0.08, 5
 
--- Line layers, drawn bottom to top. Tiles are white; colours are applied with SetVertexColor.
-local LAYERS = { "shade", "terrain", "water", "roads" }
-local LAYER_CODE = { shade = "s", terrain = "t", water = "w", roads = "r" }
-local LAYER_LEVEL = { shade = 0, terrain = 1, water = 2, roads = 3 }   -- texture sublevel
+-- Tile layers, drawn bottom to top. Tiles are white; colours are applied with SetVertexColor.
+-- fill = walkable area, hatch = not walkable (mountains, water), lines on top.
+local LAYERS = { "fill", "hatch", "shade", "terrain", "water", "roads" }
+local LAYER_CODE = { fill = "f", hatch = "h", shade = "s", terrain = "t", water = "w", roads = "r" }
+local LAYER_LEVEL = { fill = 0, hatch = 1, shade = 2, terrain = 3, water = 4, roads = 5 }   -- texture sublevel
+local STYLE = 2            -- bump to reset saved colours when the default look changes
 
+-- One calm colour for all lines (Diablo IV style); quest areas stay gold
+local LINE = { 0.82, 0.86, 0.89 }
 local defaults = {
     x = nil, y = nil, w = 700, h = 450,
     zoom = 1.5, alpha = 0.7, rotate = true, locked = false, shown = false,
     colors = {
-        shade   = { r = 0.09, g = 0.07, b = 0.11, a = 1 },
-        terrain = { r = 0.86, g = 0.80, b = 0.98, a = 1 },
-        water   = { r = 0.39, g = 0.71, b = 0.98, a = 1 },
-        roads   = { r = 0.93, g = 0.86, b = 0.73, a = 0.9 },
-        questAreas = { r = 1.00, g = 0.82, b = 0.00, a = 0.9 },
+        fill    = { r = 1, g = 1, b = 1, a = 0.06 },
+        hatch   = { r = 0.80, g = 0.84, b = 0.88, a = 0.22 },
+        shade   = { r = 0.05, g = 0.05, b = 0.06, a = 0.45 },
+        terrain = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
+        water   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
+        roads   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.4 },
+        questAreas = { r = 1.00, g = 0.82, b = 0.30, a = 0.85 },
     },
-    layers = { shade = true, terrain = true, water = true, roads = true, questAreas = true },
+    layers = { fill = true, hatch = true, shade = true, terrain = true, water = true, roads = true, questAreas = true },
 }
 local db
 
@@ -368,6 +374,7 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         if arg1 ~= ADDON then return end
         RunewayDB = RunewayDB or {}
         db = RunewayDB
+        if db.style ~= STYLE then db.colors, db.style = nil, STYLE end
         ApplyDefaults(db, defaults)
         view:SetAlpha(db.alpha)
         ApplySize()
@@ -439,7 +446,7 @@ SlashCmdList.RUNEWAY = function(msg)
             ApplyColors()
             Print(("%s colour %.2f %.2f %.2f"):format(layer, c.r, c.g, c.b))
         else
-            Print("/rnw color terrain|water|roads|shade|questareas R G B   (0-1)")
+            Print("/rnw color fill|hatch|shade|terrain|water|roads|questareas R G B   (0-1)")
         end
     elseif cmd == "probe" then
         Runeway_Probe(arg)

@@ -11,9 +11,10 @@ from PIL import Image
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 T = 1600 / 3
-LAYERS = ('shade', 'terrain', 'water', 'roads')
-COLORS = dict(shade=(0.09, 0.07, 0.11, 1), terrain=(0.86, 0.80, 0.98, 1),
-              water=(0.39, 0.71, 0.98, 1), roads=(0.93, 0.86, 0.73, 0.9))     # defaults in Core.lua
+LAYERS = ('fill', 'hatch', 'shade', 'terrain', 'water', 'roads')
+COLORS = dict(fill=(1, 1, 1, 0.06), hatch=(0.80, 0.84, 0.88, 0.22), shade=(0.05, 0.05, 0.06, 0.45),
+              terrain=(0.82, 0.86, 0.89, 0.85), water=(0.82, 0.86, 0.89, 0.85),
+              roads=(0.82, 0.86, 0.89, 0.4))     # defaults in Core.lua
 W, H, k = 700, 450, 1.5
 pN, pW = (float(sys.argv[1]), float(sys.argv[2])) if len(sys.argv) > 2 else (1917.6, 84.9)
 

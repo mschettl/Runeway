@@ -35,8 +35,10 @@ L.execute('''
         local visible, loading = 0, 0
         for _, f in ipairs(FRAMES) do end
         for _, t in ipairs(ALL_TEX) do
-            if t._shown and (t._alpha or 1) > 0 then visible = visible + 1 end
-            if t._shown and t._alpha == 0 then loading = loading + 1 end
+            local col = rawget(t, "_color")
+            local a = col and col[4] or 1
+            if rawget(t, "_shown") and a > 0 then visible = visible + 1 end
+            if rawget(t, "_shown") and a == 0 then loading = loading + 1 end
         end
         print(label, "visible", visible, "loading", loading)
     end

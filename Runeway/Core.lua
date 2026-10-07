@@ -62,6 +62,8 @@ view:SetMovable(true)
 view:SetResizable(true)
 view:RegisterForDrag("LeftButton")
 view:Hide()
+-- position and size live in RunewayDB; keep WoW's layout cache from restoring an old size
+if view.SetDontSavePosition then view:SetDontSavePosition(true) end
 ns.view = view
 ns.db = function() return db end
 
@@ -120,9 +122,10 @@ ns.Player = function() return pN, pW, k end
 -- background (alpha 0). They swap once the file is loaded, so zooming never shows empty tiles.
 local tiles = {}       -- ["inst:c_r:layer"] = { cur = Texture, next = Texture, lod = shown level, want = level }
 
-local function ApplyColor(t, layer)
+-- Note: on textures SetAlpha overwrites the vertex colour alpha, so opacity only goes through SetVertexColor
+local function ApplyColor(t, layer, hidden)
     local c = db.colors[layer]
-    t:SetVertexColor(c.r, c.g, c.b, c.a)
+    t:SetVertexColor(c.r, c.g, c.b, hidden and 0 or c.a)
 end
 
 local function NewTileTex(layer)
@@ -145,7 +148,7 @@ local function GetTile(inst, key, layer, lod)
     local e = tiles[id]
     if not e then
         e = { cur = NewTileTex(layer), next = NewTileTex(layer), layer = layer }
-        e.next:SetAlpha(0)
+        ApplyColor(e.next, layer, true)
         tiles[id] = e
     end
     if e.want ~= lod then
@@ -154,8 +157,8 @@ local function GetTile(inst, key, layer, lod)
     end
     if e.lod ~= e.want and IsLoaded(e.next) then
         e.cur, e.next = e.next, e.cur
-        e.cur:SetAlpha(1)
-        e.next:SetAlpha(0)
+        ApplyColor(e.cur, e.layer)
+        ApplyColor(e.next, e.layer, true)
         e.lod = e.want
     end
     return e
@@ -164,7 +167,7 @@ end
 local function ApplyColors()
     for _, e in pairs(tiles) do
         ApplyColor(e.cur, e.layer)
-        ApplyColor(e.next, e.layer)
+        ApplyColor(e.next, e.layer, true)
     end
     if ns.ApplyQuestAreaColor then ns.ApplyQuestAreaColor() end
 end
@@ -367,6 +370,7 @@ end
 view:SetScript("OnDragStart", function(self) self:StartMoving() end)
 view:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
+    if self.SetUserPlaced then self:SetUserPlaced(false) end
     SavePos()
     ApplyPos()
 end)
@@ -447,6 +451,8 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
         self:RegisterEvent("QUEST_LOG_UPDATE")
     elseif event == "PLAYER_ENTERING_WORLD" then
+        ApplySize()            -- again after WoW's layout restore
+        ApplyPos()
         view:SetShown(db.shown)
         RefreshQuests()
     elseif view:IsShown() then

@@ -523,7 +523,8 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2)
                     local l = GetLine(n)
                     l:SetStartPoint("CENTER", view, x0, y0)
                     l:SetEndPoint("CENTER", view, x1, y1)
-                    l:SetAlpha(t)
+                    local c = ns.db().colors.questAreas
+                    l:SetVertexColor(c.r, c.g, c.b, c.a * t)   -- not SetAlpha: it overwrites the vertex alpha
                     l:Show()
                 end
                 x0, y0 = x1, y1

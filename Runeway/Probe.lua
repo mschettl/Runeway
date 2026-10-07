@@ -94,6 +94,11 @@ local function SampleQuest(f, q, res, done)
     f:DrawNone()
     f:DrawBlob(q.questID, true)
     SampleRect(f, q.questID, 0, 0, 1, 1, res, res, function(coarse)
+        -- cross-check: sample at the player position vs. the game's own C_Minimap.IsInsideQuestBlob
+        local mp = C_Map.GetPlayerMapPosition(f:GetMapID(), "player")
+        local px, py = mp and mp:GetXY()
+        local playerHit = px and select(2, pcall(f.UpdateMouseOverTooltip, f, px, py)) ~= nil
+        local inside = C_Minimap and C_Minimap.IsInsideQuestBlob and C_Minimap.IsInsideQuestBlob(q.questID)
         local x0, y0, x1, y1
         if coarse.bbox then
             local m = 2 / res
@@ -101,7 +106,8 @@ local function SampleQuest(f, q, res, done)
         elseif (GetQuestPOIBlobCount and GetQuestPOIBlobCount(q.questID) or 0) > 0 and q.x then
             x0, y0, x1, y1 = q.x - FINE_WINDOW, q.y - FINE_WINDOW, q.x + FINE_WINDOW, q.y + FINE_WINDOW
         end
-        local r = { questID = q.questID, title = QuestTitle(q.questID), pin = { q.x, q.y }, coarse = coarse }
+        local r = { questID = q.questID, title = QuestTitle(q.questID), pin = { q.x, q.y }, coarse = coarse,
+                    player = { px, py }, playerHit = playerHit, playerInside = inside }
         if not x0 then return done(r) end
         x0, y0, x1, y1 = math.max(0, x0), math.max(0, y0), math.min(1, x1), math.min(1, y1)
         local step = math.max(FINE_STEP, (x1 - x0) / FINE_MAX, (y1 - y0) / FINE_MAX)
@@ -187,7 +193,8 @@ function Runeway_ProbeSample(mapID, quests, res, visible, prevMap)
         SampleQuest(f, q, res, function(r)
             RunewayDB.probe.quests[#RunewayDB.probe.quests + 1] = r
             local c, fi = r.coarse, r.fine
-            Print(("  quest %d: coarse %d hits%s, fine %s"):format(r.questID, c.hits,
+            Print(("  quest %d: player sample %s / game %s, coarse %d hits%s, fine %s"):format(r.questID,
+                tostring(r.playerHit), tostring(r.playerInside), c.hits,
                 c.errors > 0 and (" (" .. c.errors .. " errors)") or "",
                 fi and ("%d x %d, %d hits, bbox %.3f,%.3f - %.3f,%.3f"):format(fi.nx, fi.ny, fi.hits,
                     unpack(fi.bbox or { 0, 0, 0, 0 })) or "-"))

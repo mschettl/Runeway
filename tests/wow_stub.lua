@@ -33,7 +33,9 @@ function UnitPosition() return POS[1], POS[2], POS[3], POS[4] end
 function GetPlayerFacing() return 0.5 end
 function IsShiftKeyDown() return false end
 function HideUIPanel() end
-C_Map = { GetBestMapForUnit = function() return 1420 end, GetPlayerMapPosition = function() return nil end }
+C_Map = { GetBestMapForUnit = function() return 1420 end,
+          GetPlayerMapPosition = function() return { GetXY = function() return 0.4, 0.6 end } end }
+C_Minimap = { IsInsideQuestBlob = function() return true end }
 C_QuestLog = { GetQuestsOnMap = function() return { { questID = 4242, x = 0.4, y = 0.6 } } end,
                GetTitleForQuestID = function(id) return "Test quest " .. id end }
 function CreateVector2D(x, y) return { x = x, y = y } end

@@ -309,7 +309,13 @@ local function RefreshQuests()
 end
 
 -- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
--- Classic quest marks: yellow "?" = ready to turn in, grey "?" = in progress.
+-- Same look as the world map pins: dark round badge with gold rim, "?" for turn-in, yellow "..." in progress.
+local PIN_SIZE = 26
+local function SetAtlasOr(t, atlas, file)
+    local ok, res = pcall(t.SetAtlas, t, atlas)
+    if not ok or res == false then t:SetTexture(file) end
+end
+
 local function UpdateQuestPins()
     local n = 0
     for _, q in ipairs(quests) do
@@ -317,23 +323,21 @@ local function UpdateQuestPins()
             n = n + 1
             local p = qpins[n]
             if not p then
-                -- dark silhouette of the "?" behind it: readable on any ground
-                p = { shadow = top:CreateTexture(nil, "ARTWORK", nil, 0), icon = top:CreateTexture(nil, "ARTWORK", nil, 1) }
-                for _, t in ipairs({ p.shadow, p.icon }) do
-                    t:SetTexture("Interface\\GossipFrame\\ActiveQuestIcon")
+                p = { back = top:CreateTexture(nil, "ARTWORK", nil, 0), icon = top:CreateTexture(nil, "ARTWORK", nil, 1) }
+                SetAtlasOr(p.back, "UI-QuestPoi-QuestNumber", MEDIA .. "dot.tga")
+                for _, t in ipairs({ p.back, p.icon }) do
+                    t:SetSize(PIN_SIZE, PIN_SIZE)
                     Fade(t)
                 end
-                p.shadow:SetVertexColor(0, 0, 0, 0.85)
-                p.shadow:SetSize(23, 23)
-                p.icon:SetSize(18, 18)
                 qpins[n] = p
             end
             if p.done ~= q.done then
                 p.done = q.done
-                p.icon:SetDesaturated(not q.done)
+                SetAtlasOr(p.icon, q.done and "UI-QuestIcon-TurnIn-Normal" or "Quest-In-Progress-Icon-yellow",
+                    "Interface\\GossipFrame\\ActiveQuestIcon")
             end
             local x, y = ToScreen(q[1], q[2])
-            for _, t in ipairs({ p.shadow, p.icon }) do
+            for _, t in ipairs({ p.back, p.icon }) do
                 t:ClearAllPoints()
                 t:SetPoint("CENTER", view, "CENTER", x, y)
                 t:Show()
@@ -341,7 +345,7 @@ local function UpdateQuestPins()
         end
     end
     for i = n + 1, #qpins do
-        qpins[i].shadow:Hide()
+        qpins[i].back:Hide()
         qpins[i].icon:Hide()
     end
 end

@@ -51,7 +51,7 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 |---|---|
 | `Runeway.toc` | Interface 16001, Version 1.1, SavedVariables `RunewayDB`; lädt `Tiles.lua`, `Core.lua`, `QuestAreas.lua`, `Options.lua` |
 | `Core.lua` | Fenster, Kacheln, Zoom, Drehung, Questmarker, Sichtbarkeit und Aufruf-Modi, Slash-Befehle, Einstellungen |
-| `Options.lua` | Einstellungen im Blizzard-Stil (`Settings.RegisterVerticalLayoutCategory` mit Proxy-Settings) unter Optionen → AddOns → Runeway, Unterseite „Layers“; auch über `/rnw config`. Wird bei `PLAYER_LOGIN` aufgebaut, weil die Tastenbelegungs-Zeilen `GetNumBindings` brauchen |
+| `Options.lua` | Einstellungen im Blizzard-Stil (`Settings.RegisterVerticalLayoutCategory` mit Proxy-Settings) unter Optionen → AddOns → Runeway, Layer als eigener Abschnitt auf derselben Seite; auch über `/rnw config`. Wird bei `PLAYER_LOGIN` aufgebaut, weil die Tastenbelegungs-Zeilen `GetNumBindings` brauchen |
 | `QuestAreas.lua` | Questbereiche: Abtasten, Umriss, Zeichnen |
 | `Tiles.lua` | generiert: vorhandene Kacheln und Ebenen je Kachel, z. B. `["31_28"] = "fhstwr"` |
 | `Bindings.xml` | Tastenbelegung `RUNEWAY_TOGGLE` |

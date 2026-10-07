@@ -1,4 +1,4 @@
--- Runeway options in Blizzard's own settings list: Options -> AddOns -> Runeway (and Runeway -> Layers),
+-- Runeway options in Blizzard's own settings list: Options -> AddOns -> Runeway,
 -- or /rnw config. All values live in RunewayDB and apply immediately.
 
 local ADDON, ns = ...
@@ -101,27 +101,27 @@ local function Build()
     Slider("questEdge", "Quest area edge", 0.5, 2.5, 0.05, function(v) return ("%.2f x"):format(v) end)
 
     -- Layers: show + opacity in one row, colour in the row below
-    local layers, layersLayout = Settings.RegisterVerticalLayoutSubcategory(category, "Layers")
+    Header("Layers")
     local function Apply() ns.ApplyColors() end
     for _, layer in ipairs(ns.LAYER_KEYS) do
         local label, c = LAYER_LABELS[layer], "colors." .. layer
-        local shown = Settings.RegisterProxySetting(layers, "RUNEWAY_LAYER_" .. layer:upper(), Settings.VarType.Boolean,
+        local shown = Settings.RegisterProxySetting(category, "RUNEWAY_LAYER_" .. layer:upper(), Settings.VarType.Boolean,
             label, ns.DEFAULTS.layers[layer], function() return ns.db().layers[layer] end,
             function(v) ns.db().layers[layer] = v; Apply() end)
-        local opacity = Settings.RegisterProxySetting(layers, "RUNEWAY_OPACITY_" .. layer:upper(), Settings.VarType.Number,
+        local opacity = Settings.RegisterProxySetting(category, "RUNEWAY_OPACITY_" .. layer:upper(), Settings.VarType.Number,
             label .. " opacity", ns.DEFAULTS.colors[layer].a, function() return ns.db().colors[layer].a end,
             function(v) ns.db().colors[layer].a = v; Apply() end)
-        layersLayout:AddInitializer(CreateSettingsCheckboxSliderInitializer(shown, label, nil, opacity,
+        layout:AddInitializer(CreateSettingsCheckboxSliderInitializer(shown, label, nil, opacity,
             SliderOptions(0, 1, 0.01, Pct), label .. " opacity"))
         local function Hex(col) return CreateColor(col.r, col.g, col.b):GenerateHexColor() end
-        local color = Settings.RegisterProxySetting(layers, "RUNEWAY_COLOR_" .. layer:upper(), Settings.VarType.String,
+        local color = Settings.RegisterProxySetting(category, "RUNEWAY_COLOR_" .. layer:upper(), Settings.VarType.String,
             label .. " colour", Hex(Get(ns.DEFAULTS, c)), function() return Hex(Get(ns.db(), c)) end,
             function(v)
                 local col = Get(ns.db(), c)
                 col.r, col.g, col.b = CreateColorFromHexString(v):GetRGB()
                 Apply()
             end)
-        Settings.CreateColorSwatch(layers, color)
+        Settings.CreateColorSwatch(category, color)
     end
 
     Settings.RegisterAddOnCategory(category)

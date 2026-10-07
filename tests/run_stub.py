@@ -152,8 +152,8 @@ L.execute('''
     check("/rnw config opens category", OPENED == 77)
     local kinds = {}
     for _, i in ipairs(INITS) do kinds[i.kind] = (kinds[i.kind] or 0) + 1 end
-    check("settings rows: 4 headers, 2 bindings, 7 layers",
-        kinds.header == 4 and kinds.binding == 2 and kinds.checkslider == 7 and kinds.color == 7)
+    check("settings rows: 5 headers, 2 bindings, 7 layers",
+        kinds.header == 5 and kinds.binding == 2 and kinds.checkslider == 7 and kinds.color == 7)
     check("mode dropdown has 3 entries", #INITS[2].options == 3)
     for var, st in pairs(SETTINGS) do
         if st:GetValue() == nil then check("setting reads a value: " .. var, false) end

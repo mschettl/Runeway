@@ -118,21 +118,19 @@ ns.Player = function() return pN, pW, k end
 ---------------------------------------------------------------------------
 -- Contour tiles
 ---------------------------------------------------------------------------
--- Each tile layer has two textures: "cur" shows the loaded zoom level, "next" loads a new one in the
--- background (alpha 0). They swap once the file is loaded, so zooming never shows empty tiles.
-local tiles = {}       -- ["inst:c_r:layer"] = { cur = Texture, next = Texture, lod = shown level, want = level }
+-- Each tile layer has one texture per zoom level (loaded once, then kept). Around each switch point the two
+-- neighbouring levels are cross-faded, so zooming is seamless; a level that is still loading hands its
+-- weight to a loaded one.
+local LODS = { 128, 256, 512 }
+local SWITCH = { 160, 360 }            -- on-screen tile size (px) where the next finer level takes over
+local BAND = 1.25                      -- cross-fade from SWITCH / BAND to SWITCH * BAND
+local tiles = {}                       -- ["inst:c_r:layer"] = { layer = name, [lod] = Texture }
+local frame = 0                        -- update counter; textures not used in the current update get hidden
 
 -- Note: on textures SetAlpha overwrites the vertex colour alpha, so opacity only goes through SetVertexColor
-local function ApplyColor(t, layer, hidden)
+local function ApplyColor(t, layer, weight)
     local c = db.colors[layer]
-    t:SetVertexColor(c.r, c.g, c.b, hidden and 0 or c.a)
-end
-
-local function NewTileTex(layer)
-    local t = canvas:CreateTexture(nil, "ARTWORK", nil, LAYER_LEVEL[layer])
-    Fade(t)
-    ApplyColor(t, layer)
-    return t
+    t:SetVertexColor(c.r, c.g, c.b, c.a * (weight or 1))
 end
 
 local function TilePath(inst, key, layer, lod)
@@ -143,59 +141,70 @@ local function IsLoaded(t)
     return not t.IsObjectLoaded or t:IsObjectLoaded()
 end
 
-local function GetTile(inst, key, layer, lod)
-    local id = inst .. ":" .. key .. ":" .. layer
-    local e = tiles[id]
-    if not e then
-        e = { cur = NewTileTex(layer), next = NewTileTex(layer), layer = layer }
-        ApplyColor(e.next, layer, true)
-        tiles[id] = e
+local function GetTex(e, inst, key, lod)
+    local t = e[lod]
+    if not t then
+        t = canvas:CreateTexture(nil, "ARTWORK", nil, LAYER_LEVEL[e.layer])
+        Fade(t)
+        t:SetTexture(TilePath(inst, key, e.layer, lod))
+        e[lod] = t
     end
-    if e.want ~= lod then
-        e.want = lod
-        if e.lod ~= lod then e.next:SetTexture(TilePath(inst, key, layer, lod)) end
+    return t
+end
+
+-- Weights of the zoom levels for an on-screen tile size: { [lod] = weight }
+local function LodWeights(size)
+    for i, sw in ipairs(SWITCH) do
+        if size < sw * BAND then
+            local lo, hi = LODS[i], LODS[i + 1]
+            if size <= sw / BAND then return lo, 1, hi, 0 end
+            local f = math.log(size * BAND / sw) / math.log(BAND * BAND)
+            f = f * f * (3 - 2 * f)
+            return lo, 1 - f, hi, f
+        end
     end
-    if e.lod ~= e.want and IsLoaded(e.next) then
-        e.cur, e.next = e.next, e.cur
-        ApplyColor(e.cur, e.layer)
-        ApplyColor(e.next, e.layer, true)
-        e.lod = e.want
-    end
-    return e
+    return 512, 1, 256, 0
 end
 
 local function ApplyColors()
     for _, e in pairs(tiles) do
-        ApplyColor(e.cur, e.layer)
-        ApplyColor(e.next, e.layer, true)
+        for _, lod in ipairs(LODS) do
+            if e[lod] then ApplyColor(e[lod], e.layer, e[lod].weight) end
+        end
     end
     if ns.ApplyQuestAreaColor then ns.ApplyQuestAreaColor() end
 end
 
 local function HideTiles()
     for _, e in pairs(tiles) do
-        e.cur:Hide()
-        e.next:Hide()
+        for _, lod in ipairs(LODS) do
+            if e[lod] then e[lod]:Hide() end
+        end
     end
 end
 
-local function PlaceTex(t, x, y, size, angle)
+local function PlaceTex(t, x, y, size, angle, layer, weight)
     t:ClearAllPoints()
     t:SetPoint("CENTER", view, "CENTER", x, y)
     t:SetSize(size, size)
     t:SetRotation(angle)
+    if t.weight ~= weight then
+        t.weight = weight
+        ApplyColor(t, layer, weight)
+    end
+    t.frame = frame
     t:Show()
 end
 
 local function UpdateTiles(inst, angle)
     local data = RunewayTiles and RunewayTiles[inst]
-    HideTiles()
-    if not data then return false end
+    frame = frame + 1
+    if not data then HideTiles() return false end
 
     local W, H = view:GetSize()
     local reach = math.sqrt(W * W + H * H) / 2 / k + T   -- visible radius in yards plus one tile
     local size = T * k
-    local lod = (size < 160 and 128) or (size < 360 and 256) or 512   -- zoomed out: coarser tiles
+    local loA, wA, loB, wB = LodWeights(size)
 
     for key, have in pairs(data) do
         local c, r = key:match("(%d+)_(%d+)")
@@ -206,9 +215,38 @@ local function UpdateTiles(inst, angle)
             local x, y = ToScreen(cn, cw)
             for _, layer in ipairs(LAYERS) do
                 if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) then
-                    local e = GetTile(inst, key, layer, lod)
-                    if e.lod then PlaceTex(e.cur, x, y, size, angle) end
-                    if e.lod ~= e.want then PlaceTex(e.next, x, y, size, angle) end   -- shown at alpha 0 to load
+                    local id = inst .. ":" .. key .. ":" .. layer
+                    local e = tiles[id]
+                    if not e then e = { layer = layer }; tiles[id] = e end
+                    local a = GetTex(e, inst, key, loA)
+                    local b = wB > 0 and GetTex(e, inst, key, loB)
+                    local okA, okB = IsLoaded(a), b and IsLoaded(b)
+                    local ta, tb = wA, wB
+                    if not okA and okB then ta, tb = 0, 1 elseif okA and b and not okB then ta, tb = 1, 0 end
+                    if not okA and not okB then
+                        -- nothing loaded yet for these levels: keep any loaded level of this tile on screen
+                        for _, lod in ipairs(LODS) do
+                            local t = e[lod]
+                            if t and t ~= a and t ~= b and IsLoaded(t) then
+                                PlaceTex(t, x, y, size, angle, layer, 1)
+                                break
+                            end
+                        end
+                    end
+                    PlaceTex(a, x, y, size, angle, layer, okA and ta or 0)   -- shown at weight 0 while loading
+                    if b then PlaceTex(b, x, y, size, angle, layer, okB and tb or 0) end
+                end
+            end
+        end
+    end
+    for _, e in pairs(tiles) do
+        for _, lod in ipairs(LODS) do
+            local t = e[lod]
+            if t and t.frame ~= frame then
+                if t:IsShown() then t:Hide() end
+                if frame - t.frame > 800 then          -- unused for ~20 s: free the texture memory
+                    t:SetTexture(nil)
+                    e[lod] = nil
                 end
             end
         end
@@ -266,45 +304,31 @@ local function RefreshQuests()
 end
 
 -- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
--- Classic quest marks with a soft glow: yellow "?" = ready to turn in, grey "?" = in progress.
-local function SetPinIcon(p, done)
-    if p.done == done then return end
-    p.done = done
-    p.icon:SetDesaturated(not done)
-    p.icon:SetVertexColor(1, 1, 1, done and 1 or 0.85)
-    if done then p.glow:SetVertexColor(1, 0.82, 0.2, 0.55) else p.glow:SetVertexColor(1, 1, 1, 0.25) end
-end
-
+-- Classic quest marks: yellow "?" = ready to turn in, grey "?" = in progress.
 local function UpdateQuestPins()
     local n = 0
     for _, q in ipairs(quests) do
         if not (ns.HasQuestArea and ns.HasQuestArea(q.questID)) then
             n = n + 1
-            local p = qpins[n]
-            if not p then
-                p = { glow = top:CreateTexture(nil, "ARTWORK", nil, 0), icon = top:CreateTexture(nil, "ARTWORK", nil, 1) }
-                p.glow:SetTexture(MEDIA .. "pinglow.tga")
-                p.glow:SetBlendMode("ADD")
-                p.glow:SetSize(30, 30)
-                p.icon:SetTexture("Interface\\GossipFrame\\ActiveQuestIcon")
-                p.icon:SetSize(14, 14)
-                Fade(p.glow)
-                Fade(p.icon)
-                qpins[n] = p
+            local t = qpins[n]
+            if not t then
+                t = top:CreateTexture(nil, "ARTWORK")
+                t:SetTexture("Interface\\GossipFrame\\ActiveQuestIcon")
+                t:SetSize(15, 15)
+                Fade(t)
+                qpins[n] = t
             end
-            SetPinIcon(p, q.done)
+            if t.done ~= q.done then
+                t.done = q.done
+                t:SetDesaturated(not q.done)
+            end
             local x, y = ToScreen(q[1], q[2])
-            for _, t in ipairs({ p.glow, p.icon }) do
-                t:ClearAllPoints()
-                t:SetPoint("CENTER", view, "CENTER", x, y)
-                t:Show()
-            end
+            t:ClearAllPoints()
+            t:SetPoint("CENTER", view, "CENTER", x, y)
+            t:Show()
         end
     end
-    for i = n + 1, #qpins do
-        qpins[i].glow:Hide()
-        qpins[i].icon:Hide()
-    end
+    for i = n + 1, #qpins do qpins[i]:Hide() end
 end
 
 ---------------------------------------------------------------------------

@@ -128,25 +128,35 @@ def build(cols, rows):
     return m, dict(walk=walk, water=water, road=sk, present=present)
 
 
-def contours(mask, min_len=40):
+# Lines are drawn per zoom level from the outlines (not shrunk from the 512 image): same stroke width at
+# every level, coarser simplification and no small details when zoomed out.
+LINE_LOD = {512: (40, 1.0, 2), 256: (90, 2.0, 1), 128: (300, 3.5, 1)}   # min outline length, simplification (full px), stroke px
+
+
+def contours(mask):
     cnts, _ = cv2.findContours(mask.astype(np.uint8), cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-    return [cv2.approxPolyDP(c, 1.0, True) for c in cnts if cv2.arcLength(c, True) >= min_len]
+    return cnts
+
+
+def draw_outlines(cnts, shape, s):
+    """Outlines at zoom level s (pixels per tile) on a canvas of the scaled mosaic."""
+    min_len, eps, width = LINE_LOD[s]
+    f = s / P
+    out = np.zeros(shape, np.uint8)
+    pts = [np.round(cv2.approxPolyDP(c, eps, True) * f * 16).astype(np.int32)
+           for c in cnts if cv2.arcLength(c, True) >= min_len]
+    cv2.polylines(out, pts, True, 255, width, cv2.LINE_AA, shift=4)
+    if width == 1:                                             # thin anti-aliased strokes: lift the faint pixels
+        out = np.clip(out.astype(np.float32) * 1.4, 0, 255).astype(np.uint8)
+    return out
 
 
 def line_layers(L, keep):
-    """White layers (alpha 0..255): fill (walkable area), blocked (source of the hatch layer: mountains,
-    water), terrain / water / roads lines and the dark shade under them.
-    keep: mask of the selected zones; everything outside is cleared."""
+    """White layers (alpha 0..255). fill (walkable area) and blocked (source of the hatch layer: mountains,
+    water) at full resolution; lines (terrain, water, roads) and the dark shade under them per zoom level:
+    {'fill': ..., 'blocked': ..., 512: {...}, 256: {...}, 128: {...}}.
+    keep: mask of the selected zones; everything outside fades out."""
     H, W = L['walk'].shape
-    terrain = np.zeros((H, W), np.uint8)
-    water = np.zeros((H, W), np.uint8)
-    cv2.drawContours(terrain, contours(L['walk']), -1, 255, 2, cv2.LINE_AA)
-    cv2.drawContours(water, contours(L['water']), -1, 255, 2, cv2.LINE_AA)
-    # shore: terrain line only where the walk edge borders steep ground, not water
-    near_water = cv2.dilate(L['water'].astype(np.uint8), np.ones((9, 9), np.uint8)) > 0
-    terrain[near_water] = 0
-    roads = (cv2.dilate(L['road'].astype(np.uint8), np.ones((2, 2), np.uint8)) * 230).astype(np.uint8)
-    roads[L['water']] = 0
     edge = ~L['present']                                       # missing tiles and mosaic border
     edge[:3, :] = edge[-3:, :] = edge[:, :3] = edge[:, -3:] = True
     edge = cv2.dilate(edge.astype(np.uint8), np.ones((9, 9), np.uint8)) > 0
@@ -158,15 +168,34 @@ def line_layers(L, keep):
     inside = (inside.astype(bool) & ~edge).astype(np.uint8)
     dist = cv2.distanceTransform(np.pad(inside, 1), cv2.DIST_L2, 5)[1:-1, 1:-1]
     zf = np.clip(dist / EDGE_FADE, 0, 1)
-    zf = zf * zf * (3 - 2 * zf)
-    fill = (L['walk'] * 255).astype(np.uint8)
-    blocked = ((L['present'] & ~L['walk']) * 255).astype(np.uint8)
-    for a in (terrain, water, roads, fill, blocked):
-        a[edge] = 0
-        a[:] = (a * zf).astype(np.uint8)
-    shade = cv2.dilate(np.maximum(np.maximum(terrain, water), roads), np.ones((7, 7), np.uint8))
-    shade = (cv2.GaussianBlur(shade, (0, 0), 1.5).astype(np.float32) * 0.65).astype(np.uint8)
-    return dict(fill=fill, blocked=blocked, terrain=terrain, water=water, roads=roads, shade=shade)
+    zf = (zf * zf * (3 - 2 * zf)).astype(np.float32)
+    zf[edge] = 0
+    out = dict(fill=(L['walk'] * 255 * zf).astype(np.uint8),
+               blocked=((L['present'] & ~L['walk']) * 255 * zf).astype(np.uint8))
+
+    walk_c, water_c = contours(L['walk']), contours(L['water'])
+    # shore: terrain line only where the walk edge borders steep ground, not water
+    near_water = cv2.dilate(L['water'].astype(np.uint8), np.ones((9, 9), np.uint8))
+    roads_full = (cv2.dilate(L['road'].astype(np.uint8), np.ones((2, 2), np.uint8)) * 230).astype(np.uint8)
+    roads_full[L['water']] = 0
+    for s in LODS:
+        f = s / P
+        shape = (int(H * f), int(W * f))
+        size = (shape[1], shape[0])
+        terrain = draw_outlines(walk_c, shape, s)
+        water = draw_outlines(water_c, shape, s)
+        terrain[cv2.resize(near_water, size, interpolation=cv2.INTER_NEAREST) > 0] = 0
+        roads = roads_full if s == P else np.clip(
+            cv2.resize(roads_full, size, interpolation=cv2.INTER_AREA).astype(np.float32) / f, 0, 230).astype(np.uint8)
+        z = zf if s == P else cv2.resize(zf, size, interpolation=cv2.INTER_AREA)
+        layer = {}
+        for n, a in (('terrain', terrain), ('water', water), ('roads', roads)):
+            layer[n] = (a * z).astype(np.uint8)
+        k = 7 if s == P else 3
+        shade = cv2.dilate(np.maximum(np.maximum(layer['terrain'], layer['water']), layer['roads']), np.ones((k, k), np.uint8))
+        layer['shade'] = (cv2.GaussianBlur(shade, (0, 0), 1.5 if s == P else 0.8).astype(np.float32) * 0.65).astype(np.uint8)
+        out[s] = layer
+    return out
 
 
 # --- output -----------------------------------------------------------------
@@ -211,13 +240,21 @@ def write_tiles(layers, cols, rows, tiles):
         xs = slice((c - cols[0]) * P, (c - cols[0] + 1) * P)
         have = ''
         for n in LAYERS:
-            blk = np.ascontiguousarray(layers['blocked' if n == 'hatch' else n][ys, xs])
+            area = n in ('fill', 'hatch')
+            src = layers['blocked' if n == 'hatch' else n] if area else layers[P][n]
+            blk = np.ascontiguousarray(src[ys, xs])
             if blk.max() < 8:
                 continue
             have += n[0]
             for s in LODS:
                 d = OUT if s == P else os.path.join(OUT, str(s))
-                img = hatch(blk, s, c, r) if n == 'hatch' else downscale(blk, s, n != 'fill')
+                if n == 'hatch':
+                    img = hatch(blk, s, c, r)
+                elif area:
+                    img = downscale(blk, s, False)
+                else:                                      # lines: drawn at this zoom level
+                    img = np.ascontiguousarray(layers[s][n][(r - rows[0]) * s:(r - rows[0] + 1) * s,
+                                                             (c - cols[0]) * s:(c - cols[0] + 1) * s])
                 save_tga(img, os.path.join(d, f'{c}_{r}_{n}.tga'))
         if have:
             written[(c, r)] = have
@@ -298,9 +335,10 @@ def main(zone_names):
     written = write_tiles(layers, cols, rows, {(c, r) for c in cols for r in rows})
     os.makedirs(BUILD, exist_ok=True)
     half = lambda a: cv2.resize(a, (a.shape[1] // 2, a.shape[0] // 2), interpolation=cv2.INTER_AREA)
-    cv2.imwrite(os.path.join(BUILD, 'preview_lines.png'), half(compose(layers)))
+    flat = dict(layers[P], fill=layers['fill'], blocked=layers['blocked'])
+    cv2.imwrite(os.path.join(BUILD, 'preview_lines.png'), half(compose(flat)))
     cv2.imwrite(os.path.join(BUILD, 'preview_over_minimap.png'),
-                half(compose(layers, (minimap(cols, rows) * 0.45).astype(np.uint8))))
+                half(compose(flat, (minimap(cols, rows) * 0.45).astype(np.uint8))))
     size = sum(os.path.getsize(os.path.join(d, f)) for d, _, fs in os.walk(OUT) for f in fs)
     print(f'{len(written)} tiles written, {size / 1e6:.1f} MB, previews in build/')
 

@@ -266,13 +266,13 @@ local function RefreshQuests()
 end
 
 -- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
--- Classic "?" in the glow style of the quest areas: bright = ready to turn in, dimmed = in progress.
-local function SetPinIcon(t, done)
-    if t.done == done then return end
-    t.done = done
-    local c = db.colors.questAreas
-    local k = done and 1 or 0.55
-    t:SetVertexColor(math.min(1, c.r + 0.25) * k, math.min(1, c.g + 0.2) * k, c.b * k, done and 1 or 0.8)
+-- Classic quest marks with a soft glow: yellow "?" = ready to turn in, grey "?" = in progress.
+local function SetPinIcon(p, done)
+    if p.done == done then return end
+    p.done = done
+    p.icon:SetDesaturated(not done)
+    p.icon:SetVertexColor(1, 1, 1, done and 1 or 0.85)
+    if done then p.glow:SetVertexColor(1, 0.82, 0.2, 0.55) else p.glow:SetVertexColor(1, 1, 1, 0.25) end
 end
 
 local function UpdateQuestPins()
@@ -280,24 +280,31 @@ local function UpdateQuestPins()
     for _, q in ipairs(quests) do
         if not (ns.HasQuestArea and ns.HasQuestArea(q.questID)) then
             n = n + 1
-            local t = qpins[n]
-            if not t then
-                t = top:CreateTexture(nil, "ARTWORK")
-                t:SetSize(14, 14)
-                t:SetTexture("Interface\\GossipFrame\\ActiveQuestIcon")
-                t:SetDesaturated(true)
-                t:SetBlendMode("ADD")
-                Fade(t)
-                qpins[n] = t
+            local p = qpins[n]
+            if not p then
+                p = { glow = top:CreateTexture(nil, "ARTWORK", nil, 0), icon = top:CreateTexture(nil, "ARTWORK", nil, 1) }
+                p.glow:SetTexture(MEDIA .. "pinglow.tga")
+                p.glow:SetBlendMode("ADD")
+                p.glow:SetSize(30, 30)
+                p.icon:SetTexture("Interface\\GossipFrame\\ActiveQuestIcon")
+                p.icon:SetSize(14, 14)
+                Fade(p.glow)
+                Fade(p.icon)
+                qpins[n] = p
             end
-            SetPinIcon(t, q.done)
+            SetPinIcon(p, q.done)
             local x, y = ToScreen(q[1], q[2])
-            t:ClearAllPoints()
-            t:SetPoint("CENTER", view, "CENTER", x, y)
-            t:Show()
+            for _, t in ipairs({ p.glow, p.icon }) do
+                t:ClearAllPoints()
+                t:SetPoint("CENTER", view, "CENTER", x, y)
+                t:Show()
+            end
         end
     end
-    for i = n + 1, #qpins do qpins[i]:Hide() end
+    for i = n + 1, #qpins do
+        qpins[i].glow:Hide()
+        qpins[i].icon:Hide()
+    end
 end
 
 ---------------------------------------------------------------------------

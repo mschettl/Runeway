@@ -70,6 +70,11 @@ L.execute('''
     local ng, gl = 0, 0
     for key, g in pairs(G) do ng = ng + 1; gl = #g.loops; print("group", key, "loops", gl) end
     print("groups:", ng)
+    -- neighbouring zone: own quests sampled there, a quest cut off at its map border is drawn from the other map
+    local _, _, S, O = NS.QuestAreaState()
+    local nb = S[1421] and S[1421].areas or {}
+    print(("neighbour map 1421: quest 5001 %d loop(s), quest 4243 cut %s, owners 4243 -> %s, 5001 -> %s"):format(
+        nb[5001] and #nb[5001].loops or -1, tostring(nb[4243] and nb[4243].cut), tostring(O[4243]), tostring(O[5001])))
     print("pins textures:", (function() local n = 0 for _, t in ipairs(TEXTURES) do if t:find("Gossip") then n = n + 1 end end return n end)())
     SlashCmdList.RUNEWAY("layer questareas")
     SlashCmdList.RUNEWAY("color questareas 1 0.5 0")

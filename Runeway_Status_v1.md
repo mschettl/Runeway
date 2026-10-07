@@ -1,4 +1,4 @@
-# Runeway – Stand Version 1.1 und Übergabe
+# Runeway – Stand Version 1.2 und Übergabe
 
 Diese Datei fasst den kompletten Stand nach Version 1.1 zusammen, damit eine neue Session nahtlos weitermachen kann. Sie ersetzt den Chatverlauf. Vorgaben und Ziele stehen in `Runeway_Prompt_v1.md`, Arbeitsregeln in `CLAUDE.md`.
 
@@ -18,6 +18,10 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 Im Spiel getestet und für Version 1 abgenommen.
 
 **Stand 1.1 (im Spiel getestet und abgenommen):** Punkt 3.4 ist umgesetzt. Dazu gehören die Einstellungsseite im Blizzard-Stil (`Options.lua`), die Aufruf-Modi samt eigener Weltkarten-Tastenbelegung, das automatische Ausblenden und die Fensterbedienung laut Vorgabe.
+
+**Stand 1.2 (gebaut, Test im Spiel offen):** Etappe 1 des Pakets „weitere Zonen“ (Abschnitt 8).
+- **Zonen:** Tirisfal, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains in einem Mosaik (Kacheln 26–38 / 24–36). Alterac ist dabei, weil es zwischen den anderen liegt; ohne es entstünde ein ausgeblendetes Loch.
+- **Questbereiche und Questmarker angrenzender Zonen:** siehe Abschnitt 5, „Nachbarzonen“.
 
 ---
 
@@ -56,7 +60,7 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 | `Tiles.lua` | generiert: vorhandene Kacheln und Ebenen je Kachel, z. B. `["31_28"] = "fhstwr"` |
 | `Bindings.xml` | Tastenbelegung `RUNEWAY_TOGGLE` |
 | `media/` | `fade1.tga`–`fade5.tga` (runde Ausblendmasken je Randstärke, erzeugt mit `scripts/make_masks.py`), `arrow.tga` (Spielerpfeil), `edge.tga` (kantengeglättete Linientextur), `dot.tga` (Rückfall-Symbol) |
-| `tiles/0/[256/ \| 128/]<c>_<r>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Tirisfal: 42 Kacheln, ~22 MB |
+| `tiles/0/[256/ \| 128/]<c>_<r>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Tirisfal: 42 Kacheln, ~22 MB; Etappe 1 (5 Zonen): 104 Kacheln, ~69 MB |
 
 `tools/Probe.lua` ist ein Entwicklungswerkzeug und nicht im Release (siehe Abschnitt 6).
 
@@ -140,7 +144,7 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 
 **Bauen:**
 ```bash
-python scripts/build_raw.py               # Zonen aus scripts/zones.txt (aktuell: Tirisfal Glades)
+python scripts/build_raw.py               # Zonen aus scripts/zones.txt (aktuell: Etappe 1, 5 Zonen)
 python scripts/build_raw.py "Zone Name"   # einzelne Zone(n), Namen wie in AreaTable (AreaName_lang)
 ```
 Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `build/` (`preview_lines.png`, `preview_over_minimap.png`). Die Community-Listfile (`listfile.csv`) wird beim ersten Lauf geladen. Der Bereichsindex der ADTs wird in `build/area_index.npz` zwischengespeichert.
@@ -162,7 +166,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 - **Begehbar:** Steigung unter 50° und kein Wasser. Zerklüftete Hänge werden zu Blöcken geschlossen (`BLOCK_CLOSE`). Kleine begehbare Inseln mitten im Gebirge werden entfernt (`MIN_WALK`), außer sie grenzen an Wasser (`MIN_ISLAND`, z. B. die Insel im Brightwater Lake).
 - **Wasser:** MH2O-Oberfläche liegt über dem Gelände.
 - **Wege:** Texturen mit „road“ oder „path“ im Namen, ab Gewicht 0.3, als Mittellinie (Skelett).
-- **Zonen-Zuschnitt:** über AreaTable (Unterzonen → Hauptzone). Meeres-Chunks zählen nur in Küstennähe der Zone, denn „The Great Sea“ ist in der AreaTable eine Unterzone von Tirisfal.
+- **Zonen-Zuschnitt:** über AreaTable (Unterzonen → Hauptzone). Zonennamen gelten nur für `ContinentID` 0; die AreaTable enthält gleichnamige Zonen anderer Kontinente (z. B. „Hillsbrad Foothills“ ID 16562, „Eastern Plaguelands“ ID 16028), die sonst die richtige ID überschrieben. Meeres-Chunks zählen nur in Küstennähe der Zone, denn „The Great Sea“ ist in der AreaTable eine Unterzone von Tirisfal.
 - **Weicher Kartenrand:** `EDGE_FADE` = 160 px (~165 yd), mittig auf der Zonengrenze, also überwiegend nach außen. Kacheln, in die die Ausblendung reicht, werden mitgeschrieben.
 - **Linien je Zoomstufe:** aus den Umrissen neu gezeichnet, nicht verkleinert (`LINE_LOD`). Bei 512 px 2 px breit, bei 256/128 px 1 px kantengeglättet, stärker vereinfacht, ohne Kleinstteile.
 - **Schraffur:** Linienabstand je Stufe 9 / 6 / 4 px, über Kachelgrenzen fortlaufend.
@@ -194,7 +198,14 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
    - Breite = Kachelgröße ÷ 140 (2–7 px), folgt also dem Zoom.
    - Segmente überlappen nur bei voller Deckkraft um 1 px.
    - Ausblendung zum Rand pro Segment über `SetVertexColor`.
-7. **Questmarker (`Core.lua`):**
+7. **Nachbarzonen (1.2):**
+   - `ns.NearbyMaps()` (`Core.lua`): Karte des Spielers zuerst, dann die Zonen desselben Kontinents (`C_Map.GetMapInfo` bis `mapType` 2, `C_Map.GetMapChildrenInfo(Kontinent, 3)`), deren Kartenrechteck (Weltkoordinaten der Ecken, je Karte zwischengespeichert) näher als die Sichtweite + 200 yd liegt, nach Abstand sortiert.
+   - `QuestAreas.lua` hält den Zustand je Karte (`state[mapID]`: Bereiche, Gruppen, Kartenecken). Die Warteschlange enthält Quests aller nahen Karten (Karte für Karte, je Karte nächste zuerst). `SetMapID` wechselt nur bei einem Kartenwechsel des Jobs (dann 1 s Wartezeit).
+   - Jede Sekunde wird geprüft, ob sich die Liste naher Karten geändert hat (Bewegung, Zoom); dann werden Bereiche und Questmarker neu abgefragt.
+   - **Doppelte Quests:** Erscheint eine Quest auf mehreren Karten, wird nur ein Umriss gezeichnet (`owner`): bevorzugt einer, der den Kartenrand nicht berührt (`cut`, also nicht abgeschnitten), sonst der der näheren Karte. Questmarker: die erste (nächste) Karte gewinnt.
+   - Achsenreihenfolge (`MapToWorld`) für Karten, auf denen der Spieler nicht steht: von einer bereits geprüften Karte übernommen.
+   - Cache-Version 3 (`cut` neu); alte Einträge werden einmal verworfen.
+8. **Questmarker (`Core.lua`):**
    - Nur Quests ohne Umriss bekommen einen Marker (punktuelle Ziele).
    - Atlas `UI-QuestPoi-QuestNumber` (Kreis mit Goldrand) plus `UI-QuestIcon-TurnIn-Normal` (Abgabe) bzw. `Quest-In-Progress-Icon-yellow` (läuft), 26 px.
 
@@ -225,7 +236,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 
 | Punkt | Status |
 |---|---|
-| 3.1 RAW-Daten (Begehbarkeit aus Steigung, Wasser aus MH2O, Wege aus Texturen, Zonen-Zuschnitt, Tirisfal) | **erledigt** für Tirisfal; weitere Zonen offen |
+| 3.1 RAW-Daten (Begehbarkeit aus Steigung, Wasser aus MH2O, Wege aus Texturen, Zonen-Zuschnitt, Tirisfal) | **erledigt** für Tirisfal; Etappe 1 (Silverpine, Western Plaguelands, Hillsbrad, Alterac) gebaut, Spieltest offen; weitere Zonen offen |
 | 3.2 Einfärbbare Ebenen | **erledigt**, erweitert um `fill` und `hatch` |
 | 3.3 Questgebiete | **erledigt**, über das Abtasten statt DB2 (die Tabellen sind leer) |
 | 3.4 Konfigurationsoberfläche und Bedienung | **erledigt** in 1.1, im Spiel getestet |
@@ -245,8 +256,13 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 - Minimap-PNGs gibt es nur für Tirisfal (Kacheln 26–34 / 26–29). Sie dienen nur der Vorschau `preview_over_minimap.png`. Für neue Zonen braucht es dafür einen Minimap-Export aus wow.export (Mario).
 - `build_raw.py` baut alle Zonen eines Laufs als **ein Mosaik**. Gemeinsame Grenzen sind damit nahtlos; die weiche Ausblendung (`EDGE_FADE`) liegt nur am Außenrand der gebauten Zonen. Deshalb immer alle gewünschten Zonen zusammen bauen (über `zones.txt`), nie einzeln nacheinander, sonst überschreiben sich Grenzkacheln.
 
+**Stand Etappe 1 (1.2):** gebaut und im Stub getestet, Spieltest offen (Testliste 1.2 in Abschnitt 9).
+- `build_raw.py` braucht für die 5 Zonen (13 × 13 Kacheln) wenige GB RAM; die Texturgewichte der ~570 Weg-Texturen werden direkt in ein Raster summiert (vorher ein Raster je Textur).
+- Die Parameter sind unverändert (an Tirisfal kalibriert). Die Vorschau zeigt plausible Ergebnisse; ohne Minimap-Export der neuen Zonen ist der Abgleich aber nur grob möglich.
+- Questbereiche angrenzender Zonen: umgesetzt (Abschnitt 5, Punkt 7). Ob `C_QuestLog.GetQuestsOnMap(Nachbarzone)` und `QuestPOIFrame:SetMapID(Nachbarzone)` in Forever liefern, ist im Spiel zu prüfen.
+
 **Vorgehen in Etappen:**
-1. **Etappe 1:** Nachbarn von Tirisfal: `Silverpine Forest`, `Western Plaguelands`, ggf. `Hillsbrad Foothills` (Namen exakt wie `AreaName_lang` in `AreaTable.csv` prüfen). In `zones.txt` eintragen, `build_raw.py` laufen lassen.
+1. **Etappe 1 (erledigt, siehe oben):** Nachbarn von Tirisfal: `Silverpine Forest`, `Western Plaguelands`, ggf. `Hillsbrad Foothills` (Namen exakt wie `AreaName_lang` in `AreaTable.csv` prüfen). In `zones.txt` eintragen, `build_raw.py` laufen lassen.
 2. **Pro Zone prüfen** (Vorschauen in `build/`): Steigung bzw. Begehbarkeit, Wege, Wasser, Zonengrenze, Meeresküste. Die Parameter (`BLOCK_CLOSE`, `MIN_WALK`, `MIN_ISLAND`, Weg-Gewicht 0.3) sind an Tirisfal kalibriert und können je Landschaft (z. B. Pestländer, Gebirge in Hillsbrad) Nachjustieren brauchen.
 3. **Im Spiel testen:** Übergang über die Zonengrenze ohne Kante oder Lücke, Zoom, Ladezeiten.
 4. Weitere Etappen danach: restliche Östliche Königreiche.
@@ -277,7 +293,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 
 ### Bekannte Einschränkungen
 - **Feldwege:** Erdwege mit Dirt-Texturen werden nicht erkannt, weil Dirt in Tirisfal normaler Untergrund ist.
-- **Questbereiche:** Sie erscheinen beim ersten Mal nach Login oder Zonenwechsel mit etwa 1 s Verzögerung; danach kommen sie aus dem Zwischenspeicher. Gezeigt werden nur die Bereiche der Quests auf der aktuellen Zonenkarte.
+- **Questbereiche:** Sie erscheinen beim ersten Mal nach Login oder Zonenwechsel mit etwa 1 s Verzögerung (je Karte); danach kommen sie aus dem Zwischenspeicher.
 - **Gebäude:** Außer Undercity und den Stadttürmen sind keine Gebäude eingezeichnet. Kleine Gebäude, z. B. in Brill, sind nicht berücksichtigt.
 
 ---
@@ -288,12 +304,20 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 python tests/run_stub.py                      # lädt das Addon (Lua 5.1) gegen einen WoW-API-Stub, prüft Kacheln/Questbereiche/Zoom-Laden
 python tests/render_quest_outlines.py <SavedVariables/Runeway.lua>   # Questumrisse aus Probe-Daten mit dem Addon-Code
 python scripts/simulate.py                    # Darstellung aus den Kacheln
-cd <repo> && zip -r build/Runeway-1.1.zip Runeway
+cd <repo> && zip -r build/Runeway-1.2.zip Runeway
 ```
 
 **Testwerkzeug `/rnw probe`:** Nur in Entwicklungsbuilds; dazu `tools/Probe.lua` in den Addon-Ordner kopieren und in der `.toc` eintragen. Es tastet die Questbereiche der aktuellen Zone ab und speichert sie in `RunewayDB.probe`. Die Auswertung macht `scripts/probe_view.py`.
 
-**Installation:** Alten Ordner `Interface\AddOns\Runeway` löschen, `Runeway-1.1.zip` dort entpacken und WoW komplett neu starten. Wegen der neuen Masken `fade1–5.tga` und der neuen Tastenbelegung in `Bindings.xml` reicht `/reload` nicht.
+**Installation:** Alten Ordner `Interface\AddOns\Runeway` löschen, `Runeway-1.2.zip` dort entpacken und WoW komplett neu starten. Neue Texturdateien (hier die Kacheln der neuen Zonen) lädt WoW erst nach einem Neustart, `/reload` reicht nicht.
+
+**Testliste 1.2 (Etappe 1, offen):**
+1. **Neue Zonen:** Silverpine, Western Plaguelands, Hillsbrad, Alterac ablaufen: Begehbarkeit, Wasser, Wege, Küste plausibel? Auffällige Stellen mit `/rnw pos` und Screenshot melden.
+2. **Zonengrenzen:** Übergang Tirisfal ↔ Silverpine und Tirisfal ↔ Western Plaguelands ohne Kante, Lücke oder Flackern, in allen Zoomstufen. Außenrand (z. B. Richtung Eastern Plaguelands) blendet weich aus.
+3. **Ladezeit:** spürbare Ruckler beim Zoomen oder an Zonengrenzen?
+4. **Questbereiche Nachbarzone:** In Tirisfal nahe der Grenze eine Quest aus Silverpine im Log haben: Ihr Bereich erscheint (nach etwa 1 s), auch wenn man noch in Tirisfal steht. Beim Herauszoomen kommen weitere Zonen hinzu.
+5. **Questmarker Nachbarzone:** Abgabe-Marker einer Quest der Nachbarzone erscheint, ohne doppelt zu sein.
+6. **Grenzüberschreitender Bereich:** Ein Bereich über die Zonengrenze wird nicht an der Grenze abgeschnitten und nicht doppelt gezeichnet.
 
 **Testliste 1.1 (Punkt 3.4, alle Punkte im Spiel bestanden):**
 1. **Optionen:** Optionen → AddOns → Runeway und `/rnw config` öffnen die Seite. Alle Regler, Häkchen und Farbfelder wirken sofort. „Standard“ setzt die jeweilige Seite zurück.

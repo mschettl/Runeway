@@ -345,7 +345,8 @@ end
 
 -- Map position -> world (north, west). The axis order of GetWorldPosFromMapPos is checked once per map
 -- against the player position.
-local swapByMap = {}
+-- Maps the player is not on (neighbouring zones) use the order found on another map.
+local swapByMap, anySwap = {}, nil
 local function MapToWorld(mapID, x, y)
     local a, b = WorldFromMap(mapID, x, y)
     if not a then return end
@@ -357,28 +358,78 @@ local function MapToWorld(mapID, x, y)
             local pa, pb = WorldFromMap(mapID, mp:GetXY())
             if pa then
                 swap = math.abs(pa - un) + math.abs(pb - uw) > math.abs(pb - un) + math.abs(pa - uw)
-                swapByMap[mapID] = swap
+                swapByMap[mapID], anySwap = swap, swap
             end
         end
+        if swap == nil then swap = anySwap end
     end
     if swap then return b, a end
     return a, b
 end
 ns.MapToWorld = MapToWorld
 
+-- Zone maps near the player: the player's map first, then the zones of the same continent whose map
+-- rectangle comes within view reach (+ margin), nearest first. Quest areas and pins come from all of them.
+local REACH_MARGIN = 200                 -- yards beyond the map corner
+local UIMAP_CONTINENT, UIMAP_ZONE = 2, 3 -- Enum.UIMapType
+local zoneRect = {}                      -- [mapID] = { n0, n1, w0, w1 } in world yards, or false
+local function NearbyMaps()
+    local m = C_Map.GetBestMapForUnit("player")
+    if not m then return end
+    local list = { m }
+    local pn, pw = UnitPosition("player")
+    if not (pn and C_Map.GetMapInfo and C_Map.GetMapChildrenInfo) then return list end
+    local cont, info = m, C_Map.GetMapInfo(m)
+    while info and info.mapType ~= UIMAP_CONTINENT and (info.parentMapID or 0) > 0 do
+        cont = info.parentMapID
+        info = C_Map.GetMapInfo(cont)
+    end
+    if not (info and info.mapType == UIMAP_CONTINENT) then return list end
+    MapToWorld(m, 0, 0)                  -- settles the axis order on the player's map first
+    local W, H = view:GetSize()
+    local reach = math.sqrt(W * W + H * H) / 2 / db.zoom + REACH_MARGIN
+    local found = {}
+    for _, c in ipairs(C_Map.GetMapChildrenInfo(cont, UIMAP_ZONE) or {}) do
+        local id = c.mapID
+        if id ~= m then
+            local r = zoneRect[id]
+            if r == nil then
+                local n0, w0 = MapToWorld(id, 0, 0)
+                local n1, w1 = MapToWorld(id, 1, 1)
+                r = n0 and n1 and { math.min(n0, n1), math.max(n0, n1), math.min(w0, w1), math.max(w0, w1) } or false
+                zoneRect[id] = r
+            end
+            if r then
+                local dn, dw = math.max(r[1] - pn, 0, pn - r[2]), math.max(r[3] - pw, 0, pw - r[4])
+                local d = math.sqrt(dn * dn + dw * dw)
+                if d < reach then found[#found + 1] = { id, d } end
+            end
+        end
+    end
+    table.sort(found, function(a, b) return a[2] < b[2] end)
+    for _, f in ipairs(found) do list[#list + 1] = f[1] end
+    return list
+end
+ns.NearbyMaps = NearbyMaps
+
 local function RefreshQuests()
     wipe(quests)
-    local mapID = C_Map.GetBestMapForUnit("player")
-    if not (mapID and C_QuestLog and C_QuestLog.GetQuestsOnMap) then return end
-    for _, q in ipairs(C_QuestLog.GetQuestsOnMap(mapID) or {}) do
-        local n, w = MapToWorld(mapID, q.x, q.y)
-        if n then
-            local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
-                or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
-            quests[#quests + 1] = { n, w, questID = q.questID, done = done and true or false }
+    local maps = NearbyMaps()
+    if not (maps and C_QuestLog and C_QuestLog.GetQuestsOnMap) then return end
+    local seen = {}          -- a quest can show on two zone maps: the first (nearest) map wins
+    for _, mapID in ipairs(maps) do
+        for _, q in ipairs(C_QuestLog.GetQuestsOnMap(mapID) or {}) do
+            local n, w = MapToWorld(mapID, q.x, q.y)
+            if n and not seen[q.questID] then
+                seen[q.questID] = true
+                local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
+                    or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
+                quests[#quests + 1] = { n, w, questID = q.questID, done = done and true or false }
+            end
         end
     end
 end
+ns.RefreshQuests = RefreshQuests
 
 -- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
 -- Same look as the world map pins: dark round badge with gold rim, "?" for turn-in, yellow "..." in progress.

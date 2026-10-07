@@ -52,7 +52,8 @@ def zone_of_area():
         while int(rows[z]['ParentAreaID']) in rows and int(rows[z]['ParentAreaID']) != 0:
             z = int(rows[z]['ParentAreaID'])
         top[i] = z
-    names = {rows[i]['AreaName_lang'].lower(): i for i in rows if int(rows[i]['ParentAreaID']) == 0}
+    names = {rows[i]['AreaName_lang'].lower(): i for i in rows
+             if int(rows[i]['ParentAreaID']) == 0 and rows[i]['ContinentID'] == '0'}    # 0 = Eastern Kingdoms
     seas = {i for i in rows if re.search(r'\b(sea|ocean)\b', rows[i]['AreaName_lang'].lower())}
     return top, names, seas
 
@@ -118,8 +119,7 @@ def build(cols, rows):
     # Roads: road textures -> centre lines
     lf = load_listfile()
     names = sorted({n for n in lf.values() if any(k in n for k in ROAD_KEYS)})
-    tex = m.build_textures(lf, names)
-    rw = sum(tex.values()) if tex else np.zeros_like(m.height)
+    rw = m.build_textures(lf, names)
     road = smooth(rw > ROAD_MIN, 1.5)
     road = cv2.morphologyEx(road.astype(np.uint8), cv2.MORPH_CLOSE,
                             cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))).astype(bool) & ~water

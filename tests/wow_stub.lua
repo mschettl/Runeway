@@ -15,6 +15,8 @@ local function obj(name)
             return self._loadIn < 0
         end end
         if k == "SetAlpha" then return function(self, a) self._alpha = a end end
+        if k == "SetStartPoint" then return function(self, _, _, x, y) self._p0 = { x, y } end end
+        if k == "SetEndPoint" then return function(self, _, _, x, y) self._p1 = { x, y } end end
         if k == "SetVertexColor" then return function(self, r, g, b, a) self._color = { r, g, b, a } end end
         if k == "GetSize" then return function() return 700, 450 end end
         if k == "GetCenter" then return function() return 500, 400 end end
@@ -31,6 +33,7 @@ local function obj(name)
             CREATED[k] = (CREATED[k] or 0) + 1
             local o = obj(k)
             if k == "CreateTexture" then ALL_TEX[#ALL_TEX + 1] = o end
+            if k == "CreateLine" then ALL_LINES[#ALL_LINES + 1] = o end
             return o
         end end
         return function() end
@@ -38,6 +41,7 @@ local function obj(name)
 end
 TEXTURES = {}
 ALL_TEX = {}
+ALL_LINES = {}
 LOAD_FRAMES = 0      -- frames until a texture counts as loaded
 CREATED = {}
 DRAWN = {}

@@ -14,11 +14,10 @@ local SIMPLIFY = 0.35             -- outline simplification tolerance in fine ce
 local WARMUP_MAP, WARMUP_QUEST = 1.0, 0.2   -- seconds before sampling (first draw after SetMapID is slow)
 local MIN_SEG = 5                 -- minimum drawn segment length in screen pixels
 local OVERLAP = 1                 -- px the solid lines are extended at both ends: closes the gaps at the joints
--- Outline = dark solid underlay + faint additive glow + bright solid core. Thick soft lines show every
--- segment joint; solid thin ones hide them, so the glow is kept weak.
-local CORE, UNDER, THICKNESS = 2.5, 6, 10
-local GLOW_ALPHA = 0.35
-local GLOW = "Interface\\AddOns\\Runeway\\media\\glow.tga"
+-- Outline like the minimap quest blobs: a bright solid edge with a soft glow fading into the area.
+-- The glow is built from thin solid lines offset inwards (thin solid lines hide the segment joints).
+local EDGE = 2
+local INNER = { { 2.5, 0.40 }, { 4.5, 0.22 }, { 6.5, 0.10 } }   -- offset px, opacity
 
 local blobFrame, mapID, corners
 local areas = {}          -- [questID] = { sig = string, loops = { {n1, w1, n2, w2, ...}, ... }, box = {n0, n1, w0, w1},
@@ -155,7 +154,17 @@ local function Trace(grid, nx, ny)
                 local nxt = (nd[1] ~= prev) and nd[1] or nd[2]
                 prev, cur = cur, nxt
             until cur == nil or seen[cur]
-            if #xs >= 4 then loops[#loops + 1] = { xs, ys } end
+            if #xs >= 4 then
+                -- which side of the loop is the area: probe the blurred field next to the first segment
+                local dx, dy = xs[2] - xs[1], ys[2] - ys[1]
+                local len = math.sqrt(dx * dx + dy * dy)
+                local mx, my = (xs[1] + xs[2]) / 2 - dy / len * 0.6, (ys[1] + ys[2]) / 2 + dx / len * 0.6
+                local c0, r0 = math.floor(mx), math.floor(my)
+                local fx, fy = mx - c0, my - r0
+                local val = (v(c0, r0) * (1 - fx) + v(c0 + 1, r0) * fx) * (1 - fy)
+                    + (v(c0, r0 + 1) * (1 - fx) + v(c0 + 1, r0 + 1) * fx) * fy
+                loops[#loops + 1] = { xs, ys, plus = val > ISO }   -- plus: area at (-dy, dx) of the direction
+            end
         end
     end
     return loops
@@ -211,7 +220,7 @@ ns.TraceOutline = function(grid, nx, ny)   -- for tests: smoothed loops in sampl
     local out = {}
     for _, l in ipairs(Trace(grid, nx, ny)) do
         local px, py = SmoothLoop(l[1], l[2])
-        if px then out[#out + 1] = { px, py } end
+        if px then out[#out + 1] = { px, py, plus = l.plus } end
     end
     return out
 end
@@ -238,7 +247,12 @@ local function Finish()
     if job.hits > 0 and corners then
         for _, l in ipairs(Trace(job.grid, job.nx, job.ny)) do
             local wl = ToWorldLoop(l[1], l[2], area.box)
-            if wl then area.loops[#area.loops + 1] = wl end
+            if wl then
+                -- inward normal on screen for a segment (dx, dy): inward * (dy, -dx)
+                -- (sample -> world mirrors, world -> screen keeps the orientation)
+                wl.inward = l.plus and 1 or -1
+                area.loops[#area.loops + 1] = wl
+            end
         end
         area.rect = { job.x0 + job.minC * job.dx, job.y0 + job.minR * job.dy,
                       job.x0 + (job.maxC + 1) * job.dx, job.y0 + (job.maxR + 1) * job.dy }
@@ -382,7 +396,11 @@ local function Refresh()
     if m ~= mapID then
         mapID = m
         -- areas are kept per map in the saved variables, so they show up at once after /reload or relog
-        local cache = ns.db().questAreaCache
+        local db = ns.db()
+        if db.questAreaCacheVersion ~= 2 then        -- 2: loops know the side of the area (inward glow)
+            db.questAreaCache, db.questAreaCacheVersion = {}, 2
+        end
+        local cache = db.questAreaCache
         cache[m] = cache[m] or { areas = {}, groups = {} }
         areas, groups = cache[m].areas, cache[m].groups
         wipe(inGroup)
@@ -479,30 +497,30 @@ lineParent:SetClipsChildren(true)       -- hard edge if lines do not take the fa
 local function GetLine(i)
     local l = lines[i]
     if not l then
-        local u = lineParent:CreateLine(nil, "ARTWORK", nil, 0)
-        u:SetThickness(UNDER)
-        u:SetColorTexture(1, 1, 1, 1)
-        local g = lineParent:CreateLine(nil, "ARTWORK", nil, 1)
-        g:SetThickness(THICKNESS)
-        g:SetTexture(GLOW)
-        g:SetBlendMode("ADD")
-        l = lineParent:CreateLine(nil, "ARTWORK", nil, 2)
-        l:SetThickness(CORE)
+        l = lineParent:CreateLine(nil, "ARTWORK", nil, 1)
+        l:SetThickness(EDGE)
         l:SetColorTexture(1, 1, 1, 1)
-        l.under, l.glow = u, g
+        l.inner = {}
+        for k = 1, #INNER do
+            local g = lineParent:CreateLine(nil, "ARTWORK", nil, 0)
+            g:SetThickness(2)
+            g:SetColorTexture(1, 1, 1, 1)
+            l.inner[k] = g
+        end
         lines[i] = l
     end
     return l
 end
 
+local function HideLine(l)
+    l:Hide()
+    for _, g in ipairs(l.inner) do g:Hide() end
+end
+
 function ns.ApplyQuestAreaColor() end      -- colours are set per segment in DrawArea
 
 function ns.HideQuestAreas()
-    for i = 1, shownLines do
-        lines[i]:Hide()
-        lines[i].under:Hide()
-        lines[i].glow:Hide()
-    end
+    for i = 1, shownLines do HideLine(lines[i]) end
     shownLines = 0
 end
 
@@ -512,44 +530,68 @@ function ns.HasQuestArea(questID)
     return (a and #a.loops > 0) or (g and #g.loops > 0) or false
 end
 
+local px, py, nx, ny = {}, {}, {}, {}   -- screen points and inward normals of the loop being drawn (reused)
+
 local function DrawArea(a, n, pN, pW, reach, W2, H2)
     local b = a.box
     if not (b[1] < pN + reach and b[2] > pN - reach and b[3] < pW + reach and b[4] > pW - reach) then return n end
     local view, ToScreen = ns.view, ns.ToScreen
+    local c = ns.db().colors.questAreas
+    local er, eg, eb = 0.5 + 0.5 * c.r, 0.5 + 0.5 * c.g, 0.5 + 0.5 * c.b   -- edge: lighter than the glow
     for _, loop in ipairs(a.loops) do
-        local cnt = #loop
-        local x0, y0 = ToScreen(loop[cnt - 1], loop[cnt])
+        -- screen points; zoomed out, segments get shorter than a pixel and WoW drops them: keep >= MIN_SEG
+        local cnt, k = #loop, 0
         for m = 1, cnt, 2 do
-            local x1, y1 = ToScreen(loop[m], loop[m + 1])
-            local dx, dy = x1 - x0, y1 - y0
-            -- zoomed out, segments get shorter than a pixel and WoW drops them: merge until MIN_SEG px long
-            if m >= cnt - 1 or dx * dx + dy * dy >= MIN_SEG * MIN_SEG then
-                -- soft edge: same oval fade as the tile mask (lines do not take mask textures)
+            local x, y = ToScreen(loop[m], loop[m + 1])
+            if k == 0 or (x - px[k]) ^ 2 + (y - py[k]) ^ 2 >= MIN_SEG * MIN_SEG then
+                k = k + 1
+                px[k], py[k] = x, y
+            end
+        end
+        if k >= 3 then
+            local inward = loop.inward
+            if not inward then                      -- areas cached before the side was stored: assume outer loop
+                local area2 = 0
+                for i = 1, k do
+                    local j = i % k + 1
+                    area2 = area2 + px[i] * py[j] - px[j] * py[i]
+                end
+                inward = area2 > 0 and -1 or 1
+            end
+            -- vertex normals (average of the two neighbouring segments), pointing into the area
+            for i = 1, k do
+                local h, j = (i - 2) % k + 1, i % k + 1
+                local ax, ay, bx, by = px[i] - px[h], py[i] - py[h], px[j] - px[i], py[j] - py[i]
+                local la, lb = math.sqrt(ax * ax + ay * ay), math.sqrt(bx * bx + by * by)
+                local vx, vy = ay / la + by / lb, -ax / la - bx / lb
+                local lv = math.sqrt(vx * vx + vy * vy)
+                if lv > 0 then nx[i], ny[i] = inward * vx / lv, inward * vy / lv else nx[i], ny[i] = 0, 0 end
+            end
+            for i = 1, k do
+                local j = i % k + 1
+                local x0, y0, x1, y1 = px[i], py[i], px[j], py[j]
+                local dx, dy = x1 - x0, y1 - y0
+                local len = math.sqrt(dx * dx + dy * dy)
+                -- soft edge of the map: same oval fade as the tile mask (lines do not take mask textures)
                 local mx, my = (x0 + x1) / (2 * W2), (y0 + y1) / (2 * H2)
                 local t = (1 - math.sqrt(mx * mx + my * my)) / 0.38
-                if t > 0 then
+                if t > 0 and len > 0 then
                     t = t >= 1 and 1 or t * t * (3 - 2 * t)
                     n = n + 1
                     local l = GetLine(n)
-                    local len = math.sqrt(dx * dx + dy * dy)
-                    local ex, ey = 0, 0
-                    if len > 0 then ex, ey = dx / len * OVERLAP, dy / len * OVERLAP end
-                    local c = ns.db().colors.questAreas   -- not SetAlpha: it overwrites the vertex alpha
-                    local u, g = l.under, l.glow
-                    u:SetStartPoint("CENTER", view, x0 - ex, y0 - ey)
-                    u:SetEndPoint("CENTER", view, x1 + ex, y1 + ey)
-                    u:SetVertexColor(0, 0, 0, 0.45 * t)
-                    g:SetStartPoint("CENTER", view, x0, y0)
-                    g:SetEndPoint("CENTER", view, x1, y1)
-                    g:SetVertexColor(c.r, c.g, c.b, GLOW_ALPHA * c.a * t)
+                    local ex, ey = dx / len * OVERLAP, dy / len * OVERLAP
                     l:SetStartPoint("CENTER", view, x0 - ex, y0 - ey)
                     l:SetEndPoint("CENTER", view, x1 + ex, y1 + ey)
-                    l:SetVertexColor(0.5 + 0.5 * c.r, 0.5 + 0.5 * c.g, 0.5 + 0.5 * c.b, c.a * t)   -- core: lighter
-                    u:Show()
-                    g:Show()
+                    l:SetVertexColor(er, eg, eb, c.a * t)   -- not SetAlpha: it overwrites the vertex alpha
                     l:Show()
+                    for q, g in ipairs(l.inner) do
+                        local d = INNER[q][1]
+                        g:SetStartPoint("CENTER", view, x0 + nx[i] * d - ex, y0 + ny[i] * d - ey)
+                        g:SetEndPoint("CENTER", view, x1 + nx[j] * d + ex, y1 + ny[j] * d + ey)
+                        g:SetVertexColor(c.r, c.g, c.b, INNER[q][2] * c.a * t)
+                        g:Show()
+                    end
                 end
-                x0, y0 = x1, y1
             end
         end
     end
@@ -570,10 +612,6 @@ function ns.DrawQuestAreas()
             if not (g and #g.loops > 0) then n = DrawArea(a, n, pN, pW, reach, W / 2, H / 2) end
         end
     end
-    for i = n + 1, shownLines do
-        lines[i]:Hide()
-        lines[i].under:Hide()
-        lines[i].glow:Hide()
-    end
+    for i = n + 1, shownLines do HideLine(lines[i]) end
     shownLines = n
 end

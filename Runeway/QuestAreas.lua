@@ -520,7 +520,6 @@ function ns.HasQuestArea(questID)
 end
 
 local px, py, qx, qy, qa = {}, {}, {}, {}, {}   -- reused buffers: screen points, subdivided points, fade
-local colA, colB = CreateColor(1, 1, 1, 1), CreateColor(1, 1, 1, 1)   -- gradient colours (reused)
 
 local function DrawArea(a, n, pN, pW, reach, W2, H2, ew)
     local b = a.box
@@ -567,21 +566,21 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2, ew)
                 local x0, y0, x1, y1 = qx[i], qy[i], qx[j], qy[j]
                 local dx, dy = x1 - x0, y1 - y0
                 local len = math.sqrt(dx * dx + dy * dy)
-                if (qa[i] > 0 or qa[j] > 0) and len > 0 then
+                local t = (qa[i] + qa[j]) / 2
+                if t > 0 and len > 0 then
                     n = n + 1
                     local l = GetLine(n)
-                    local ex, ey = dx / len * ov, dy / len * ov
+                    -- overlap only at full opacity: semi-transparent overlaps show as dots in the fade
+                    local o = t >= 0.999 and ov or 0
+                    local ex, ey = dx / len * o, dy / len * o
                     if l.w ~= ew then
                         l.w = ew
                         l:SetThickness(ew)
                     end
                     l:SetStartPoint("CENTER", view, x0 - ex, y0 - ey)
                     l:SetEndPoint("CENTER", view, x1 + ex, y1 + ey)
-                    -- alpha runs from the start to the end point (lines do not take mask textures), so the fade
-                    -- towards the map edge is continuous instead of stepping per segment
-                    colA:SetRGBA(c.r, c.g, c.b, c.a * qa[i])
-                    colB:SetRGBA(c.r, c.g, c.b, c.a * qa[j])
-                    l:SetGradient("HORIZONTAL", colA, colB)
+                    -- fade per segment (lines do not take mask textures); segments are ~6 px, so the steps are small
+                    l:SetVertexColor(c.r, c.g, c.b, c.a * t)   -- not SetAlpha: it overwrites the vertex alpha
                     l:Show()
                 end
             end

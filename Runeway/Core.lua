@@ -611,18 +611,37 @@ end
 
 -- Key modes via override bindings (no taint: only binding commands, never protected calls)
 local bindOwner = CreateFrame("Frame")
-local bindPending = false
+local bindPending, binding = false, false
+local mapKeys = {}            -- keys taken over from the world map (for /rnw keys)
 local function ApplyBindings()
     if InCombatLockdown() then bindPending = true return end
     bindPending = false
+    binding = true            -- our own changes fire UPDATE_BINDINGS: ignore those
     ClearOverrideBindings(bindOwner)
-    if db.mode ~= "mapkey" then return end
-    local keys = { GetBindingKey("TOGGLEWORLDMAP") }
-    if #keys == 0 then keys = { "M" } end
-    for _, key in ipairs(keys) do
-        if key ~= db.worldMapKey then SetOverrideBinding(bindOwner, false, key, "RUNEWAY_TOGGLE") end
+    wipe(mapKeys)
+    if db.mode == "mapkey" then
+        local keys = { GetBindingKey("TOGGLEWORLDMAP") }
+        if #keys == 0 then keys = { "M" } end
+        -- priority overrides: other addons or the default UI may override the same key as well
+        for _, key in ipairs(keys) do
+            if key ~= db.worldMapKey then
+                SetOverrideBinding(bindOwner, true, key, "RUNEWAY_TOGGLE")
+                mapKeys[#mapKeys + 1] = key
+            end
+        end
+        if db.worldMapKey then SetOverrideBinding(bindOwner, true, db.worldMapKey, "TOGGLEWORLDMAP") end
     end
-    if db.worldMapKey then SetOverrideBinding(bindOwner, false, db.worldMapKey, "TOGGLEWORLDMAP") end
+    binding = false
+end
+
+local function ReportBindings()
+    Print(("mode %s, world map key %s"):format(tostring(db.mode), tostring(db.worldMapKey)))
+    Print("TOGGLEWORLDMAP keys: " .. table.concat({ GetBindingKey("TOGGLEWORLDMAP") }, ", "))
+    local keys = #mapKeys > 0 and mapKeys or { GetBindingKey("TOGGLEWORLDMAP") }
+    for _, key in ipairs(keys) do
+        Print(("%s -> %s (without overrides: %s)"):format(key, tostring(GetBindingAction(key, true)),
+            tostring(GetBindingAction(key, false))))
+    end
 end
 
 ---------------------------------------------------------------------------
@@ -699,6 +718,10 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         self:RegisterEvent("QUEST_LOG_UPDATE")
         self:RegisterEvent("PLAYER_REGEN_DISABLED")
         self:RegisterEvent("PLAYER_REGEN_ENABLED")
+        self:RegisterEvent("UPDATE_BINDINGS")
+    elseif event == "UPDATE_BINDINGS" then
+        -- key bindings (re)loaded or changed by the player: take the map key over again
+        if not binding then ApplyBindings() end
     elseif event == "PLAYER_ENTERING_WORLD" then
         ApplySize()            -- again after WoW's layout restore
         ApplyPos()
@@ -789,6 +812,9 @@ SlashCmdList.RUNEWAY = function(msg)
     elseif cmd == "probe" then
         -- dev tool, not part of the release: add tools/Probe.lua to the .toc to use it
         if Runeway_Probe then Runeway_Probe(arg) else Print("probe is a dev tool (tools/Probe.lua), not loaded") end
+    elseif cmd == "keys" then
+        ApplyBindings()
+        ReportBindings()
     elseif cmd == "pos" then
         local pn, pw, _, inst = UnitPosition("player")
         local mapID = C_Map.GetBestMapForUnit("player")
@@ -799,6 +825,6 @@ SlashCmdList.RUNEWAY = function(msg)
         Print("settings reset")
     else
         Print("/rnw [toggle] | config | lock | unlock | alpha 5-100 | zoom 0.08-5 | size N | rotate | edge 1-5"
-            .. " | mode key|mapkey|permanent | layer NAME | color NAME R G B [A] | pos | reset")
+            .. " | mode key|mapkey|permanent | layer NAME | color NAME R G B [A] | keys | pos | reset")
     end
 end

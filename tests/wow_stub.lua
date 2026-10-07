@@ -99,6 +99,7 @@ BINDINGS = {}
 function GetBindingKey(cmd) if cmd == "TOGGLEWORLDMAP" then return "M" end end
 function SetOverrideBinding(_, _, key, cmd) BINDINGS[key] = cmd end
 function ClearOverrideBindings() wipe(BINDINGS) end
+function GetBindingAction(key, override) return override and BINDINGS[key] or (key == "M" and "TOGGLEWORLDMAP" or "") end
 GameTooltip = obj("GameTooltip")
 function GameTooltip_Hide() end
 ColorPickerFrame = obj("ColorPickerFrame")

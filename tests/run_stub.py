@@ -12,7 +12,7 @@ for f in ('Runeway/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Ru
     L.execute('NS = NS or {}; local f = assert(loadstring(..., "@' + f + '")); f("Runeway", NS)', src)
 
 L.execute('''
-    local function fire(event, arg)
+    function fire(event, arg)
         for _, f in ipairs(FRAMES) do
             local h = f:GetScript("OnEvent")
             if h then h(f, event, arg) end
@@ -119,6 +119,9 @@ L.execute('''
     SlashCmdList.RUNEWAY("mode mapkey")
     check("mapkey: M -> overlay", BINDINGS.M == "RUNEWAY_TOGGLE")
     check("mapkey: SHIFT-M -> world map", BINDINGS["SHIFT-M"] == "TOGGLEWORLDMAP")
+    wipe(BINDINGS); fire("UPDATE_BINDINGS")
+    check("mapkey: re-applied on UPDATE_BINDINGS", BINDINGS.M == "RUNEWAY_TOGGLE")
+    SlashCmdList.RUNEWAY("keys")
     SlashCmdList.RUNEWAY("mode key")
     check("key mode: no override bindings", next(BINDINGS) == nil)
     -- mouse wheel works locked, shift+wheel size only unlocked

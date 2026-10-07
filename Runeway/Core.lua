@@ -12,7 +12,7 @@ local ZOOM_MIN, ZOOM_MAX = 0.08, 5
 local LAYERS = { "fill", "hatch", "shade", "terrain", "water", "roads" }
 local LAYER_CODE = { fill = "f", hatch = "h", shade = "s", terrain = "t", water = "w", roads = "r" }
 local LAYER_LEVEL = { fill = 0, hatch = 1, shade = 2, terrain = 3, water = 4, roads = 5 }   -- texture sublevel
-local STYLE = 5            -- bump when the default look changes (see migration in ADDON_LOADED)
+local STYLE = 6            -- bump when the default look changes (see migration in ADDON_LOADED)
 
 -- One calm colour for all lines (Diablo IV style); quest areas glow blue like the minimap blobs
 local LINE = { 0.82, 0.86, 0.89 }
@@ -26,7 +26,7 @@ local defaults = {
         terrain = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
         water   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
         roads   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.4 },
-        questAreas = { r = 0.45, g = 0.72, b = 1.00, a = 1 },
+        questAreas = { r = 0.45, g = 0.78, b = 1.00, a = 1 },
     },
     layers = { fill = true, hatch = true, shade = true, terrain = true, water = true, roads = true, questAreas = true },
     questAreaCache = {},     -- [mapID] = { areas = {}, groups = {} }, see QuestAreas.lua
@@ -487,7 +487,7 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         if style < 2 then db.colors = nil end                              -- 2: Diablo IV style
         if style < 3 and db.colors then db.colors.questAreas = nil end     -- 3: blue glow quest areas
         if style < 4 and db.colors then db.colors.fill = nil end           -- 4: brown fill
-        if style < 5 and db.colors then db.colors.questAreas = nil end     -- 5: brighter quest areas
+        if style < 6 and db.colors then db.colors.questAreas = nil end     -- 5/6: quest area colour
         db.style = STYLE
         ApplyDefaults(db, defaults)
         canvas:SetAlpha(db.alpha)      -- map layers only; player arrow, quest marks and areas stay opaque

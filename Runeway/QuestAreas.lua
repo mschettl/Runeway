@@ -19,7 +19,7 @@ local SUB_SEG = 6                 -- zoomed in, the outline is subdivided (Catmu
 -- Line textures fade to 0 at their borders: WoW does not anti-alias line quads, the texture does.
 local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
 -- Widths follow the zoom like the terrain lines in the tiles: edge = tile size on screen / EDGE_DIV px
-local EDGE_DIV, EDGE_MIN, EDGE_MAX = 170, 1.5, 6   -- edge line (media/edge.tga: core = half the width)
+local EDGE_DIV, EDGE_MIN, EDGE_MAX = 140, 2, 7     -- edge line (media/edge.tga: core = half the width)
 
 local blobFrame, mapID, corners
 local areas = {}          -- [questID] = { sig = string, loops = { {n1, w1, n2, w2, ...}, ... }, box = {n0, n1, w0, w1},
@@ -519,15 +519,21 @@ function ns.HasQuestArea(questID)
     return (a and #a.loops > 0) or (g and #g.loops > 0) or false
 end
 
-local px, py, qx, qy = {}, {}, {}, {}   -- reused buffers: screen points, subdivided points
+local px, py, qx, qy, qa = {}, {}, {}, {}, {}   -- reused buffers: screen points, subdivided points, fade
+local colA, colB = CreateColor(1, 1, 1, 1), CreateColor(1, 1, 1, 1)   -- gradient colours (reused)
 
 local function DrawArea(a, n, pN, pW, reach, W2, H2, ew)
     local b = a.box
     if not (b[1] < pN + reach and b[2] > pN - reach and b[3] < pW + reach and b[4] > pW - reach) then return n end
     local view, ToScreen = ns.view, ns.ToScreen
     local c = ns.db().colors.questAreas
-    local er, eg, eb = 0.5 + 0.5 * c.r, 0.5 + 0.5 * c.g, 0.5 + 0.5 * c.b   -- edge: lighter than the glow
-    local ov = ew / 2                    -- segments overlap by half a width (no notches at the joints)
+    local ov = math.min(1, ew / 2)       -- 1 px overlap closes the joints; more would show in the fade
+    local function fade(x, y)            -- soft edge of the map: same oval fade as the tile mask
+        local mx, my = x / W2, y / H2
+        local t = (1 - math.sqrt(mx * mx + my * my)) / 0.38
+        if t <= 0 then return 0 end
+        return t >= 1 and 1 or t * t * (3 - 2 * t)
+    end
     for _, loop in ipairs(a.loops) do
         -- screen points, at least MIN_SEG apart (zoomed out)
         local cnt, k = #loop, 0
@@ -555,16 +561,13 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2, ew)
                     qy[q] = w0 * py[h] + w1 * py[i] + w2 * py[j] + w3 * py[l]
                 end
             end
+            for i = 1, q do qa[i] = fade(qx[i], qy[i]) end
             for i = 1, q do
                 local j = i % q + 1
                 local x0, y0, x1, y1 = qx[i], qy[i], qx[j], qy[j]
                 local dx, dy = x1 - x0, y1 - y0
                 local len = math.sqrt(dx * dx + dy * dy)
-                -- soft edge of the map: same oval fade as the tile mask (lines do not take mask textures)
-                local mx, my = (x0 + x1) / (2 * W2), (y0 + y1) / (2 * H2)
-                local t = (1 - math.sqrt(mx * mx + my * my)) / 0.38
-                if t > 0 and len > 0 then
-                    t = t >= 1 and 1 or t * t * (3 - 2 * t)
+                if (qa[i] > 0 or qa[j] > 0) and len > 0 then
                     n = n + 1
                     local l = GetLine(n)
                     local ex, ey = dx / len * ov, dy / len * ov
@@ -574,7 +577,11 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2, ew)
                     end
                     l:SetStartPoint("CENTER", view, x0 - ex, y0 - ey)
                     l:SetEndPoint("CENTER", view, x1 + ex, y1 + ey)
-                    l:SetVertexColor(er, eg, eb, c.a * t)   -- not SetAlpha: it overwrites the vertex alpha
+                    -- alpha runs from the start to the end point (lines do not take mask textures), so the fade
+                    -- towards the map edge is continuous instead of stepping per segment
+                    colA:SetRGBA(c.r, c.g, c.b, c.a * qa[i])
+                    colB:SetRGBA(c.r, c.g, c.b, c.a * qa[j])
+                    l:SetGradient("HORIZONTAL", colA, colB)
                     l:Show()
                 end
             end

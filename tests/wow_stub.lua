@@ -54,6 +54,9 @@ UIParent = obj("UIParent")
 WorldMapFrame = obj("WorldMapFrame")
 FRAMES = {}
 function CreateFrame(_, name) local f = obj("Frame"); FRAMES[#FRAMES + 1] = f; if name then _G[name] = f end; return f end
+function CreateColor(r, g, b, a)
+    return { r = r, g = g, b = b, a = a, SetRGBA = function(self, r2, g2, b2, a2) self.r, self.g, self.b, self.a = r2, g2, b2, a2 end }
+end
 function wipe(t) for k in pairs(t) do t[k] = nil end return t end
 function print(...) io.write(table.concat({ ... }, " "), "\n") end
 SlashCmdList = {}

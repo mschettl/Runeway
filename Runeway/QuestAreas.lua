@@ -528,9 +528,10 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2, ew)
     local view, ToScreen = ns.view, ns.ToScreen
     local c = ns.db().colors.questAreas
     local ov = math.min(1, ew / 2)       -- 1 px overlap closes the joints; more would show in the fade
+    local fw = ns.FadeWidth()
     local function fade(x, y)            -- soft edge of the map: same oval fade as the tile mask
         local mx, my = x / W2, y / H2
-        local t = (1 - math.sqrt(mx * mx + my * my)) / 0.38
+        local t = (1 - math.sqrt(mx * mx + my * my)) / fw
         if t <= 0 then return 0 end
         return t >= 1 and 1 or t * t * (3 - 2 * t)
     end
@@ -597,6 +598,7 @@ function ns.DrawQuestAreas()
         local W, H = ns.view:GetSize()
         local reach = math.sqrt(W * W + H * H) / 2 / k
         local ew = math.min(EDGE_MAX, math.max(EDGE_MIN, (1600 / 3) * k / EDGE_DIV))   -- edge width follows the zoom
+            * ns.db().questEdge
         for _, g in pairs(groups) do
             if #g.loops > 0 then n = DrawArea(g, n, pN, pW, reach, W / 2, H / 2, ew) end
         end

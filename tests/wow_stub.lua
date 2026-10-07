@@ -20,6 +20,14 @@ local function obj(name)
         if k == "SetVertexColor" then return function(self, r, g, b, a) self._color = { r, g, b, a } end end
         if k == "GetSize" then return function() return 700, 450 end end
         if k == "GetCenter" then return function() return 500, 400 end end
+        if k == "GetLeft" then return function() return 150 end end
+        if k == "GetTop" then return function() return 750 end end
+        if k == "GetEffectiveScale" then return function() return 1 end end
+        if k == "GetChecked" then return function(self) return rawget(self, "_checked") end end
+        if k == "SetChecked" then return function(self, v) self._checked = v end end
+        if k == "SetValue" then return function(self, v) self._value = v end end
+        if k == "SetText" then return function(self, v) self._text = v end end
+        if k == "Text" or k == "Low" or k == "High" then local c = obj(k); rawset(t, k, c); return c end
         if k == "GetFrameLevel" then return function() return 1 end end
         if k == "DrawNone" then return function() DRAWN = {} end end
         if k == "DrawBlob" then return function(self, q) DRAWN[q] = true end end
@@ -55,7 +63,15 @@ WorldMapFrame = obj("WorldMapFrame")
 FRAMES = {}
 function CreateFrame(_, name) local f = obj("Frame"); FRAMES[#FRAMES + 1] = f; if name then _G[name] = f end; return f end
 function CreateColor(r, g, b, a)
-    return { r = r, g = g, b = b, a = a, SetRGBA = function(self, r2, g2, b2, a2) self.r, self.g, self.b, self.a = r2, g2, b2, a2 end }
+    return { r = r, g = g, b = b, a = a, SetRGBA = function(self, r2, g2, b2, a2) self.r, self.g, self.b, self.a = r2, g2, b2, a2 end,
+             GetRGB = function(self) return self.r, self.g, self.b end,
+             GenerateHexColor = function(self)
+                 return ("ff%02x%02x%02x"):format(self.r * 255 + 0.5, self.g * 255 + 0.5, self.b * 255 + 0.5)
+             end }
+end
+function CreateColorFromHexString(h)
+    local r, g, b = h:match("^%x%x(%x%x)(%x%x)(%x%x)$")
+    return CreateColor(tonumber(r, 16) / 255, tonumber(g, 16) / 255, tonumber(b, 16) / 255, 1)
 end
 function wipe(t) for k in pairs(t) do t[k] = nil end return t end
 function print(...) io.write(table.concat({ ... }, " "), "\n") end
@@ -74,3 +90,59 @@ C_QuestLog = { GetQuestsOnMap = function() return { { questID = 4242, x = 0.4, y
 function CreateVector2D(x, y) return { x = x, y = y } end
 C_Map.GetWorldPosFromMapPos = function(_, v) return 0, { x = 3000 - v.y * 4000, y = 2000 - v.x * 6000 } end
 function date() return "2026-10-07" end
+-- 3.4: visibility, bindings, settings
+function GetTime() return clock end
+STATE = { combat = false, instance = false, mounted = false, resting = false }
+function UnitAffectingCombat() return STATE.combat end
+function IsInInstance() return STATE.instance, STATE.instance and "party" or "none" end
+function IsMounted() return STATE.mounted end
+function IsFlying() return false end
+function UnitOnTaxi() return false end
+function IsResting() return STATE.resting end
+function IsAltKeyDown() return false end
+function IsControlKeyDown() return false end
+CURSOR = { 700, 300 }
+function GetCursorPosition() return CURSOR[1], CURSOR[2] end
+BINDINGS = {}
+function GetBindingKey(cmd) return ({ TOGGLEWORLDMAP = "M", RUNEWAY_WORLDMAP = "SHIFT-M" })[cmd] end
+function GetNumBindings() return 2 end
+function GetBinding(i) return ({ "RUNEWAY_TOGGLE", "RUNEWAY_WORLDMAP" })[i] end
+function SetOverrideBinding(_, _, key, cmd) BINDINGS[key] = cmd end
+function ClearOverrideBindings() wipe(BINDINGS) end
+function GetBindingAction(key, override) return override and BINDINGS[key] or (key == "M" and "TOGGLEWORLDMAP" or "") end
+GameTooltip = obj("GameTooltip")
+function GameTooltip_Hide() end
+ColorPickerFrame = obj("ColorPickerFrame")
+function ColorPickerFrame:SetupColorPickerAndShow(info) self.info = info end
+function ColorPickerFrame:GetColorRGB() return 0.1, 0.2, 0.3 end
+-- Settings API: proxy settings by variable name, rows as plain initializer tables
+SETTINGS, INITS = {}, {}
+local function Layout() return { AddInitializer = function(_, i) INITS[#INITS + 1] = i end } end
+local function Row(kind) return function(_, setting, options) INITS[#INITS + 1] = { kind = kind, setting = setting,
+    options = type(options) == "function" and options() or options } end end
+Settings = {
+    VarType = { Boolean = "boolean", Number = "number", String = "string" },
+    RegisterVerticalLayoutCategory = function() return { GetID = function() return 77 end }, Layout() end,
+    RegisterVerticalLayoutSubcategory = function() return {}, Layout() end,
+    RegisterProxySetting = function(_, var, varType, name, default, get, set)
+        assert(type(default) == varType, var .. ": default must be " .. varType)
+        local st = { variable = var, default = default, GetValue = function() return get() end,
+                     SetValue = function(_, v) set(v) end }
+        SETTINGS[var] = st
+        return st
+    end,
+    CreateCheckbox = Row("checkbox"), CreateSlider = Row("slider"), CreateDropdown = Row("dropdown"),
+    CreateColorSwatch = Row("color"),
+    CreateSliderOptions = function(min, max) return { min = min, max = max, SetLabelFormatter = function(o, _, f) o.fmt = f end } end,
+    CreateControlTextContainer = function()
+        local d = {}
+        return { Add = function(_, v, label) d[#d + 1] = { value = v, label = label } end, GetData = function() return d end }
+    end,
+    RegisterAddOnCategory = function() end,
+    OpenToCategory = function(id) OPENED = id end,
+}
+MinimalSliderWithSteppersMixin = { Label = { Right = 1 } }
+function CreateSettingsListSectionHeaderInitializer(name) return { kind = "header", name = name } end
+function CreateSettingsButtonInitializer(name, text, click) return { kind = "button", click = click } end
+function CreateSettingsCheckboxSliderInitializer(cb, _, _, slider, options) return { kind = "checkslider", setting = cb, slider = slider, options = options } end
+function CreateKeybindingEntryInitializer(i) return { kind = "binding", action = GetBinding(i) } end

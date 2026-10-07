@@ -7,20 +7,21 @@ from lupa import lua51       # WoW runs Lua 5.1
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 L = lua51.LuaRuntime(unpack_returned_tuples=True)
 L.execute(open(os.path.join(ROOT, 'tests', 'wow_stub.lua')).read())
-for f in ('Runeway/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'tools/Probe.lua'):
+for f in ('Runeway/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
     src = open(os.path.join(ROOT, f), encoding='utf8').read()
     L.execute('NS = NS or {}; local f = assert(loadstring(..., "@' + f + '")); f("Runeway", NS)', src)
 
 L.execute('''
-    local function fire(event, arg)
+    function fire(event, arg)
         for _, f in ipairs(FRAMES) do
             local h = f:GetScript("OnEvent")
             if h then h(f, event, arg) end
         end
     end
     fire("ADDON_LOADED", "Runeway")
+    fire("PLAYER_LOGIN")
     fire("PLAYER_ENTERING_WORLD")
-    RunewayFrame:Show()
+    SlashCmdList.RUNEWAY("toggle")
     local upd = RunewayFrame:GetScript("OnUpdate")
     upd(RunewayFrame, 0.05)
     print("textures after first frame:", #TEXTURES)
@@ -89,6 +90,86 @@ L.execute('''
     print("coarse rows:")
     for _, r in ipairs(p.coarse.rows) do print("  " .. r) end
     print("fine grid", p.fine.nx, p.fine.ny, "hits", p.fine.hits)
+''')
+
+# 3.4: window handling, visibility modes, auto-hide, key modes, options panel
+L.execute('''
+    local view, db = RunewayFrame, RunewayDB
+    local poll = NS.view and nil
+    local function tick() for _, f in ipairs(FRAMES) do local h = f:GetScript("OnUpdate") if h and f ~= view then h(f, 0.3) end end end
+    local function check(label, ok) print(("%-44s %s"):format(label, ok and "ok" or "FAIL")) end
+    -- toggle and auto-hide
+    db.shown = false; tick()
+    SlashCmdList.RUNEWAY("toggle"); tick()
+    check("toggle shows", view:IsShown())
+    db.autoHide.combat = true; STATE.combat = true; tick()
+    check("auto-hide in combat", not view:IsShown())
+    SlashCmdList.RUNEWAY("toggle"); tick()
+    check("toggle overrides auto-hide", view:IsShown())
+    STATE.combat = false; tick()
+    check("after combat: shown (db.shown)", view:IsShown())
+    db.autoHide.mounted = true; STATE.mounted = true; tick()
+    check("auto-hide mounted", not view:IsShown())
+    STATE.mounted = false; db.autoHide.combat = false; db.autoHide.mounted = false; tick()
+    SlashCmdList.RUNEWAY("toggle"); tick()
+    check("toggle hides", not view:IsShown())
+    SlashCmdList.RUNEWAY("mode permanent"); tick()
+    check("permanent shows", view:IsShown())
+    -- key modes
+    SlashCmdList.RUNEWAY("mode mapkey")
+    check("mapkey: M -> overlay", BINDINGS.M == "RUNEWAY_TOGGLE")
+    check("mapkey: SHIFT-M -> world map", BINDINGS["SHIFT-M"] == "TOGGLEWORLDMAP")
+    wipe(BINDINGS); fire("UPDATE_BINDINGS")
+    check("mapkey: re-applied on UPDATE_BINDINGS", BINDINGS.M == "RUNEWAY_TOGGLE")
+    SlashCmdList.RUNEWAY("keys")
+    SlashCmdList.RUNEWAY("mode key")
+    check("key mode: no override bindings", next(BINDINGS) == nil)
+    -- mouse wheel works locked, shift+wheel size only unlocked
+    SlashCmdList.RUNEWAY("lock")
+    local z = db.zoom
+    view:GetScript("OnMouseWheel")(view, 1)
+    check("locked: wheel zooms", db.zoom > z)
+    IsShiftKeyDown = function() return true end
+    local w = db.w
+    view:GetScript("OnMouseWheel")(view, 1)
+    check("locked: shift+wheel keeps size", db.w == w)
+    SlashCmdList.RUNEWAY("unlock")
+    view:GetScript("OnMouseWheel")(view, 1)
+    check("unlocked: shift+wheel sizes", db.w == w + 30)
+    IsShiftKeyDown = function() return false end
+    -- resize grip: left 150, top 750, cursor 700/300 -> 550 x 450 -> square 550
+    local grip
+    for _, f in ipairs(FRAMES) do if f:GetScript("OnMouseDown") then grip = f end end
+    grip:GetScript("OnMouseDown")(grip)
+    grip:GetScript("OnUpdate")(grip, 0.1)
+    grip:GetScript("OnMouseUp")(grip)
+    check("grip sizes square (550)", db.w == 550)
+    CURSOR[1] = 5000
+    grip:GetScript("OnMouseDown")(grip); grip:GetScript("OnUpdate")(grip, 0.1); grip:GetScript("OnMouseUp")(grip)
+    check("grip clamps to 1400", db.w == 1400)
+    -- options panel
+    SlashCmdList.RUNEWAY("config")
+    check("/rnw config opens category", OPENED == 77)
+    local kinds = {}
+    for _, i in ipairs(INITS) do kinds[i.kind] = (kinds[i.kind] or 0) + 1 end
+    check("settings rows: 5 headers, 2 bindings, 7 layers",
+        kinds.header == 5 and kinds.binding == 2 and kinds.checkslider == 7 and kinds.color == 7)
+    check("mode dropdown has 3 entries", #INITS[2].options == 3)
+    for var, st in pairs(SETTINGS) do
+        if st:GetValue() == nil then check("setting reads a value: " .. var, false) end
+    end
+    SETTINGS.RUNEWAY_EDGE:SetValue(5)
+    check("edge 5 -> fade5.tga", TEXTURES[#TEXTURES]:find("fade5.tga") ~= nil)
+    SETTINGS.RUNEWAY_COLOR_FILL:SetValue("ff1a334d")
+    check("colour swatch sets fill", math.abs(db.colors.fill.r - 0.1) < 0.01 and math.abs(db.colors.fill.b - 0.3) < 0.01)
+    check("colour swatch reads hex", SETTINGS.RUNEWAY_COLOR_FILL:GetValue() == "ff1a334d")
+    SETTINGS.RUNEWAY_OPACITY_ROADS:SetValue(0.5)
+    SETTINGS.RUNEWAY_AUTOHIDE_COMBAT:SetValue(true)
+    check("opacity and auto-hide write the db", db.colors.roads.a == 0.5 and db.autoHide.combat == true)
+    for _, st in pairs(SETTINGS) do st:SetValue(st.default) end
+    check("defaults restored", db.edge == 3 and db.w == 600 and db.mode == "key" and db.colors.roads.a == 0.4
+        and math.abs(db.colors.fill.r - 0.8) < 0.01)
+    view:GetScript("OnUpdate")(view, 0.05)
 ''')
 
 # every referenced texture file must exist

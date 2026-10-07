@@ -12,10 +12,12 @@ local FINE_WINDOW = 0.06          -- fine window around the quest pin if the coa
 local BUDGET_MS = 3                -- sampling time per frame in milliseconds
 local SIMPLIFY = 0.35             -- outline simplification tolerance in fine cells
 local WARMUP_MAP, WARMUP_QUEST = 1.0, 0.2   -- seconds before sampling (first draw after SetMapID is slow)
-local MIN_SEG = 6                 -- minimum drawn segment length in screen pixels
-local OVERLAP = 4                 -- px each segment is extended at both ends: closes the gaps at the joints
-local THICKNESS = 16            -- glow line: bright core + soft halo (media/glow.tga)
-local UNDER = 12                -- dark underlay line
+local MIN_SEG = 5                 -- minimum drawn segment length in screen pixels
+local OVERLAP = 1                 -- px the solid lines are extended at both ends: closes the gaps at the joints
+-- Outline = dark solid underlay + faint additive glow + bright solid core. Thick soft lines show every
+-- segment joint; solid thin ones hide them, so the glow is kept weak.
+local CORE, UNDER, THICKNESS = 2.5, 6, 10
+local GLOW_ALPHA = 0.35
 local GLOW = "Interface\\AddOns\\Runeway\\media\\glow.tga"
 
 local blobFrame, mapID, corners
@@ -477,31 +479,29 @@ lineParent:SetClipsChildren(true)       -- hard edge if lines do not take the fa
 local function GetLine(i)
     local l = lines[i]
     if not l then
-        -- dark soft underlay for contrast on bright ground, glow line on top
         local u = lineParent:CreateLine(nil, "ARTWORK", nil, 0)
         u:SetThickness(UNDER)
-        u:SetTexture(GLOW)
-        u:SetVertexColor(0, 0, 0, 0.5)
-        l = lineParent:CreateLine(nil, "ARTWORK", nil, 1)
-        l:SetThickness(THICKNESS)
-        l:SetTexture(GLOW)
-        local c = ns.db().colors.questAreas
-        l:SetVertexColor(c.r, c.g, c.b, c.a)
-        l.under = u
+        u:SetColorTexture(1, 1, 1, 1)
+        local g = lineParent:CreateLine(nil, "ARTWORK", nil, 1)
+        g:SetThickness(THICKNESS)
+        g:SetTexture(GLOW)
+        g:SetBlendMode("ADD")
+        l = lineParent:CreateLine(nil, "ARTWORK", nil, 2)
+        l:SetThickness(CORE)
+        l:SetColorTexture(1, 1, 1, 1)
+        l.under, l.glow = u, g
         lines[i] = l
     end
     return l
 end
 
-function ns.ApplyQuestAreaColor()
-    local c = ns.db().colors.questAreas
-    for _, l in ipairs(lines) do l:SetVertexColor(c.r, c.g, c.b, c.a) end
-end
+function ns.ApplyQuestAreaColor() end      -- colours are set per segment in DrawArea
 
 function ns.HideQuestAreas()
     for i = 1, shownLines do
         lines[i]:Hide()
         lines[i].under:Hide()
+        lines[i].glow:Hide()
     end
     shownLines = 0
 end
@@ -531,20 +531,23 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2)
                     t = t >= 1 and 1 or t * t * (3 - 2 * t)
                     n = n + 1
                     local l = GetLine(n)
-                    -- butt-ended segments leave a wedge at each bend: extend them a little into each other
                     local len = math.sqrt(dx * dx + dy * dy)
                     local ex, ey = 0, 0
                     if len > 0 then ex, ey = dx / len * OVERLAP, dy / len * OVERLAP end
-                    l:SetStartPoint("CENTER", view, x0 - ex, y0 - ey)
-                    l:SetEndPoint("CENTER", view, x1 + ex, y1 + ey)
-                    local c = ns.db().colors.questAreas
-                    l:SetVertexColor(c.r, c.g, c.b, c.a * t)   -- not SetAlpha: it overwrites the vertex alpha
-                    l:Show()
-                    local u = l.under
+                    local c = ns.db().colors.questAreas   -- not SetAlpha: it overwrites the vertex alpha
+                    local u, g = l.under, l.glow
                     u:SetStartPoint("CENTER", view, x0 - ex, y0 - ey)
                     u:SetEndPoint("CENTER", view, x1 + ex, y1 + ey)
-                    u:SetVertexColor(0, 0, 0, 0.5 * t)
+                    u:SetVertexColor(0, 0, 0, 0.45 * t)
+                    g:SetStartPoint("CENTER", view, x0, y0)
+                    g:SetEndPoint("CENTER", view, x1, y1)
+                    g:SetVertexColor(c.r, c.g, c.b, GLOW_ALPHA * c.a * t)
+                    l:SetStartPoint("CENTER", view, x0 - ex, y0 - ey)
+                    l:SetEndPoint("CENTER", view, x1 + ex, y1 + ey)
+                    l:SetVertexColor(0.5 + 0.5 * c.r, 0.5 + 0.5 * c.g, 0.5 + 0.5 * c.b, c.a * t)   -- core: lighter
                     u:Show()
+                    g:Show()
+                    l:Show()
                 end
                 x0, y0 = x1, y1
             end
@@ -570,6 +573,7 @@ function ns.DrawQuestAreas()
     for i = n + 1, shownLines do
         lines[i]:Hide()
         lines[i].under:Hide()
+        lines[i].glow:Hide()
     end
     shownLines = n
 end

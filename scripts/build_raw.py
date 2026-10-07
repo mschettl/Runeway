@@ -27,7 +27,12 @@ LISTFILE_URL = 'https://github.com/wowdev/wow-listfile/releases/latest/download/
 P = 512                    # pixels per ADT tile (~1.04 yd/px)
 LODS = (512, 256, 128)     # zoom levels written per layer
 LAYERS = ('fill', 'hatch', 'shade', 'terrain', 'water', 'roads')
-HATCH = {512: 9, 256: 6, 128: 4}   # hatch line spacing in pixels per zoom level
+# Zoom levels stored per layer (file size). Soft area layers need little resolution; the addon draws a
+# missing level with the nearest stored one. hatch = mask of the not walkable area: the hatch lines come
+# from one shared pattern per zoom level (media/hatch<lod>.tga), cut out by this mask at runtime.
+FILE_LODS = dict(fill=(128,), hatch=(256,), shade=(256, 128))
+HATCH = {512: 57, 256: 43, 128: 32}   # hatch lines per tile and zoom level (spacing ~9 / 6 / 4 px)
+MEDIA = os.path.join(ROOT, 'Runeway', 'media')
 MAX_SLOPE = 50             # degrees; steeper terrain counts as not walkable
 MIN_BLOCK = 1500           # px; smaller steep patches are ignored (single rocks, bumps)
 BLOCK_CLOSE = 15           # px; merges rugged cliffs into one solid block
@@ -200,15 +205,13 @@ def line_layers(L, keep):
 
 # --- output -----------------------------------------------------------------
 
-def hatch(mask, size, c, r):
-    """Diagonal hatch lines inside mask, spacing per zoom level, continuous across tiles (global pixel grid)."""
-    m = cv2.resize(mask, (size, size), interpolation=cv2.INTER_AREA).astype(np.float32) / 255
-    sp = HATCH[size]
+def hatch_pattern(size):
+    """Diagonal hatch lines, a whole number per tile, so the pattern is continuous across tiles."""
+    sp = size / HATCH[size]
     y, x = np.mgrid[0:size, 0:size]
-    t = (c * size + x + r * size + y) % sp                    # lines run bottom left -> top right
+    t = (x + y + 0.5) % sp                                    # lines run bottom left -> top right
     d = np.minimum(t, sp - t) / np.sqrt(2)                    # distance to the nearest line in pixels
-    line = np.clip(1.2 - d, 0, 1)
-    return (line * m * 255).astype(np.uint8)
+    return (np.clip(1.2 - d, 0, 1) * 255).astype(np.uint8)
 
 
 def downscale(a, size, lines=True):
@@ -234,6 +237,8 @@ def write_tiles(layers, cols, rows, tiles):
     shutil.rmtree(OUT, ignore_errors=True)
     for s in LODS:
         os.makedirs(OUT if s == P else os.path.join(OUT, str(s)), exist_ok=True)
+    for s in LODS:
+        save_tga(hatch_pattern(s), os.path.join(MEDIA, f'hatch{s}.tga'))
     written = {}
     for c, r in sorted(tiles):
         ys = slice((r - rows[0]) * P, (r - rows[0] + 1) * P)
@@ -246,11 +251,9 @@ def write_tiles(layers, cols, rows, tiles):
             if blk.max() < 8:
                 continue
             have += n[0]
-            for s in LODS:
+            for s in FILE_LODS.get(n, LODS):
                 d = OUT if s == P else os.path.join(OUT, str(s))
-                if n == 'hatch':
-                    img = hatch(blk, s, c, r)
-                elif area:
+                if area:
                     img = downscale(blk, s, False)
                 else:                                      # lines: drawn at this zoom level
                     img = np.ascontiguousarray(layers[s][n][(r - rows[0]) * s:(r - rows[0] + 1) * s,
@@ -277,9 +280,8 @@ def compose(layers, base=None):
     """Tints the white layers like the addon does at runtime (BGR output). Hatch uses the 512 pattern."""
     H, W = layers['terrain'].shape
     out = np.full((H, W, 3), 30, np.float32) if base is None else base.astype(np.float32)
-    y, x = np.mgrid[0:H, 0:W]
-    t = (x + y) % HATCH[512]
-    hatch_full = (np.clip(1.2 - np.minimum(t, HATCH[512] - t) / np.sqrt(2), 0, 1) * layers['blocked']).astype(np.float32)
+    pat = hatch_pattern(P).astype(np.float32) / 255
+    hatch_full = np.tile(pat, (H // P, W // P)) * layers['blocked'].astype(np.float32)
     for n in LAYERS:
         a = (hatch_full if n == 'hatch' else layers[n].astype(np.float32))[..., None] / 255.0 * COLORS[n][3]
         out = out * (1 - a) + np.array(COLORS[n][2::-1], np.float32) * 255 * a

@@ -59,8 +59,8 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 | `QuestAreas.lua` | Questbereiche: Abtasten, Umriss, Zeichnen |
 | `Tiles.lua` | generiert: vorhandene Kacheln und Ebenen je Kachel, z. B. `["31_28"] = "fhstwr"` |
 | `Bindings.xml` | Tastenbelegung `RUNEWAY_TOGGLE` |
-| `media/` | `fade1.tga`–`fade5.tga` (runde Ausblendmasken je Randstärke, erzeugt mit `scripts/make_masks.py`), `arrow.tga` (Spielerpfeil), `edge.tga` (kantengeglättete Linientextur), `dot.tga` (Rückfall-Symbol) |
-| `tiles/0/[256/ \| 128/]<c>_<r>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Tirisfal: 42 Kacheln, ~22 MB; Etappe 1 (5 Zonen): 104 Kacheln, ~69 MB |
+| `media/` | `hatch512/256/128.tga` (gemeinsames Schraffurmuster je Zoomstufe, erzeugt von `build_raw.py`), `fade1.tga`–`fade5.tga` (runde Ausblendmasken je Randstärke, erzeugt mit `scripts/make_masks.py`), `arrow.tga` (Spielerpfeil), `edge.tga` (kantengeglättete Linientextur), `dot.tga` (Rückfall-Symbol) |
+| `tiles/0/[256/ \| 128/]<c>_<r>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Speicherbedarf siehe „Dateigröße“ unten |
 
 `tools/Probe.lua` ist ein Entwicklungswerkzeug und nicht im Release (siehe Abschnitt 6).
 
@@ -68,6 +68,11 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 `fill` (f, begehbar) → `hatch` (h, Schraffur nicht begehbar) → `shade` (s, dunkler Saum) → `terrain` (t) → `water` (w) → `roads` (r). Darüber `questAreas` (Linien aus `QuestAreas.lua`), Questmarker und Spielerpfeil.
 
 Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
+
+### Dateigröße (1.2)
+- **Gespeicherte Zoomstufen je Ebene** (`FILE_LODS` in `build_raw.py`, `FILE_LOD` in `Core.lua`): Linien (`terrain`, `water`, `roads`) in 512/256/128, `shade` in 256/128 (die 512-Stufe nutzt 256), `fill` nur in 128. Fallen zwei Zoomstufen auf dieselbe Datei, wird nicht überblendet.
+- **Schraffur:** Die Kachel `256/<c>_<r>_hatch.tga` ist nur noch die Maske der nicht begehbaren Fläche. Die Linien kommen aus `media/hatch<lod>.tga` (ganze Zahl Linien pro Kachel: 57 / 43 / 32, daher über Kachelgrenzen fortlaufend). Die Maske ist eine `MaskTexture`, die wie die Kachel platziert und gedreht wird; jede Schraffur-Textur hat damit zwei Masken (Randausblendung + Fläche). Ohne Masken-Unterstützung entfällt die Schraffur.
+- **Ergebnis:** 5 Zonen 17,3 MB Kacheln + 0,8 MB Muster (vorher 68,5 MB, also −75 %). Hochrechnung: Östliche Königreiche ≈ 70 MB, beide Kontinente ≈ 140 MB. Im Spiel belegen nur die Kacheln im Sichtfeld Speicher (Freigabe nach ~20 s), unabhängig von der Zahl der Zonen.
 
 ### Standardwerte (`RunewayDB`)
 | Schlüssel | Standard |
@@ -269,7 +274,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 
 **Risiken / offene Fragen:**
 - **Speicher beim Bauen:** Das Mosaik hat 512 px pro Kachel und mehrere Ebenen. Für viele Zonen auf einmal wird das groß (ganze Östliche Königreiche ≈ mehrere GB RAM). Bei Bedarf `build_raw.py` regional mit Überlappungsrand bauen lassen.
-- **Addon-Größe:** Tirisfal sind ~22 MB, alle Östlichen Königreiche grob 300–500 MB. Größe je Etappe messen (Ausgabe von `build_raw.py`). Sparmöglichkeiten: Schraffur über offenem Meer auf einen Küstenstreifen begrenzen, Fläche und Schraffur nicht in 512 px speichern.
+- **Addon-Größe:** seit 1.2 optimiert (Abschnitt 3, „Dateigröße“), Hochrechnung ≈ 70 MB für die Östlichen Königreiche. Größe je Etappe messen (Ausgabe von `build_raw.py`). Falls zwei Masken pro Textur im Spiel nicht funktionieren: Schraffur wieder als Bild in 256 px (≈ +10 MB für 5 Zonen).
 - **`Tiles.lua`:** wird bei jedem Lauf komplett neu geschrieben; Kacheln nicht mehr gebauter Zonen bleiben sonst als Dateien liegen (vor einem Lauf `Runeway/tiles/0` leeren).
 - **Städte:** Undercity bzw. Ruinen von Lordaeron bleiben über `structures.py` erhalten. Andere Städte (z. B. Ironforge, Stormwind) brauchen eigene WMO-Exporte, siehe unten „Weitere Städte“.
 
@@ -315,9 +320,10 @@ cd <repo> && zip -r build/Runeway-1.2.zip Runeway
 1. **Neue Zonen:** Silverpine, Western Plaguelands, Hillsbrad, Alterac ablaufen: Begehbarkeit, Wasser, Wege, Küste plausibel? Auffällige Stellen mit `/rnw pos` und Screenshot melden.
 2. **Zonengrenzen:** Übergang Tirisfal ↔ Silverpine und Tirisfal ↔ Western Plaguelands ohne Kante, Lücke oder Flackern, in allen Zoomstufen. Außenrand (z. B. Richtung Eastern Plaguelands) blendet weich aus.
 3. **Ladezeit:** spürbare Ruckler beim Zoomen oder an Zonengrenzen?
-4. **Questbereiche Nachbarzone:** In Tirisfal nahe der Grenze eine Quest aus Silverpine im Log haben: Ihr Bereich erscheint (nach etwa 1 s), auch wenn man noch in Tirisfal steht. Beim Herauszoomen kommen weitere Zonen hinzu.
-5. **Questmarker Nachbarzone:** Abgabe-Marker einer Quest der Nachbarzone erscheint, ohne doppelt zu sein.
-6. **Grenzüberschreitender Bereich:** Ein Bereich über die Zonengrenze wird nicht an der Grenze abgeschnitten und nicht doppelt gezeichnet.
+4. **Schraffur (neu als Muster + Maske):** nur auf nicht begehbaren Flächen, beim Drehen deckungsgleich mit den Geländelinien, weicher Rand zum Kartenrand wie bisher, keine Nähte zwischen Kacheln, Zoomstufen-Wechsel ohne Springen.
+5. **Questbereiche Nachbarzone:** In Tirisfal nahe der Grenze eine Quest aus Silverpine im Log haben: Ihr Bereich erscheint (nach etwa 1 s), auch wenn man noch in Tirisfal steht. Beim Herauszoomen kommen weitere Zonen hinzu.
+6. **Questmarker Nachbarzone:** Abgabe-Marker einer Quest der Nachbarzone erscheint, ohne doppelt zu sein.
+7. **Grenzüberschreitender Bereich:** Ein Bereich über die Zonengrenze wird nicht an der Grenze abgeschnitten und nicht doppelt gezeichnet.
 
 **Testliste 1.1 (Punkt 3.4, alle Punkte im Spiel bestanden):**
 1. **Optionen:** Optionen → AddOns → Runeway und `/rnw config` öffnen die Seite. Alle Regler, Häkchen und Farbfelder wirken sofort. „Standard“ setzt die jeweilige Seite zurück.

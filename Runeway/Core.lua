@@ -15,6 +15,11 @@ local FADE_WIDTH = { 0.12, 0.25, 0.38, 0.55, 0.75 }
 local LAYERS = { "fill", "hatch", "shade", "terrain", "water", "roads" }
 local LAYER_CODE = { fill = "f", hatch = "h", shade = "s", terrain = "t", water = "w", roads = "r" }
 local LAYER_LEVEL = { fill = 0, hatch = 1, shade = 2, terrain = 3, water = 4, roads = 5 }   -- texture sublevel
+-- Zoom levels stored per layer (FILE_LODS in scripts/build_raw.py); a missing level uses the nearest stored one.
+-- hatch: the tile file is only the mask of the not walkable area (256 px); the lines are one shared pattern
+-- per zoom level (media/hatch<lod>.tga), cut out by that mask.
+local FILE_LOD = { fill = { [128] = 128, [256] = 128, [512] = 128 }, shade = { [128] = 128, [256] = 256, [512] = 256 } }
+local HATCH_MASK_LOD = 256
 local STYLE = 6            -- bump when the default look changes (see migration in ADDON_LOADED)
 
 -- One calm colour for all lines (Diablo IV style); quest areas glow blue like the minimap blobs
@@ -223,7 +228,20 @@ local function GetTex(e, inst, key, lod)
         t = canvas:CreateTexture(nil, "ARTWORK", nil, LAYER_LEVEL[e.layer])
         Fade(t)
         NoSnap(t)
-        t:SetTexture(TilePath(inst, key, e.layer, lod))
+        if e.layer == "hatch" then
+            if not e.mask then
+                e.mask = canvas:CreateMaskTexture()
+                NoSnap(e.mask)
+            end
+            if not e.maskSet then
+                e.mask:SetTexture(TilePath(inst, key, "hatch", HATCH_MASK_LOD), "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+                e.maskSet = true
+            end
+            t:AddMaskTexture(e.mask)
+            t:SetTexture(MEDIA .. "hatch" .. lod .. ".tga")
+        else
+            t:SetTexture(TilePath(inst, key, e.layer, lod))
+        end
         e[lod] = t
     end
     return t
@@ -260,6 +278,13 @@ local function HideTiles()
     end
 end
 
+local function PlaceMask(m, x, y, size, angle)
+    m:ClearAllPoints()
+    m:SetPoint("CENTER", view, "CENTER", x, y)
+    m:SetSize(size, size)
+    m:SetRotation(angle)
+end
+
 local function PlaceTex(t, x, y, size, angle, layer, weight)
     t:ClearAllPoints()
     t:SetPoint("CENTER", view, "CENTER", x, y)
@@ -291,14 +316,19 @@ local function UpdateTiles(inst, angle)
         if math.abs(cn - pN) < reach and math.abs(cw - pW) < reach then
             local x, y = ToScreen(cn, cw)
             for _, layer in ipairs(LAYERS) do
-                if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) then
+                if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) and (layer ~= "hatch" or fade) then
                     local id = inst .. ":" .. key .. ":" .. layer
                     local e = tiles[id]
                     if not e then e = { layer = layer }; tiles[id] = e end
-                    local a = GetTex(e, inst, key, loA)
-                    local b = wB > 0 and GetTex(e, inst, key, loB)
+                    -- levels not stored for this layer: the nearest stored one, cross-fade only between two files
+                    local fl = FILE_LOD[layer]
+                    local la, lb, ta, tb = loA, loB, wA, wB
+                    if fl then la, lb = fl[loA], fl[loB] end
+                    if la == lb then ta, tb = 1, 0 end
+                    local a = GetTex(e, inst, key, la)
+                    local b = tb > 0 and GetTex(e, inst, key, lb)
+                    if e.mask then PlaceMask(e.mask, x, y, size, angle) end
                     local okA, okB = IsLoaded(a), b and IsLoaded(b)
-                    local ta, tb = wA, wB
                     if not okA and okB then ta, tb = 0, 1 elseif okA and b and not okB then ta, tb = 1, 0 end
                     if not okA and not okB then
                         -- nothing loaded yet for these levels: keep any loaded level of this tile on screen
@@ -326,6 +356,10 @@ local function UpdateTiles(inst, angle)
                     e[lod] = nil
                 end
             end
+        end
+        if e.maskSet and not (e[128] or e[256] or e[512]) then
+            e.mask:SetTexture(nil)
+            e.maskSet = false
         end
     end
     return true

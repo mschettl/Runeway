@@ -12,7 +12,8 @@ local FINE_WINDOW = 0.06          -- fine window around the quest pin if the coa
 local BUDGET = 600                -- samples per frame
 local SIMPLIFY = 0.8              -- outline simplification tolerance in fine cells
 local WARMUP_MAP, WARMUP_QUEST = 1.0, 0.2   -- seconds before sampling (first draw after SetMapID is slow)
-local THICKNESS = 2
+local THICKNESS = 14            -- glow line: bright core + soft halo (media/glow.tga)
+local GLOW = "Interface\\AddOns\\Runeway\\media\\glow.tga"
 
 local blobFrame, mapID, corners
 local areas = {}          -- [questID] = { sig = string, loops = { {n1, w1, n2, w2, ...}, ... }, box = {n0, n1, w0, w1},
@@ -406,9 +407,10 @@ local function GetLine(i)
     if not l then
         l = lineParent:CreateLine(nil, "ARTWORK")
         l:SetThickness(THICKNESS)
+        l:SetTexture(GLOW)
+        l:SetBlendMode("ADD")
         local c = ns.db().colors.questAreas
-        l:SetColorTexture(c.r, c.g, c.b, c.a)
-        ns.Fade(l)
+        l:SetVertexColor(c.r, c.g, c.b, c.a)
         lines[i] = l
     end
     return l
@@ -416,7 +418,7 @@ end
 
 function ns.ApplyQuestAreaColor()
     local c = ns.db().colors.questAreas
-    for _, l in ipairs(lines) do l:SetColorTexture(c.r, c.g, c.b, c.a) end
+    for _, l in ipairs(lines) do l:SetVertexColor(c.r, c.g, c.b, c.a) end
 end
 
 function ns.HideQuestAreas()

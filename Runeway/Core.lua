@@ -12,9 +12,9 @@ local ZOOM_MIN, ZOOM_MAX = 0.08, 5
 local LAYERS = { "fill", "hatch", "shade", "terrain", "water", "roads" }
 local LAYER_CODE = { fill = "f", hatch = "h", shade = "s", terrain = "t", water = "w", roads = "r" }
 local LAYER_LEVEL = { fill = 0, hatch = 1, shade = 2, terrain = 3, water = 4, roads = 5 }   -- texture sublevel
-local STYLE = 2            -- bump to reset saved colours when the default look changes
+local STYLE = 3            -- bump when the default look changes (see migration in ADDON_LOADED)
 
--- One calm colour for all lines (Diablo IV style); quest areas stay gold
+-- One calm colour for all lines (Diablo IV style); quest areas glow blue like the minimap blobs
 local LINE = { 0.82, 0.86, 0.89 }
 local defaults = {
     x = nil, y = nil, w = 700, h = 450,
@@ -26,7 +26,7 @@ local defaults = {
         terrain = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
         water   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
         roads   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.4 },
-        questAreas = { r = 1.00, g = 0.82, b = 0.30, a = 0.85 },
+        questAreas = { r = 0.35, g = 0.60, b = 1.00, a = 1 },
     },
     layers = { fill = true, hatch = true, shade = true, terrain = true, water = true, roads = true, questAreas = true },
 }
@@ -374,7 +374,10 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         if arg1 ~= ADDON then return end
         RunewayDB = RunewayDB or {}
         db = RunewayDB
-        if db.style ~= STYLE then db.colors, db.style = nil, STYLE end
+        local style = db.style or 0
+        if style < 2 then db.colors = nil end                              -- 2: Diablo IV style
+        if style < 3 and db.colors then db.colors.questAreas = nil end     -- 3: blue glow quest areas
+        db.style = STYLE
         ApplyDefaults(db, defaults)
         view:SetAlpha(db.alpha)
         ApplySize()

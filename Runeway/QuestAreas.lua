@@ -12,6 +12,7 @@ local FINE_WINDOW = 0.06          -- fine window around the quest pin if the coa
 local BUDGET_MS = 3                -- sampling time per frame in milliseconds
 local SIMPLIFY = 0.35             -- outline simplification tolerance in fine cells
 local WARMUP_MAP, WARMUP_QUEST = 1.0, 0.2   -- seconds before sampling (first draw after SetMapID is slow)
+local MIN_SEG = 4                 -- minimum drawn segment length in screen pixels
 local THICKNESS = 14            -- glow line: bright core + soft halo (media/glow.tga)
 local GLOW = "Interface\\AddOns\\Runeway\\media\\glow.tga"
 
@@ -510,19 +511,23 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2)
         local x0, y0 = ToScreen(loop[cnt - 1], loop[cnt])
         for m = 1, cnt, 2 do
             local x1, y1 = ToScreen(loop[m], loop[m + 1])
-            -- soft edge: same oval fade as the tile mask (lines do not take mask textures)
-            local mx, my = (x0 + x1) / (2 * W2), (y0 + y1) / (2 * H2)
-            local t = (1 - math.sqrt(mx * mx + my * my)) / 0.38
-            if t > 0 then
-                t = t >= 1 and 1 or t * t * (3 - 2 * t)
-                n = n + 1
-                local l = GetLine(n)
-                l:SetStartPoint("CENTER", view, x0, y0)
-                l:SetEndPoint("CENTER", view, x1, y1)
-                l:SetAlpha(t)
-                l:Show()
+            local dx, dy = x1 - x0, y1 - y0
+            -- zoomed out, segments get shorter than a pixel and WoW drops them: merge until MIN_SEG px long
+            if m >= cnt - 1 or dx * dx + dy * dy >= MIN_SEG * MIN_SEG then
+                -- soft edge: same oval fade as the tile mask (lines do not take mask textures)
+                local mx, my = (x0 + x1) / (2 * W2), (y0 + y1) / (2 * H2)
+                local t = (1 - math.sqrt(mx * mx + my * my)) / 0.38
+                if t > 0 then
+                    t = t >= 1 and 1 or t * t * (3 - 2 * t)
+                    n = n + 1
+                    local l = GetLine(n)
+                    l:SetStartPoint("CENTER", view, x0, y0)
+                    l:SetEndPoint("CENTER", view, x1, y1)
+                    l:SetAlpha(t)
+                    l:Show()
+                end
+                x0, y0 = x1, y1
             end
-            x0, y0 = x1, y1
         end
     end
     return n

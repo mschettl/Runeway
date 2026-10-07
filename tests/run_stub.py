@@ -2,13 +2,14 @@
 #   python tests/run_stub.py
 import os
 import lupa
+from lupa import lua51       # WoW runs Lua 5.1
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
-L = lupa.LuaRuntime(unpack_returned_tuples=True)
+L = lua51.LuaRuntime(unpack_returned_tuples=True)
 L.execute(open(os.path.join(ROOT, 'tests', 'wow_stub.lua')).read())
 for f in ('Tiles.lua', 'Core.lua', 'QuestAreas.lua', 'Probe.lua'):
     src = open(os.path.join(ROOT, 'Runeway', f), encoding='utf8').read()
-    L.execute('NS = NS or {}; local f = assert(load(..., "@' + f + '")); f("Runeway", NS)', src)
+    L.execute('NS = NS or {}; local f = assert(loadstring(..., "@' + f + '")); f("Runeway", NS)', src)
 
 L.execute('''
     local function fire(event, arg)

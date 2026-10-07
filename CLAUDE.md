@@ -5,6 +5,7 @@
   chat output, slash commands and UI texts are English.
 - This includes test tooling: test/probe commands, their chat output, saved test data,
   file and folder names for test results, and test step names use English terms.
+- Tests run on Lua 5.1 (lupa.lua51) like the game: no goto, no integer division, use loadstring.
 - Lean code, iterate on the existing code instead of rewriting.
 - Target client: WoW Forever (game type "camelot", Interface 16001), retail-based UI.
   Reference UI source: Gethe/wow-ui-source, branch `forever`.

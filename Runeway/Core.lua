@@ -253,7 +253,8 @@ local function UpdateQuestPins()
             local t = qpins[n]
             if not t then
                 t = top:CreateTexture(nil, "ARTWORK")
-                t:SetSize(18, 18)
+                t:SetSize(12, 12)
+                t:SetAlpha(0.85)
                 Fade(t)
                 qpins[n] = t
             end

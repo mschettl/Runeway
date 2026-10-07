@@ -63,7 +63,15 @@ WorldMapFrame = obj("WorldMapFrame")
 FRAMES = {}
 function CreateFrame(_, name) local f = obj("Frame"); FRAMES[#FRAMES + 1] = f; if name then _G[name] = f end; return f end
 function CreateColor(r, g, b, a)
-    return { r = r, g = g, b = b, a = a, SetRGBA = function(self, r2, g2, b2, a2) self.r, self.g, self.b, self.a = r2, g2, b2, a2 end }
+    return { r = r, g = g, b = b, a = a, SetRGBA = function(self, r2, g2, b2, a2) self.r, self.g, self.b, self.a = r2, g2, b2, a2 end,
+             GetRGB = function(self) return self.r, self.g, self.b end,
+             GenerateHexColor = function(self)
+                 return ("ff%02x%02x%02x"):format(self.r * 255 + 0.5, self.g * 255 + 0.5, self.b * 255 + 0.5)
+             end }
+end
+function CreateColorFromHexString(h)
+    local r, g, b = h:match("^%x%x(%x%x)(%x%x)(%x%x)$")
+    return CreateColor(tonumber(r, 16) / 255, tonumber(g, 16) / 255, tonumber(b, 16) / 255, 1)
 end
 function wipe(t) for k in pairs(t) do t[k] = nil end return t end
 function print(...) io.write(table.concat({ ... }, " "), "\n") end
@@ -96,7 +104,9 @@ function IsControlKeyDown() return false end
 CURSOR = { 700, 300 }
 function GetCursorPosition() return CURSOR[1], CURSOR[2] end
 BINDINGS = {}
-function GetBindingKey(cmd) if cmd == "TOGGLEWORLDMAP" then return "M" end end
+function GetBindingKey(cmd) return ({ TOGGLEWORLDMAP = "M", RUNEWAY_WORLDMAP = "SHIFT-M" })[cmd] end
+function GetNumBindings() return 2 end
+function GetBinding(i) return ({ "RUNEWAY_TOGGLE", "RUNEWAY_WORLDMAP" })[i] end
 function SetOverrideBinding(_, _, key, cmd) BINDINGS[key] = cmd end
 function ClearOverrideBindings() wipe(BINDINGS) end
 function GetBindingAction(key, override) return override and BINDINGS[key] or (key == "M" and "TOGGLEWORLDMAP" or "") end
@@ -105,6 +115,34 @@ function GameTooltip_Hide() end
 ColorPickerFrame = obj("ColorPickerFrame")
 function ColorPickerFrame:SetupColorPickerAndShow(info) self.info = info end
 function ColorPickerFrame:GetColorRGB() return 0.1, 0.2, 0.3 end
-Settings = { RegisterCanvasLayoutCategory = function(frame) SETTINGS_PANEL = frame; return { GetID = function() return 77 end } end,
-             RegisterAddOnCategory = function() end,
-             OpenToCategory = function(id) OPENED = id end }
+-- Settings API: proxy settings by variable name, rows as plain initializer tables
+SETTINGS, INITS = {}, {}
+local function Layout() return { AddInitializer = function(_, i) INITS[#INITS + 1] = i end } end
+local function Row(kind) return function(_, setting, options) INITS[#INITS + 1] = { kind = kind, setting = setting,
+    options = type(options) == "function" and options() or options } end end
+Settings = {
+    VarType = { Boolean = "boolean", Number = "number", String = "string" },
+    RegisterVerticalLayoutCategory = function() return { GetID = function() return 77 end }, Layout() end,
+    RegisterVerticalLayoutSubcategory = function() return {}, Layout() end,
+    RegisterProxySetting = function(_, var, varType, name, default, get, set)
+        assert(type(default) == varType, var .. ": default must be " .. varType)
+        local st = { variable = var, default = default, GetValue = function() return get() end,
+                     SetValue = function(_, v) set(v) end }
+        SETTINGS[var] = st
+        return st
+    end,
+    CreateCheckbox = Row("checkbox"), CreateSlider = Row("slider"), CreateDropdown = Row("dropdown"),
+    CreateColorSwatch = Row("color"),
+    CreateSliderOptions = function(min, max) return { min = min, max = max, SetLabelFormatter = function(o, _, f) o.fmt = f end } end,
+    CreateControlTextContainer = function()
+        local d = {}
+        return { Add = function(_, v, label) d[#d + 1] = { value = v, label = label } end, GetData = function() return d end }
+    end,
+    RegisterAddOnCategory = function() end,
+    OpenToCategory = function(id) OPENED = id end,
+}
+MinimalSliderWithSteppersMixin = { Label = { Right = 1 } }
+function CreateSettingsListSectionHeaderInitializer(name) return { kind = "header", name = name } end
+function CreateSettingsButtonInitializer(name, text, click) return { kind = "button", click = click } end
+function CreateSettingsCheckboxSliderInitializer(cb, _, _, slider, options) return { kind = "checkslider", setting = cb, slider = slider, options = options } end
+function CreateKeybindingEntryInitializer(i) return { kind = "binding", action = GetBinding(i) } end

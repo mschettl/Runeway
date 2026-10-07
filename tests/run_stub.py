@@ -19,6 +19,7 @@ L.execute('''
         end
     end
     fire("ADDON_LOADED", "Runeway")
+    fire("PLAYER_LOGIN")
     fire("PLAYER_ENTERING_WORLD")
     SlashCmdList.RUNEWAY("toggle")
     local upd = RunewayFrame:GetScript("OnUpdate")
@@ -115,7 +116,6 @@ L.execute('''
     SlashCmdList.RUNEWAY("mode permanent"); tick()
     check("permanent shows", view:IsShown())
     -- key modes
-    db.worldMapKey = "SHIFT-M"
     SlashCmdList.RUNEWAY("mode mapkey")
     check("mapkey: M -> overlay", BINDINGS.M == "RUNEWAY_TOGGLE")
     check("mapkey: SHIFT-M -> world map", BINDINGS["SHIFT-M"] == "TOGGLEWORLDMAP")
@@ -150,21 +150,25 @@ L.execute('''
     -- options panel
     SlashCmdList.RUNEWAY("config")
     check("/rnw config opens category", OPENED == 77)
-    SETTINGS_PANEL:GetScript("OnShow")(SETTINGS_PANEL)
-    SlashCmdList.RUNEWAY("edge 5")
-    check("edge 5 -> fade5.tga", TEXTURES[#TEXTURES]:find("fade5.tga") ~= nil)
-    rawset(ColorPickerFrame, "info", nil)
-    -- the first swatch button (fill): click and pick a colour
-    for _, f in ipairs(FRAMES) do
-        if f:GetScript("OnClick") and not rawget(ColorPickerFrame, "info") then
-            local h = f:GetScript("OnClick")
-            if rawget(f, "Refresh") and not rawget(f.Text, "_text") and f:GetScript("OnEnter") then h(f) end
-        end
+    local kinds = {}
+    for _, i in ipairs(INITS) do kinds[i.kind] = (kinds[i.kind] or 0) + 1 end
+    check("settings rows: 4 headers, 2 bindings, 7 layers",
+        kinds.header == 4 and kinds.binding == 2 and kinds.checkslider == 7 and kinds.color == 7)
+    check("mode dropdown has 3 entries", #INITS[2].options == 3)
+    for var, st in pairs(SETTINGS) do
+        if st:GetValue() == nil then check("setting reads a value: " .. var, false) end
     end
-    if rawget(ColorPickerFrame, "info") then ColorPickerFrame.info.swatchFunc() end
-    check("colour picker sets fill", db.colors.fill.r == 0.1 and db.colors.fill.b == 0.3)
-    SETTINGS_PANEL:OnDefault()
-    check("defaults restored", db.edge == 3 and db.w == 600 and db.mode == "key")
+    SETTINGS.RUNEWAY_EDGE:SetValue(5)
+    check("edge 5 -> fade5.tga", TEXTURES[#TEXTURES]:find("fade5.tga") ~= nil)
+    SETTINGS.RUNEWAY_COLOR_FILL:SetValue("ff1a334d")
+    check("colour swatch sets fill", math.abs(db.colors.fill.r - 0.1) < 0.01 and math.abs(db.colors.fill.b - 0.3) < 0.01)
+    check("colour swatch reads hex", SETTINGS.RUNEWAY_COLOR_FILL:GetValue() == "ff1a334d")
+    SETTINGS.RUNEWAY_OPACITY_ROADS:SetValue(0.5)
+    SETTINGS.RUNEWAY_AUTOHIDE_COMBAT:SetValue(true)
+    check("opacity and auto-hide write the db", db.colors.roads.a == 0.5 and db.autoHide.combat == true)
+    for _, st in pairs(SETTINGS) do st:SetValue(st.default) end
+    check("defaults restored", db.edge == 3 and db.w == 600 and db.mode == "key" and db.colors.roads.a == 0.4
+        and math.abs(db.colors.fill.r - 0.8) < 0.01)
     view:GetScript("OnUpdate")(view, 0.05)
 ''')
 

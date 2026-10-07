@@ -1,3 +1,4 @@
 <Bindings>
     <Binding name="RUNEWAY_TOGGLE" header="RUNEWAY">Runeway_Toggle()</Binding>
+    <Binding name="RUNEWAY_WORLDMAP" header="RUNEWAY">ToggleWorldMap()</Binding>
 </Bindings>

@@ -51,7 +51,7 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 |---|---|
 | `Runeway.toc` | Interface 16001, Version 1.1, SavedVariables `RunewayDB`; lädt `Tiles.lua`, `Core.lua`, `QuestAreas.lua`, `Options.lua` |
 | `Core.lua` | Fenster, Kacheln, Zoom, Drehung, Questmarker, Sichtbarkeit und Aufruf-Modi, Slash-Befehle, Einstellungen |
-| `Options.lua` | Einstellungsseite unter Optionen → AddOns → Runeway (`Settings.RegisterCanvasLayoutCategory`), auch über `/rnw config` |
+| `Options.lua` | Einstellungen im Blizzard-Stil (`Settings.RegisterVerticalLayoutCategory` mit Proxy-Settings) unter Optionen → AddOns → Runeway, Unterseite „Layers“; auch über `/rnw config`. Wird bei `PLAYER_LOGIN` aufgebaut, weil die Tastenbelegungs-Zeilen `GetNumBindings` brauchen |
 | `QuestAreas.lua` | Questbereiche: Abtasten, Umriss, Zeichnen |
 | `Tiles.lua` | generiert: vorhandene Kacheln und Ebenen je Kachel, z. B. `["31_28"] = "fhstwr"` |
 | `Bindings.xml` | Tastenbelegung `RUNEWAY_TOGGLE` |
@@ -80,7 +80,6 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `colors.questAreas` | 0.45 / 0.78 / 1.00, a 1 |
 | `layers.*` | alle true |
 | `mode` | `"key"` (eigene Taste), `"mapkey"` (Kartentaste M öffnet das Overlay), `"permanent"` |
-| `worldMapKey` | nil; im Modus `mapkey` die Taste für die normale Weltkarte |
 | `autoHide.combat/instance/mounted/city` | alle false (`city` = ausgeruht, also Städte und Gasthäuser) |
 | `hover` | true (Rahmen bei Mausüberfahrt, nur entsperrt) |
 | `edge` | 3 (Randstärke 1–5, Breite 0,12 / 0,25 / 0,38 / 0,55 / 0,75 des Radius) |
@@ -123,7 +122,7 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 
 **Tastenmodi (`ApplyBindings`):**
 - **Mechanik:** Nur Override-Bindings, damit kein Taint entsteht. Im Kampf wird die Anwendung bis `PLAYER_REGEN_ENABLED` verschoben.
-- **Modus `mapkey`:** Die Tasten von `TOGGLEWORLDMAP` (Rückfall `M`) lösen `RUNEWAY_TOGGLE` aus. `worldMapKey` löst `TOGGLEWORLDMAP` aus.
+- **Modus `mapkey`:** Die Tasten von `TOGGLEWORLDMAP` (Rückfall `M`) lösen `RUNEWAY_TOGGLE` aus. Die Tasten der Belegung `RUNEWAY_WORLDMAP` („World map (map key mode)“) lösen per Override `TOGGLEWORLDMAP` aus. Gesetzt wird sie als normale Tastenbelegung, direkt auf der Runeway-Seite. `UPDATE_BINDINGS` wendet alles neu an; `/rnw keys` zeigt den Stand.
 
 ### Wichtige Laufzeit-Mechanik
 - **Weltkoordinaten:** `UnitPosition` liefert (Nord, West). Eine ADT-Kachel ist 1600/3 Yards groß. Kachelmitte: `nord = (32 - zeile) * T - T/2`, `west = (32 - spalte) * T - T/2`.
@@ -280,7 +279,7 @@ cd <repo> && zip -r build/Runeway-1.1.zip Runeway
 **Installation:** Alten Ordner `Interface\AddOns\Runeway` löschen, `Runeway-1.1.zip` dort entpacken und WoW komplett neu starten. Wegen der neuen Masken `fade1–5.tga` reicht `/reload` nicht.
 
 **Testliste 1.1 (Punkt 3.4):**
-1. **Optionen:** Optionen → AddOns → Runeway und `/rnw config` öffnen die Seite. Alle Regler, Häkchen und Farbfelder wirken sofort. „Defaults“ setzt zurück.
+1. **Optionen:** Optionen → AddOns → Runeway und `/rnw config` öffnen die Seite. Alle Regler, Häkchen und Farbfelder wirken sofort. „Standard“ setzt die jeweilige Seite zurück.
 2. **Farbe:** Ein Farbfeld öffnet den Farbwähler. „Abbrechen“ stellt die alte Farbe wieder her.
 3. **Rand:** Die Stufen 1–5 sind sichtbar unterschiedlich. Die Questränder blenden passend dazu aus.
 4. **Mausrad gesperrt:** Über der Karte wird gezoomt, Klicks gehen durch die Karte hindurch.

@@ -23,7 +23,6 @@ local defaults = {
     x = nil, y = nil, w = 600,          -- square map (w = edge length)
     zoom = 1.5, alpha = 0.7, rotate = true, locked = false, shown = false,
     mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
-    worldMapKey = nil,       -- mode "mapkey": key that still opens the world map
     autoHide = { combat = false, instance = false, mounted = false, city = false },
     hover = true,            -- unlocked: subtle frame while the mouse is over the map
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
@@ -56,6 +55,7 @@ end
 
 BINDING_HEADER_RUNEWAY = "Runeway"
 BINDING_NAME_RUNEWAY_TOGGLE = "Toggle overlay map"
+BINDING_NAME_RUNEWAY_WORLDMAP = "World map (map key mode)"
 
 local function Print(msg)
     print("|cff66ccffRuneway:|r " .. msg)
@@ -624,18 +624,20 @@ local function ApplyBindings()
         if #keys == 0 then keys = { "M" } end
         -- priority overrides: other addons or the default UI may override the same key as well
         for _, key in ipairs(keys) do
-            if key ~= db.worldMapKey then
-                SetOverrideBinding(bindOwner, true, key, "RUNEWAY_TOGGLE")
-                mapKeys[#mapKeys + 1] = key
-            end
+            SetOverrideBinding(bindOwner, true, key, "RUNEWAY_TOGGLE")
+            mapKeys[#mapKeys + 1] = key
         end
-        if db.worldMapKey then SetOverrideBinding(bindOwner, true, db.worldMapKey, "TOGGLEWORLDMAP") end
+        -- the world map moves to the keys of RUNEWAY_WORLDMAP, run through Blizzard's own command
+        for _, key in ipairs({ GetBindingKey("RUNEWAY_WORLDMAP") }) do
+            SetOverrideBinding(bindOwner, true, key, "TOGGLEWORLDMAP")
+        end
     end
     binding = false
 end
 
 local function ReportBindings()
-    Print(("mode %s, world map key %s"):format(tostring(db.mode), tostring(db.worldMapKey)))
+    Print(("mode %s, world map key %s"):format(tostring(db.mode),
+        table.concat({ GetBindingKey("RUNEWAY_WORLDMAP") }, ", ")))
     Print("TOGGLEWORLDMAP keys: " .. table.concat({ GetBindingKey("TOGGLEWORLDMAP") }, ", "))
     local keys = #mapKeys > 0 and mapKeys or { GetBindingKey("TOGGLEWORLDMAP") }
     for _, key in ipairs(keys) do
@@ -666,6 +668,7 @@ local function ResetSettings()
     ApplyAll()
 end
 
+ns.DEFAULTS = defaults
 ns.LAYER_KEYS = { "fill", "hatch", "shade", "terrain", "water", "roads", "questAreas" }
 ns.ZOOM_MIN, ns.ZOOM_MAX, ns.SIZE_MIN, ns.SIZE_MAX = ZOOM_MIN, ZOOM_MAX, SIZE_MIN, SIZE_MAX
 ns.Print = Print
@@ -704,6 +707,7 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         if style < 4 and db.colors then db.colors.fill = nil end           -- 4: brown fill
         if style < 6 and db.colors then db.colors.questAreas = nil end     -- 5/6: quest area colour
         db.style = STYLE
+        db.worldMapKey = nil                                               -- 1.1 test builds: now a key binding
         ApplyDefaults(db, defaults)
         canvas:SetAlpha(db.alpha)      -- map layers only; player arrow, quest marks and areas stay opaque
         ApplyEdge()

@@ -16,11 +16,17 @@ local function obj(name)
         if k == "GetFrameLevel" then return function() return 1 end end
         if k == "UpdateMouseOverTooltip" then return function(self, x, y)
             if (x - 0.4) ^ 2 + (y - 0.6) ^ 2 < 0.04 then return 4242, 1 end end end
-        if k:match("^Create") then return function(self) return obj(k) end end
+        if k:match("^Create") then return function(self)
+            CREATED[k] = (CREATED[k] or 0) + 1
+            return obj(k)
+        end end
         return function() end
     end })
 end
 TEXTURES = {}
+CREATED = {}
+function InCombatLockdown() return false end
+function GetQuestPOIBlobCount() return 1 end
 UIParent = obj("UIParent")
 WorldMapFrame = obj("WorldMapFrame")
 FRAMES = {}

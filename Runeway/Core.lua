@@ -1,7 +1,7 @@
 -- Runeway
 -- Player-centred, rotating contour overlay (line layers per ADT tile in world coordinates)
 
-local ADDON = ...
+local ADDON, ns = ...               -- ns: shared with QuestAreas.lua
 local T = 1600 / 3                 -- edge length of an ADT tile in yards (533.33)
 local PATH = "Interface\\AddOns\\Runeway\\tiles\\"
 local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
@@ -20,8 +20,9 @@ local defaults = {
         terrain = { r = 0.86, g = 0.80, b = 0.98, a = 1 },
         water   = { r = 0.39, g = 0.71, b = 0.98, a = 1 },
         roads   = { r = 0.93, g = 0.86, b = 0.73, a = 0.9 },
+        questAreas = { r = 1.00, g = 0.82, b = 0.00, a = 0.9 },
     },
-    layers = { shade = true, terrain = true, water = true, roads = true },
+    layers = { shade = true, terrain = true, water = true, roads = true, questAreas = true },
 }
 local db
 
@@ -54,6 +55,8 @@ view:SetMovable(true)
 view:SetResizable(true)
 view:RegisterForDrag("LeftButton")
 view:Hide()
+ns.view = view
+ns.db = function() return db end
 
 -- Soft fade towards the edge (like PoE). Without mask support: hard clipping
 local fade
@@ -65,8 +68,9 @@ else
     view:SetClipsChildren(true)
 end
 local function Fade(tex)
-    if fade then tex:AddMaskTexture(fade) end
+    if fade and tex.AddMaskTexture then tex:AddMaskTexture(fade) end
 end
+ns.Fade = Fade
 
 local canvas = CreateFrame("Frame", nil, view)
 canvas:SetAllPoints()
@@ -99,6 +103,8 @@ local function ToScreen(n, w)
     local sy = (n - pN) * k
     return sx * cosA - sy * sinA, sx * sinA + sy * cosA
 end
+ns.ToScreen = ToScreen
+ns.Player = function() return pN, pW, k end
 
 ---------------------------------------------------------------------------
 -- Contour tiles
@@ -129,6 +135,7 @@ end
 
 local function ApplyColors()
     for _, t in pairs(tileTex) do ApplyColor(t, t.layer) end
+    if ns.ApplyQuestAreaColor then ns.ApplyQuestAreaColor() end
 end
 
 local function HideTiles()
@@ -179,26 +186,36 @@ local function WorldFromMap(mapID, x, y)
     if pos then return pos.x, pos.y end
 end
 
+-- Map position -> world (north, west). The axis order of GetWorldPosFromMapPos is checked once per map
+-- against the player position.
+local swapByMap = {}
+local function MapToWorld(mapID, x, y)
+    local a, b = WorldFromMap(mapID, x, y)
+    if not a then return end
+    local swap = swapByMap[mapID]
+    if swap == nil then
+        local mp = C_Map.GetPlayerMapPosition(mapID, "player")
+        local un, uw = UnitPosition("player")
+        if mp and un then
+            local pa, pb = WorldFromMap(mapID, mp:GetXY())
+            if pa then
+                swap = math.abs(pa - un) + math.abs(pb - uw) > math.abs(pb - un) + math.abs(pa - uw)
+                swapByMap[mapID] = swap
+            end
+        end
+    end
+    if swap then return b, a end
+    return a, b
+end
+ns.MapToWorld = MapToWorld
+
 local function RefreshQuests()
     wipe(quests)
     local mapID = C_Map.GetBestMapForUnit("player")
     if not (mapID and C_QuestLog and C_QuestLog.GetQuestsOnMap) then return end
-
-    -- Check the axis order of the API once against the player
-    local swap = false
-    local mp = C_Map.GetPlayerMapPosition(mapID, "player")
-    local un, uw = UnitPosition("player")
-    if mp and un then
-        local a, b = WorldFromMap(mapID, mp:GetXY())
-        if a then swap = math.abs(a - un) + math.abs(b - uw) > math.abs(b - un) + math.abs(a - uw) end
-    end
-
     for _, q in ipairs(C_QuestLog.GetQuestsOnMap(mapID) or {}) do
-        local n, w = WorldFromMap(mapID, q.x, q.y)
-        if n then
-            if swap then n, w = w, n end
-            quests[#quests + 1] = { n, w }
-        end
+        local n, w = MapToWorld(mapID, q.x, q.y)
+        if n then quests[#quests + 1] = { n, w } end
     end
 end
 
@@ -232,6 +249,7 @@ view:SetScript("OnUpdate", function(self, e)
     local n, w, _, inst = UnitPosition("player")
     if not n then
         HideTiles()
+        if ns.HideQuestAreas then ns.HideQuestAreas() end
         status:SetText("No position (instance?)")
         return
     end
@@ -248,6 +266,7 @@ view:SetScript("OnUpdate", function(self, e)
         status:SetText("No contours for this area yet")
     end
     UpdateQuestPins()
+    if ns.DrawQuestAreas then ns.DrawQuestAreas() end
 end)
 
 ---------------------------------------------------------------------------
@@ -371,6 +390,13 @@ end)
 ---------------------------------------------------------------------------
 -- Slash commands
 ---------------------------------------------------------------------------
+-- Layer key from a lower-cased slash argument ("questareas" -> "questAreas")
+local function LayerKey(name)
+    for key in pairs(defaults.layers) do
+        if key:lower() == name then return key end
+    end
+end
+
 SLASH_RUNEWAY1 = "/runeway"
 SLASH_RUNEWAY2 = "/rnw"
 SlashCmdList.RUNEWAY = function(msg)
@@ -400,18 +426,20 @@ SlashCmdList.RUNEWAY = function(msg)
     elseif cmd == "rotate" then
         db.rotate = not db.rotate
         Print(db.rotate and "map rotates with the player" or "north up")
-    elseif cmd == "layer" and LAYER_CODE[arg] then
-        db.layers[arg] = not db.layers[arg]
-        Print(("%s %s"):format(arg, db.layers[arg] and "shown" or "hidden"))
+    elseif cmd == "layer" and LayerKey(arg) then
+        local key = LayerKey(arg)
+        db.layers[key] = not db.layers[key]
+        Print(("%s %s"):format(key, db.layers[key] and "shown" or "hidden"))
     elseif cmd == "color" then
         local layer, r, g, b = arg:match("^(%a+)%s+([%d.]+)%s+([%d.]+)%s+([%d.]+)")
+        layer = layer and LayerKey(layer)
         local c = layer and db.colors[layer]
         if c then
             c.r, c.g, c.b = tonumber(r), tonumber(g), tonumber(b)
             ApplyColors()
             Print(("%s colour %.2f %.2f %.2f"):format(layer, c.r, c.g, c.b))
         else
-            Print("/rnw color terrain|water|roads|shade R G B   (0-1)")
+            Print("/rnw color terrain|water|roads|shade|questareas R G B   (0-1)")
         end
     elseif cmd == "probe" then
         Runeway_Probe(arg)

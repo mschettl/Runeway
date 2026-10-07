@@ -438,15 +438,16 @@ SlashCmdList.RUNEWAY = function(msg)
         db.layers[key] = not db.layers[key]
         Print(("%s %s"):format(key, db.layers[key] and "shown" or "hidden"))
     elseif cmd == "color" then
-        local layer, r, g, b = arg:match("^(%a+)%s+([%d.]+)%s+([%d.]+)%s+([%d.]+)")
+        local layer, r, g, b, a = arg:match("^(%a+)%s+([%d.]+)%s+([%d.]+)%s+([%d.]+)%s*([%d.]*)")
         layer = layer and LayerKey(layer)
         local c = layer and db.colors[layer]
         if c then
             c.r, c.g, c.b = tonumber(r), tonumber(g), tonumber(b)
+            c.a = tonumber(a) or c.a
             ApplyColors()
-            Print(("%s colour %.2f %.2f %.2f"):format(layer, c.r, c.g, c.b))
+            Print(("%s colour %.2f %.2f %.2f, opacity %.2f"):format(layer, c.r, c.g, c.b, c.a))
         else
-            Print("/rnw color fill|hatch|shade|terrain|water|roads|questareas R G B   (0-1)")
+            Print("/rnw color fill|hatch|shade|terrain|water|roads|questareas R G B [A]   (0-1)")
         end
     elseif cmd == "probe" then
         Runeway_Probe(arg)
@@ -467,6 +468,6 @@ SlashCmdList.RUNEWAY = function(msg)
         ApplyLock()
         Print("settings reset")
     else
-        Print("/rnw [toggle] | lock | unlock | alpha 5-100 | zoom 0.08-5 | size W H | rotate | layer NAME | color NAME R G B | probe [show] [RES] | pos | reset")
+        Print("/rnw [toggle] | lock | unlock | alpha 5-100 | zoom 0.08-5 | size W H | rotate | layer NAME | color NAME R G B [A] | probe [show] [RES] | pos | reset")
     end
 end

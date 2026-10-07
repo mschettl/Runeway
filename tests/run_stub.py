@@ -48,6 +48,7 @@ L.execute('''
     print(("quest area: %d loop(s), %d points, ellipse error %.3f .. %.3f (1 = exact)"):format(#a.loops, #loop / 2, emin, emax))
     SlashCmdList.RUNEWAY("layer questareas")
     SlashCmdList.RUNEWAY("color questareas 1 0.5 0")
+    SlashCmdList.RUNEWAY("color fill 1 1 1 0.1")
     upd(RunewayFrame, 0.05)
     SlashCmdList.RUNEWAY("reset")
     POS[1] = nil

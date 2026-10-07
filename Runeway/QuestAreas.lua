@@ -10,7 +10,7 @@ local FINE_STEP = 1 / 1024        -- fine grid step in map units (~4 yd in a 400
 local FINE_MAX = 160              -- max fine cells per axis
 local FINE_WINDOW = 0.06          -- fine window around the quest pin if the coarse grid missed the area
 local BUDGET = 600                -- samples per frame
-local SIMPLIFY = 0.8              -- outline simplification tolerance in fine cells
+local SIMPLIFY = 0.35             -- outline simplification tolerance in fine cells
 local WARMUP_MAP, WARMUP_QUEST = 1.0, 0.2   -- seconds before sampling (first draw after SetMapID is slow)
 local THICKNESS = 14            -- glow line: bright core + soft halo (media/glow.tga)
 local GLOW = "Interface\\AddOns\\Runeway\\media\\glow.tga"
@@ -61,43 +61,78 @@ end
 ---------------------------------------------------------------------------
 -- Outline: marching squares -> loops -> simplify -> smooth -> world coordinates
 ---------------------------------------------------------------------------
--- Loops in doubled grid coordinates (sample c, r sits at 2c + 4, 2r + 4)
+-- Outline loops in sample coordinates (sample c, r sits at c, r). The hit grid is blurred first and the
+-- iso line 0.5 is interpolated along the cell edges, which removes the staircase of the sample grid.
 local function Trace(grid, nx, ny)
-    local function v(c, r)
-        return c >= 0 and r >= 0 and c < nx and r < ny and grid[r * nx + c + 1] or false
+    local PAD = 3
+    local W = nx + 2 * PAD
+    local f = {}
+    for r = -PAD, ny + PAD - 1 do
+        for c = -PAD, nx + PAD - 1 do
+            f[(r + PAD) * W + c + PAD + 1] = (c >= 0 and r >= 0 and c < nx and r < ny and grid[r * nx + c + 1]) and 1 or 0
+        end
     end
-    local adj = {}
-    local function node(x, y)
-        local key = x * 8192 + y
-        local nd = adj[key]
-        if not nd then nd = { x = x, y = y }; adj[key] = nd end
-        return key, nd
+    -- two passes of a 3x3 box blur (close to a small gaussian)
+    for _ = 1, 2 do
+        local g = {}
+        for r = 0, ny + 2 * PAD - 1 do
+            for c = 0, W - 1 do
+                local sum, cnt = 0, 0
+                for dr = -1, 1 do
+                    local rr = r + dr
+                    if rr >= 0 and rr < ny + 2 * PAD then
+                        for dc = -1, 1 do
+                            local cc = c + dc
+                            if cc >= 0 and cc < W then
+                                sum, cnt = sum + f[rr * W + cc + 1], cnt + 1
+                            end
+                        end
+                    end
+                end
+                g[r * W + c + 1] = sum / cnt
+            end
+        end
+        f = g
     end
-    local function link(ax, ay, bx, by)
-        local ka, na = node(ax, ay)
-        local kb, nb = node(bx, by)
-        na[#na + 1] = kb
-        nb[#nb + 1] = ka
+    local function v(c, r) return f[(r + PAD) * W + c + PAD + 1] end
+    local ISO = 0.5
+    -- edge ids: horizontal edge (c, r)-(c+1, r) and vertical edge (c, r)-(c, r+1)
+    local pos, adj = {}, {}
+    local function edge(horiz, c, r)
+        local key = ((r + PAD) * W + c + PAD) * 2 + (horiz and 0 or 1)
+        if not pos[key] then
+            local a, b
+            if horiz then a, b = v(c, r), v(c + 1, r) else a, b = v(c, r), v(c, r + 1) end
+            local t = (ISO - a) / (b - a)
+            pos[key] = horiz and { c + t, r } or { c, r + t }
+            adj[key] = {}
+        end
+        return key
     end
-    for r = -1, ny - 1 do
-        for c = -1, nx - 1 do
-            local tl, tr, br, bl = v(c, r), v(c + 1, r), v(c + 1, r + 1), v(c, r + 1)
+    local function link(ka, kb)
+        local A, B = adj[ka], adj[kb]
+        A[#A + 1] = kb
+        B[#B + 1] = ka
+    end
+    for r = -PAD, ny + PAD - 2 do
+        for c = -PAD, nx + PAD - 2 do
+            local tl, tr, br, bl = v(c, r) > ISO, v(c + 1, r) > ISO, v(c + 1, r + 1) > ISO, v(c, r + 1) > ISO
             if not (tl == tr and tr == br and br == bl) then
-                local X, Y = 2 * c + 4, 2 * r + 4
-                local top, right, bottom, left = { X + 1, Y }, { X + 2, Y + 1 }, { X + 1, Y + 2 }, { X, Y + 1 }
                 local e = {}
-                if tl ~= tr then e[#e + 1] = top end
-                if tr ~= br then e[#e + 1] = right end
-                if br ~= bl then e[#e + 1] = bottom end
-                if bl ~= tl then e[#e + 1] = left end
+                if tl ~= tr then e[#e + 1] = edge(true, c, r) end
+                if tr ~= br then e[#e + 1] = edge(false, c + 1, r) end
+                if br ~= bl then e[#e + 1] = edge(true, c, r + 1) end
+                if bl ~= tl then e[#e + 1] = edge(false, c, r) end
                 if #e == 2 then
-                    link(e[1][1], e[1][2], e[2][1], e[2][2])
-                elseif tl then        -- saddle: tl and br inside, keep them separate
-                    link(top[1], top[2], left[1], left[2])
-                    link(bottom[1], bottom[2], right[1], right[2])
-                else                  -- saddle: tr and bl inside
-                    link(top[1], top[2], right[1], right[2])
-                    link(bottom[1], bottom[2], left[1], left[2])
+                    link(e[1], e[2])
+                else
+                    -- saddle (e = top, right, bottom, left): decide by the centre value
+                    local centre = (v(c, r) + v(c + 1, r) + v(c + 1, r + 1) + v(c, r + 1)) / 4 > ISO
+                    if centre == tl then
+                        link(e[1], e[2]); link(e[3], e[4])
+                    else
+                        link(e[1], e[4]); link(e[2], e[3])
+                    end
                 end
             end
         end
@@ -109,8 +144,9 @@ local function Trace(grid, nx, ny)
             local prev, cur = nil, start
             repeat
                 seen[cur] = true
+                local p = pos[cur]
+                xs[#xs + 1], ys[#ys + 1] = p[1], p[2]
                 local nd = adj[cur]
-                xs[#xs + 1], ys[#ys + 1] = nd.x, nd.y
                 local nxt = (nd[1] ~= prev) and nd[1] or nd[2]
                 prev, cur = cur, nxt
             until cur == nil or seen[cur]
@@ -138,38 +174,56 @@ local function Simplify(xs, ys, i, j, tol, keep)
     end
 end
 
--- Closed loop in grid units -> smoothed world loop { n1, w1, n2, w2, ... }; also extends box
-local function ToWorldLoop(xs, ys, box)
+-- Closed loop -> fewer points (Douglas-Peucker) -> rounded (two Chaikin steps), sample coordinates
+local function SmoothLoop(xs, ys)
     local n = #xs
-    -- split the closed loop at the point farthest from the first one
-    local far, fd = 1, 0
+    local far, fd = 1, 0             -- split the closed loop at the point farthest from the first one
     for m = 2, n do
         local d = (xs[m] - xs[1]) ^ 2 + (ys[m] - ys[1]) ^ 2
         if d > fd then far, fd = m, d end
     end
     xs[n + 1], ys[n + 1] = xs[1], ys[1]
     local keep = { [1] = true, [far] = true }
-    Simplify(xs, ys, 1, far, SIMPLIFY * 2, keep)
-    Simplify(xs, ys, far, n + 1, SIMPLIFY * 2, keep)
+    Simplify(xs, ys, 1, far, SIMPLIFY, keep)
+    Simplify(xs, ys, far, n + 1, SIMPLIFY, keep)
     local px, py = {}, {}
     for m = 1, n do
         if keep[m] then px[#px + 1], py[#py + 1] = xs[m], ys[m] end
     end
-    local out, cnt = {}, #px
-    if cnt < 3 then return end
+    if #px < 3 then return end
+    for _ = 1, 2 do
+        local qx, qy, cnt = {}, {}, #px
+        for m = 1, cnt do
+            local m2 = m % cnt + 1
+            qx[#qx + 1], qy[#qy + 1] = 0.75 * px[m] + 0.25 * px[m2], 0.75 * py[m] + 0.25 * py[m2]
+            qx[#qx + 1], qy[#qy + 1] = 0.25 * px[m] + 0.75 * px[m2], 0.25 * py[m] + 0.75 * py[m2]
+        end
+        px, py = qx, qy
+    end
+    return px, py
+end
+ns.TraceOutline = function(grid, nx, ny)   -- for tests: smoothed loops in sample coordinates
+    local out = {}
+    for _, l in ipairs(Trace(grid, nx, ny)) do
+        local px, py = SmoothLoop(l[1], l[2])
+        if px then out[#out + 1] = { px, py } end
+    end
+    return out
+end
+
+-- Closed loop in sample coordinates -> smoothed world loop { n1, w1, n2, w2, ... }; also extends box
+local function ToWorldLoop(xs, ys, box)
+    local px, py = SmoothLoop(xs, ys)
+    if not px then return end
+    local out = {}
     local n0, n1, w0, w1 = corners[1], corners[2], corners[3], corners[4]
-    local function add(gx, gy)
-        local mx = job.x0 + ((gx - 4) / 2 + 0.5) * job.dx
-        local my = job.y0 + ((gy - 4) / 2 + 0.5) * job.dy
+    for m = 1, #px do
+        local mx = job.x0 + (px[m] + 0.5) * job.dx
+        local my = job.y0 + (py[m] + 0.5) * job.dy
         local north, west = n0 + (n1 - n0) * my, w0 + (w1 - w0) * mx
         out[#out + 1], out[#out + 2] = north, west
         box[1], box[2] = math.min(box[1], north), math.max(box[2], north)
         box[3], box[4] = math.min(box[3], west), math.max(box[4], west)
-    end
-    for m = 1, cnt do                -- one Chaikin step: rounds the corners like the world map blobs
-        local m2 = m % cnt + 1
-        add(0.75 * px[m] + 0.25 * px[m2], 0.75 * py[m] + 0.25 * py[m2])
-        add(0.25 * px[m] + 0.75 * px[m2], 0.25 * py[m] + 0.75 * py[m2])
     end
     return out
 end

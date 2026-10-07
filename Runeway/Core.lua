@@ -17,7 +17,7 @@ local STYLE = 3            -- bump when the default look changes (see migration 
 -- One calm colour for all lines (Diablo IV style); quest areas glow blue like the minimap blobs
 local LINE = { 0.82, 0.86, 0.89 }
 local defaults = {
-    x = nil, y = nil, w = 700, h = 450,
+    x = nil, y = nil, w = 600,          -- square map (w = edge length)
     zoom = 1.5, alpha = 0.7, rotate = true, locked = false, shown = false,
     colors = {
         fill    = { r = 1, g = 1, b = 1, a = 0.09 },
@@ -116,37 +116,72 @@ ns.Player = function() return pN, pW, k end
 ---------------------------------------------------------------------------
 -- Contour tiles
 ---------------------------------------------------------------------------
-local tileTex = {}     -- ["inst:c_r:layer"] = Texture
+-- Each tile layer has two textures: "cur" shows the loaded zoom level, "next" loads a new one in the
+-- background (alpha 0). They swap once the file is loaded, so zooming never shows empty tiles.
+local tiles = {}       -- ["inst:c_r:layer"] = { cur = Texture, next = Texture, lod = shown level, want = level }
 
 local function ApplyColor(t, layer)
     local c = db.colors[layer]
     t:SetVertexColor(c.r, c.g, c.b, c.a)
 end
 
-local function GetTileTex(inst, key, layer, lod)
-    local id = inst .. ":" .. key .. ":" .. layer
-    local t = tileTex[id]
-    if not t then
-        t = canvas:CreateTexture(nil, "ARTWORK", nil, LAYER_LEVEL[layer])
-        Fade(t)
-        ApplyColor(t, layer)
-        t.layer = layer
-        tileTex[id] = t
-    end
-    if t.lod ~= lod then
-        t:SetTexture(PATH .. inst .. "\\" .. (lod < 512 and (lod .. "\\") or "") .. key .. "_" .. layer .. ".tga")
-        t.lod = lod
-    end
+local function NewTileTex(layer)
+    local t = canvas:CreateTexture(nil, "ARTWORK", nil, LAYER_LEVEL[layer])
+    Fade(t)
+    ApplyColor(t, layer)
     return t
 end
 
+local function TilePath(inst, key, layer, lod)
+    return PATH .. inst .. "\\" .. (lod < 512 and (lod .. "\\") or "") .. key .. "_" .. layer .. ".tga"
+end
+
+local function IsLoaded(t)
+    return not t.IsObjectLoaded or t:IsObjectLoaded()
+end
+
+local function GetTile(inst, key, layer, lod)
+    local id = inst .. ":" .. key .. ":" .. layer
+    local e = tiles[id]
+    if not e then
+        e = { cur = NewTileTex(layer), next = NewTileTex(layer), layer = layer }
+        e.next:SetAlpha(0)
+        tiles[id] = e
+    end
+    if e.want ~= lod then
+        e.want = lod
+        if e.lod ~= lod then e.next:SetTexture(TilePath(inst, key, layer, lod)) end
+    end
+    if e.lod ~= e.want and IsLoaded(e.next) then
+        e.cur, e.next = e.next, e.cur
+        e.cur:SetAlpha(1)
+        e.next:SetAlpha(0)
+        e.lod = e.want
+    end
+    return e
+end
+
 local function ApplyColors()
-    for _, t in pairs(tileTex) do ApplyColor(t, t.layer) end
+    for _, e in pairs(tiles) do
+        ApplyColor(e.cur, e.layer)
+        ApplyColor(e.next, e.layer)
+    end
     if ns.ApplyQuestAreaColor then ns.ApplyQuestAreaColor() end
 end
 
 local function HideTiles()
-    for _, t in pairs(tileTex) do t:Hide() end
+    for _, e in pairs(tiles) do
+        e.cur:Hide()
+        e.next:Hide()
+    end
+end
+
+local function PlaceTex(t, x, y, size, angle)
+    t:ClearAllPoints()
+    t:SetPoint("CENTER", view, "CENTER", x, y)
+    t:SetSize(size, size)
+    t:SetRotation(angle)
+    t:Show()
 end
 
 local function UpdateTiles(inst, angle)
@@ -168,12 +203,9 @@ local function UpdateTiles(inst, angle)
             local x, y = ToScreen(cn, cw)
             for _, layer in ipairs(LAYERS) do
                 if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) then
-                    local t = GetTileTex(inst, key, layer, lod)
-                    t:ClearAllPoints()
-                    t:SetPoint("CENTER", view, "CENTER", x, y)
-                    t:SetSize(size, size)
-                    t:SetRotation(angle)
-                    t:Show()
+                    local e = GetTile(inst, key, layer, lod)
+                    if e.lod then PlaceTex(e.cur, x, y, size, angle) end
+                    if e.lod ~= e.want then PlaceTex(e.next, x, y, size, angle) end   -- shown at alpha 0 to load
                 end
             end
         end
@@ -317,7 +349,8 @@ local function ApplyPos()
 end
 
 local function ApplySize()
-    view:SetSize(db.w, db.h)
+    db.h = nil
+    view:SetSize(db.w, db.w)
 end
 
 local function ApplyLock()
@@ -339,8 +372,7 @@ view:SetScript("OnDragStop", function(self)
 end)
 view:SetScript("OnMouseWheel", function(_, delta)
     if IsShiftKeyDown() then
-        db.w = math.max(200, math.min(2000, db.w + delta * 40))
-        db.h = math.max(150, math.min(1400, db.h + delta * 26))
+        db.w = math.max(200, math.min(1400, db.w + delta * 30))
         ApplySize()
     else
         SetZoom(db.zoom * (delta > 0 and 1.15 or 1 / 1.15))
@@ -452,12 +484,11 @@ SlashCmdList.RUNEWAY = function(msg)
         SetZoom(n)
         Print(("Zoom %.2f"):format(db.zoom))
     elseif cmd == "size" then
-        local w, h = arg:match("(%d+)%s+(%d+)")
-        if w then
-            db.w, db.h = tonumber(w), tonumber(h)
+        if n then
+            db.w = math.max(200, math.min(1400, n))
             ApplySize()
         end
-        Print(("Size %d x %d"):format(db.w, db.h))
+        Print(("Size %d x %d"):format(db.w, db.w))
     elseif cmd == "rotate" then
         db.rotate = not db.rotate
         Print(db.rotate and "map rotates with the player" or "north up")
@@ -496,6 +527,6 @@ SlashCmdList.RUNEWAY = function(msg)
         ApplyLock()
         Print("settings reset")
     else
-        Print("/rnw [toggle] | lock | unlock | alpha 5-100 | zoom 0.08-5 | size W H | rotate | layer NAME | color NAME R G B [A] | probe [show] [RES] | pos | reset")
+        Print("/rnw [toggle] | lock | unlock | alpha 5-100 | zoom 0.08-5 | size N | rotate | layer NAME | color NAME R G B [A] | probe [show] [RES] | pos | reset")
     end
 end

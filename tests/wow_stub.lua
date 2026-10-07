@@ -9,7 +9,12 @@ local function obj(name)
         if k == "SetShown" then return function(self, v) self._shown = not not v end end
         if k == "SetScript" then return function(self, s, f) self._scripts[s] = f end end
         if k == "GetScript" then return function(self, s) return self._scripts[s] end end
-        if k == "SetTexture" then return function(self, p) self._tex = p; TEXTURES[#TEXTURES + 1] = p end end
+        if k == "SetTexture" then return function(self, p) self._tex = p; self._loadIn = LOAD_FRAMES; TEXTURES[#TEXTURES + 1] = p end end
+        if k == "IsObjectLoaded" then return function(self)
+            self._loadIn = (self._loadIn or 0) - 1
+            return self._loadIn < 0
+        end end
+        if k == "SetAlpha" then return function(self, a) self._alpha = a end end
         if k == "SetVertexColor" then return function(self, r, g, b, a) self._color = { r, g, b, a } end end
         if k == "GetSize" then return function() return 700, 450 end end
         if k == "GetCenter" then return function() return 500, 400 end end
@@ -24,12 +29,16 @@ local function obj(name)
         end end
         if k:match("^Create") then return function(self)
             CREATED[k] = (CREATED[k] or 0) + 1
-            return obj(k)
+            local o = obj(k)
+            if k == "CreateTexture" then ALL_TEX[#ALL_TEX + 1] = o end
+            return o
         end end
         return function() end
     end })
 end
 TEXTURES = {}
+ALL_TEX = {}
+LOAD_FRAMES = 0      -- frames until a texture counts as loaded
 CREATED = {}
 DRAWN = {}
 BLOBS = { [4242] = { 0.4, 0.6, 0.2 }, [4243] = { 0.55, 0.6, 0.15 } }

@@ -27,7 +27,23 @@ L.execute('''
     for i = 1, math.min(4, #TEXTURES) do print("  " .. TEXTURES[i]) end
     SlashCmdList.RUNEWAY("layer roads")
     SlashCmdList.RUNEWAY("color water 0.2 0.4 1")
+    -- zoom level change with slow texture loading: every visible tile layer must keep a shown texture
+    LOAD_FRAMES = 3
+    SlashCmdList.RUNEWAY("zoom 0.5")
+    local function check(label)
+        upd(RunewayFrame, 0.05)
+        local visible, loading = 0, 0
+        for _, f in ipairs(FRAMES) do end
+        for _, t in ipairs(ALL_TEX) do
+            if t._shown and (t._alpha or 1) > 0 then visible = visible + 1 end
+            if t._shown and t._alpha == 0 then loading = loading + 1 end
+        end
+        print(label, "visible", visible, "loading", loading)
+    end
+    for i = 1, 5 do check("frame " .. i) end
+    LOAD_FRAMES = 0
     SlashCmdList.RUNEWAY("zoom 0.2")
+    SlashCmdList.RUNEWAY("size 500")
     upd(RunewayFrame, 0.05)
     print("textures after zoom out:", #TEXTURES, TEXTURES[#TEXTURES])
     -- quest areas: let the background sampler run, then draw

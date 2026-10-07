@@ -237,7 +237,6 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 ## 8. Offene Punkte und nächste Schritte
 
 ### Nächste Schritte
-- **Questmarker einfärbbar** (optional): Sie sind Atlas-Symbole und bisher nicht einfärbbar.
 - **Questbereiche angrenzender Zonen:** aktuell nur die aktuelle Zone.
 
 ### Später

@@ -16,8 +16,12 @@ local MIN_SEG = 5                 -- minimum drawn segment length in screen pixe
 local OVERLAP = 1                 -- px the solid lines are extended at both ends: closes the gaps at the joints
 -- Outline like the minimap quest blobs: a bright solid edge with a soft glow fading into the area.
 -- The glow is built from thin solid lines offset inwards (thin solid lines hide the segment joints).
-local EDGE = 2
-local INNER = { { 2.5, 0.40 }, { 4.5, 0.22 }, { 6.5, 0.10 } }   -- offset px, opacity
+-- Line textures fade to 0 at their borders: WoW does not anti-alias line quads, the texture does.
+local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
+local EDGE = 4                    -- edge line thickness (media/edge.tga: ~2 px core + soft borders)
+local SOFT = 8                    -- inner glow line thickness (media/softline.tga)
+local INNER = { { 3.5, 0.35 } }   -- inner glow: offset px into the area, opacity (scaled down for small areas)
+local GLOW_SIZE = 90              -- areas smaller than this on screen (px) get a proportionally weaker glow
 
 local blobFrame, mapID, corners
 local areas = {}          -- [questID] = { sig = string, loops = { {n1, w1, n2, w2, ...}, ... }, box = {n0, n1, w0, w1},
@@ -499,12 +503,12 @@ local function GetLine(i)
     if not l then
         l = lineParent:CreateLine(nil, "ARTWORK", nil, 1)
         l:SetThickness(EDGE)
-        l:SetColorTexture(1, 1, 1, 1)
+        l:SetTexture(MEDIA .. "edge.tga")
         l.inner = {}
         for k = 1, #INNER do
             local g = lineParent:CreateLine(nil, "ARTWORK", nil, 0)
-            g:SetThickness(2)
-            g:SetColorTexture(1, 1, 1, 1)
+            g:SetThickness(SOFT)
+            g:SetTexture(MEDIA .. "softline.tga")
             l.inner[k] = g
         end
         lines[i] = l
@@ -558,6 +562,13 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2)
                 end
                 inward = area2 > 0 and -1 or 1
             end
+            -- small areas on screen (zoomed out) get a narrower, weaker glow so it does not fill them
+            local x0b, x1b, y0b, y1b = math.huge, -math.huge, math.huge, -math.huge
+            for i = 1, k do
+                x0b, x1b = math.min(x0b, px[i]), math.max(x1b, px[i])
+                y0b, y1b = math.min(y0b, py[i]), math.max(y1b, py[i])
+            end
+            local gs = math.min(1, math.max(0, (math.min(x1b - x0b, y1b - y0b) - 12) / GLOW_SIZE))
             -- vertex normals (average of the two neighbouring segments), pointing into the area
             for i = 1, k do
                 local h, j = (i - 2) % k + 1, i % k + 1
@@ -585,11 +596,11 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2)
                     l:SetVertexColor(er, eg, eb, c.a * t)   -- not SetAlpha: it overwrites the vertex alpha
                     l:Show()
                     for q, g in ipairs(l.inner) do
-                        local d = INNER[q][1]
+                        local d = INNER[q][1] * (0.4 + 0.6 * gs)
                         g:SetStartPoint("CENTER", view, x0 + nx[i] * d - ex, y0 + ny[i] * d - ey)
                         g:SetEndPoint("CENTER", view, x1 + nx[j] * d + ex, y1 + ny[j] * d + ey)
-                        g:SetVertexColor(c.r, c.g, c.b, INNER[q][2] * c.a * t)
-                        g:Show()
+                        g:SetVertexColor(c.r, c.g, c.b, INNER[q][2] * c.a * t * gs)
+                        g:SetShown(gs > 0)
                     end
                 end
             end

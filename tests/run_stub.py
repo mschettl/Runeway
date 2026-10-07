@@ -68,7 +68,7 @@ L.execute('''
     for _, l in ipairs(ALL_LINES) do
         local inner = rawget(l, "inner")
         if rawget(l, "_shown") and inner then
-            local p, q = rawget(l, "_p0"), rawget(inner[3], "_p0")
+            local p, q = rawget(l, "_p0"), rawget(inner[#inner], "_p0")
             de = de + math.sqrt((p[1] - cx) ^ 2 + (p[2] - cy) ^ 2)
             di = di + math.sqrt((q[1] - cx) ^ 2 + (q[2] - cy) ^ 2)
             ni = ni + 1

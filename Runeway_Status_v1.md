@@ -236,12 +236,37 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 
 ## 8. Offene Punkte und nächste Schritte
 
-### Nächste Schritte
-- **Questbereiche angrenzender Zonen:** aktuell nur die aktuelle Zone.
+### Nächstes Paket (neue Session): weitere Zonen + Questbereiche angrenzender Zonen
+
+**Ziel:** Die Karte wächst über Tirisfal hinaus, nahtlos über Zonengrenzen. Questbereiche benachbarter Zonen erscheinen, sobald sie im Sichtfeld liegen.
+
+**Ausgangslage:**
+- Die ADTs der kompletten Östlichen Königreiche (736 Kacheln, inkl. `_tex0`, `_obj0/1`) liegen bereits auf `data`. Für die Kartenebenen ist **kein neuer Export** nötig.
+- Minimap-PNGs gibt es nur für Tirisfal (Kacheln 26–34 / 26–29). Sie dienen nur der Vorschau `preview_over_minimap.png`. Für neue Zonen braucht es dafür einen Minimap-Export aus wow.export (Mario).
+- `build_raw.py` baut alle Zonen eines Laufs als **ein Mosaik**. Gemeinsame Grenzen sind damit nahtlos; die weiche Ausblendung (`EDGE_FADE`) liegt nur am Außenrand der gebauten Zonen. Deshalb immer alle gewünschten Zonen zusammen bauen (über `zones.txt`), nie einzeln nacheinander, sonst überschreiben sich Grenzkacheln.
+
+**Vorgehen in Etappen:**
+1. **Etappe 1:** Nachbarn von Tirisfal: `Silverpine Forest`, `Western Plaguelands`, ggf. `Hillsbrad Foothills` (Namen exakt wie `AreaName_lang` in `AreaTable.csv` prüfen). In `zones.txt` eintragen, `build_raw.py` laufen lassen.
+2. **Pro Zone prüfen** (Vorschauen in `build/`): Steigung bzw. Begehbarkeit, Wege, Wasser, Zonengrenze, Meeresküste. Die Parameter (`BLOCK_CLOSE`, `MIN_WALK`, `MIN_ISLAND`, Weg-Gewicht 0.3) sind an Tirisfal kalibriert und können je Landschaft (z. B. Pestländer, Gebirge in Hillsbrad) Nachjustieren brauchen.
+3. **Im Spiel testen:** Übergang über die Zonengrenze ohne Kante oder Lücke, Zoom, Ladezeiten.
+4. Weitere Etappen danach: restliche Östliche Königreiche.
+
+**Risiken / offene Fragen:**
+- **Speicher beim Bauen:** Das Mosaik hat 512 px pro Kachel und mehrere Ebenen. Für viele Zonen auf einmal wird das groß (ganze Östliche Königreiche ≈ mehrere GB RAM). Bei Bedarf `build_raw.py` regional mit Überlappungsrand bauen lassen.
+- **Addon-Größe:** Tirisfal sind ~22 MB, alle Östlichen Königreiche grob 300–500 MB. Größe je Etappe messen (Ausgabe von `build_raw.py`). Sparmöglichkeiten: Schraffur über offenem Meer auf einen Küstenstreifen begrenzen, Fläche und Schraffur nicht in 512 px speichern.
+- **`Tiles.lua`:** wird bei jedem Lauf komplett neu geschrieben; Kacheln nicht mehr gebauter Zonen bleiben sonst als Dateien liegen (vor einem Lauf `Runeway/tiles/0` leeren).
+- **Städte:** Undercity bzw. Ruinen von Lordaeron bleiben über `structures.py` erhalten. Andere Städte (z. B. Ironforge, Stormwind) brauchen eigene WMO-Exporte, siehe unten „Weitere Städte“.
+
+**Questbereiche angrenzender Zonen (`QuestAreas.lua`):**
+- **Heute:** Abgefragt und abgetastet werden nur die Quests der aktuellen Zonenkarte (`C_Map.GetBestMapForUnit`). Bereiche jenseits der Grenze fehlen, grenzüberschreitende Bereiche werden an der Grenze abgeschnitten, weil die Weltkarte jeder Zone nur ihren Ausschnitt liefert.
+- **Plan:**
+  1. Nachbarzonen bestimmen, deren Kartenrechteck das Sichtfeld schneidet: Kinder der Kontinentkarte (`C_Map.GetMapChildrenInfo`) mit ihren Weltrechtecken (`C_Map.GetWorldPosFromMapPos` an den Ecken bzw. `C_Map.GetMapRectOnMap`).
+  2. Pro Nachbarzone die Quests (`C_QuestLog.GetQuestsOnMap`) holen und mit demselben `QuestPOIFrame`-Abtasten verarbeiten (`SetMapID` je Zone, Budget 3 ms pro Frame, aktuelle Zone zuerst).
+  3. Ergebnisse liegen bereits in Weltkoordinaten vor und sind je Karte in `questAreaCache` gespeichert; beim Zeichnen die Bereiche aller relevanten Karten zusammenführen. Dieselbe Quest auf zwei Karten nur einmal zeichnen bzw. Teilbereiche zusammenführen.
+  4. Questmarker (Punktziele) ebenso aus den Nachbarzonen übernehmen.
+- **Prüfen:** ob `C_QuestLog.GetQuestsOnMap(Nachbarzone)` in Forever die Quests der Nachbarzone liefert, solange der Spieler nicht dort ist (Abschnitt 6: Bereiche kommen vom Server, nach dem Login auch ohne geöffnete Karte). Betroffen sind `QuestAreas.lua` (~Zeile 396) und die Questmarker in `Core.lua` (~Zeile 371).
 
 ### Später
-- **Weitere Zonen der Östlichen Königreiche:** Zonen in `scripts/zones.txt` ergänzen und `build_raw.py` laufen lassen. Für jede Zone die Vorschau prüfen (Steigung, Wege, Wasser, Zonengrenze).
-  - Größenschätzung: Tirisfal sind ~22 MB, alle Östlichen Königreiche grob 300–500 MB. Bei Bedarf die Schraffur über dem offenen Meer auf einen Küstenstreifen begrenzen oder Fläche und Schraffur nicht in 512 px speichern.
 - **Weitere Städte:**
   - WMO als OBJ exportieren (wow.export, „Split WMO Groups“, ohne Texturen) und auf `data` legen.
   - Turm- oder Mauer-M2 in `M2_BLOCKERS` eintragen.
@@ -295,5 +320,8 @@ cd <repo> && zip -r build/Runeway-1.1.zip Runeway
 ```text
 Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch claude/dreamy-lovelace-efolxg.
 Lies zuerst CLAUDE.md, Runeway_Status_v1.md und Runeway_Prompt_v1.md.
-Version 1.1 ist abgeschlossen (inkl. 3.4 Konfiguration). Nächste Schritte siehe Runeway_Status_v1.md, Abschnitt 8. Kommunikation Deutsch, Code Englisch.
+Version 1.1 ist abgeschlossen und in main gemergt (PR #2).
+Aufgabe dieser Session: weitere Zonen der Östlichen Königreiche (Etappe 1: Nachbarzonen von Tirisfal)
+und Questbereiche angrenzender Zonen, siehe Runeway_Status_v1.md, Abschnitt 8 „Nächstes Paket“.
+Rohdaten liegen auf dem Branch data (git fetch origin data, siehe Abschnitt 2). Kommunikation Deutsch, Code Englisch.
 ```

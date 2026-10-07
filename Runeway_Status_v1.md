@@ -1,6 +1,6 @@
-# Runeway – Stand Version 1.0 und Übergabe
+# Runeway – Stand Version 1.1 und Übergabe
 
-Diese Datei fasst den kompletten Stand nach Version 1.0 zusammen, damit eine neue Session nahtlos weitermachen kann. Sie ersetzt den Chatverlauf. Vorgaben und Ziele stehen in `Runeway_Prompt_v1.md`, Arbeitsregeln in `CLAUDE.md`.
+Diese Datei fasst den kompletten Stand nach Version 1.1 zusammen, damit eine neue Session nahtlos weitermachen kann. Sie ersetzt den Chatverlauf. Vorgaben und Ziele stehen in `Runeway_Prompt_v1.md`, Arbeitsregeln in `CLAUDE.md`.
 
 ---
 
@@ -17,7 +17,7 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 
 Im Spiel getestet und für Version 1 abgenommen.
 
-**Stand 1.1 (in Arbeit, noch nicht im Spiel getestet):** Punkt 3.4 ist umgesetzt. Dazu gehören die Einstellungsseite (`Options.lua`), die Aufruf-Modi, das automatische Ausblenden und die Fensterbedienung laut Vorgabe. Die Testliste steht in Abschnitt 9.
+**Stand 1.1 (im Spiel getestet und abgenommen):** Punkt 3.4 ist umgesetzt. Dazu gehören die Einstellungsseite im Blizzard-Stil (`Options.lua`), die Aufruf-Modi samt eigener Weltkarten-Tastenbelegung, das automatische Ausblenden und die Fensterbedienung laut Vorgabe.
 
 ---
 
@@ -25,8 +25,8 @@ Im Spiel getestet und für Version 1 abgenommen.
 
 | Branch | Inhalt |
 |---|---|
-| `claude/dreamy-lovelace-efolxg` | **Gesamte Entwicklung bis 1.0** (Addon, Build-Skripte, Tests, diese Datei). **Noch nicht nach `main` gemergt.** |
-| `main` | Nur der Ausgangsstand 0.5 plus `scripts/update_data_branch.ps1`. |
+| `main` | Version 1.0 (PR mschettl/Runeway#1), 1.1 per Folge-PR. |
+| `claude/dreamy-lovelace-efolxg` | Entwicklungsbranch (Addon, Build-Skripte, Tests, diese Datei). |
 | `data` (orphan) | Rohdaten aus wow.export, nie auf `main`. ~1,6 GB. |
 
 **Inhalt von `data`** (Ordner `Wow export files/`):
@@ -101,6 +101,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `/rnw mode key\|mapkey\|permanent` | Aufruf-Modus |
 | `/rnw layer NAME` | Ebene ein/aus (`fill`, `hatch`, `shade`, `terrain`, `water`, `roads`, `questareas`) |
 | `/rnw color NAME R G B [A]` | Farbe und optional Deckkraft (0–1) |
+| `/rnw keys` | Tastenübernahme neu anwenden und anzeigen, was die Kartentaste auslöst |
 | `/rnw pos` | Position, Instanz und Karten-ID zum Kopieren |
 | `/rnw reset` | Einstellungen zurücksetzen |
 
@@ -227,7 +228,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 | 3.1 RAW-Daten (Begehbarkeit aus Steigung, Wasser aus MH2O, Wege aus Texturen, Zonen-Zuschnitt, Tirisfal) | **erledigt** für Tirisfal; weitere Zonen offen |
 | 3.2 Einfärbbare Ebenen | **erledigt**, erweitert um `fill` und `hatch` |
 | 3.3 Questgebiete | **erledigt**, über das Abtasten statt DB2 (die Tabellen sind leer) |
-| 3.4 Konfigurationsoberfläche und Bedienung | **umgesetzt** in 1.1, Test im Spiel offen (Abschnitt 9) |
+| 3.4 Konfigurationsoberfläche und Bedienung | **erledigt** in 1.1, im Spiel getestet |
 | 3.5 Abschluss (Lua-Prüfung, Simulation, Version 1.0, ZIP) | **erledigt** (Tests mit Lua 5.1, `simulate.py`, Release-ZIP) |
 | Zusätzlich | Diablo-IV-Stil, quadratische runde Karte, nahtloser Zoom, Ruinen von Lordaeron, Questmarker im Weltkarten-Stil |
 
@@ -235,14 +236,9 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 
 ## 8. Offene Punkte und nächste Schritte
 
-### Nächste Session: 1.1 im Spiel prüfen
-- **Spieltest:** Die Testliste 1.1 in Abschnitt 9 durchgehen und Auffälligkeiten korrigieren.
-- **Ungeprüft im Spiel:**
-  - Layout der Einstellungsseite.
-  - Ob `EnableMouseWheel` bei gesperrter Karte ohne `EnableMouse` das Mausrad bekommt.
-  - Die Tastenerfassung für die Weltkarten-Taste.
-  - Ob im Modus „Taste M“ die normale Weltkarte über die gewählte Taste aufgeht.
-- **Optional:** Farbe der Questmarker. Sie sind Atlas-Symbole und bisher nicht einfärbbar.
+### Nächste Schritte
+- **Questmarker einfärbbar** (optional): Sie sind Atlas-Symbole und bisher nicht einfärbbar.
+- **Questbereiche angrenzender Zonen:** aktuell nur die aktuelle Zone.
 
 ### Später
 - **Weitere Zonen der Östlichen Königreiche:** Zonen in `scripts/zones.txt` ergänzen und `build_raw.py` laufen lassen. Für jede Zone die Vorschau prüfen (Steigung, Wege, Wasser, Zonengrenze).
@@ -252,11 +248,8 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
   - Turm- oder Mauer-M2 in `M2_BLOCKERS` eintragen.
   - Die Ausrichtung je Stadt gegen die Minimap prüfen, weil die Drehrichtung erst nahe 0° kalibriert ist.
 - **Undercity unterirdisch (optional):** Ein Prototyp des Grundrisses aus den 197 Innen-Gruppen ist gezeigt, aber nicht eingebaut. Dafür bräuchte es eine eigene Ebene, die über die Karten-ID umschaltet; die ID per `/rnw pos` in Undercity ermitteln.
-- **Questbereiche (optional):**
-  - Innenschein bzw. Schraffur wie auf der Minimap. Mit Linien gab es Artefakte an den Stoßstellen, das bräuchte gefüllte Flächen, z. B. Dreiecks-Texturen.
-  - Bereiche angrenzender Zonen anzeigen; aktuell nur die aktuelle Zone.
+- **Questbereiche (optional):** Innenschein bzw. Schraffur wie auf der Minimap. Mit Linien gab es Artefakte an den Stoßstellen, das bräuchte gefüllte Flächen, z. B. Dreiecks-Texturen.
 - **Prompt Version 2:** Route zum Questziel (A* auf dem Begehbarkeitsraster), Kalimdor, Instanzen.
-- **Branch:** Den Entwicklungsbranch `claude/dreamy-lovelace-efolxg` nach `main` mergen bzw. einen PR anlegen.
 
 ### Bekannte Einschränkungen
 - **Feldwege:** Erdwege mit Dirt-Texturen werden nicht erkannt, weil Dirt in Tirisfal normaler Untergrund ist.
@@ -276,15 +269,15 @@ cd <repo> && zip -r build/Runeway-1.1.zip Runeway
 
 **Testwerkzeug `/rnw probe`:** Nur in Entwicklungsbuilds; dazu `tools/Probe.lua` in den Addon-Ordner kopieren und in der `.toc` eintragen. Es tastet die Questbereiche der aktuellen Zone ab und speichert sie in `RunewayDB.probe`. Die Auswertung macht `scripts/probe_view.py`.
 
-**Installation:** Alten Ordner `Interface\AddOns\Runeway` löschen, `Runeway-1.1.zip` dort entpacken und WoW komplett neu starten. Wegen der neuen Masken `fade1–5.tga` reicht `/reload` nicht.
+**Installation:** Alten Ordner `Interface\AddOns\Runeway` löschen, `Runeway-1.1.zip` dort entpacken und WoW komplett neu starten. Wegen der neuen Masken `fade1–5.tga` und der neuen Tastenbelegung in `Bindings.xml` reicht `/reload` nicht.
 
-**Testliste 1.1 (Punkt 3.4):**
+**Testliste 1.1 (Punkt 3.4, alle Punkte im Spiel bestanden):**
 1. **Optionen:** Optionen → AddOns → Runeway und `/rnw config` öffnen die Seite. Alle Regler, Häkchen und Farbfelder wirken sofort. „Standard“ setzt die jeweilige Seite zurück.
 2. **Farbe:** Ein Farbfeld öffnet den Farbwähler. „Abbrechen“ stellt die alte Farbe wieder her.
 3. **Rand:** Die Stufen 1–5 sind sichtbar unterschiedlich. Die Questränder blenden passend dazu aus.
 4. **Mausrad gesperrt:** Über der Karte wird gezoomt, Klicks gehen durch die Karte hindurch.
 5. **Entsperrt:** Ziehen verschiebt. Der Griff unten rechts ändert die Größe, die Karte bleibt quadratisch. Die Größenanzeige blendet aus. Der Rahmen erscheint beim Überfahren.
-6. **Taste M:** M öffnet und schließt das Overlay, die gewählte Taste öffnet die Weltkarte. Auch nach einem Kampf und nach `/reload` prüfen.
+6. **Taste M:** M öffnet und schließt das Overlay, die Belegung „World map (map key mode)“ öffnet die Weltkarte. Auch nach einem Kampf und nach `/reload` prüfen.
 7. **Permanent:** Das Overlay ist nach dem Login sichtbar.
 8. **Ausblenden:** Kampf, Instanz, Reittier oder Flug und Stadt einzeln prüfen. Nach dem Ende der Bedingung erscheint das Overlay wieder.
 
@@ -303,6 +296,5 @@ cd <repo> && zip -r build/Runeway-1.1.zip Runeway
 ```text
 Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch claude/dreamy-lovelace-efolxg.
 Lies zuerst CLAUDE.md, Runeway_Status_v1.md und Runeway_Prompt_v1.md.
-Version 1.0 ist abgeschlossen, 3.4 ist als 1.1 umgesetzt. Jetzt: 1.1 im Spiel prüfen und korrigieren
-(siehe Runeway_Status_v1.md, Abschnitte 8 und 9). Kommunikation Deutsch, Code Englisch.
+Version 1.1 ist abgeschlossen (inkl. 3.4 Konfiguration). Nächste Schritte siehe Runeway_Status_v1.md, Abschnitt 8. Kommunikation Deutsch, Code Englisch.
 ```

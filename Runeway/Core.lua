@@ -413,6 +413,8 @@ SlashCmdList.RUNEWAY = function(msg)
         else
             Print("/rnw color terrain|water|roads|shade R G B   (0-1)")
         end
+    elseif cmd == "probe" then
+        Runeway_Probe(arg)
     elseif cmd == "pos" then
         local pn, pw, _, inst = UnitPosition("player")
         local mapID = C_Map.GetBestMapForUnit("player")
@@ -430,6 +432,6 @@ SlashCmdList.RUNEWAY = function(msg)
         ApplyLock()
         Print("settings reset")
     else
-        Print("/rnw [toggle] | lock | unlock | alpha 5-100 | zoom 0.08-5 | size W H | rotate | layer NAME | color NAME R G B | pos | reset")
+        Print("/rnw [toggle] | lock | unlock | alpha 5-100 | zoom 0.08-5 | size W H | rotate | layer NAME | color NAME R G B | probe [show] [RES] | pos | reset")
     end
 end

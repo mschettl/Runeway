@@ -6,7 +6,7 @@ import lupa
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 L = lupa.LuaRuntime(unpack_returned_tuples=True)
 L.execute(open(os.path.join(ROOT, 'tests', 'wow_stub.lua')).read())
-for f in ('Tiles.lua', 'Core.lua'):
+for f in ('Tiles.lua', 'Core.lua', 'Probe.lua'):
     src = open(os.path.join(ROOT, 'Runeway', f), encoding='utf8').read()
     L.execute('local f = assert(load(..., "@' + f + '")); f("Runeway")', src)
 
@@ -33,6 +33,16 @@ L.execute('''
     POS[1] = nil
     upd(RunewayFrame, 0.05)
     SlashCmdList.RUNEWAY("help")
+    SlashCmdList.RUNEWAY("probe 16")
+    for _ = 1, 10 do
+        for _, f in ipairs(FRAMES) do
+            local h = f:GetScript("OnUpdate")
+            if h and f ~= RunewayFrame then h(f, 0.25) end
+        end
+    end
+    local p = RunewayDB.probe.quests[1]
+    print("probe rows:")
+    for _, r in ipairs(p.rows) do print("  " .. r) end
 ''')
 
 # every referenced texture file must exist

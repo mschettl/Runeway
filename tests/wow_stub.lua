@@ -13,6 +13,8 @@ local function obj(name)
         if k == "GetSize" then return function() return 700, 450 end end
         if k == "GetCenter" then return function() return 500, 400 end end
         if k == "GetFrameLevel" then return function() return 1 end end
+        if k == "UpdateMouseOverTooltip" then return function(self, x, y)
+            if (x - 0.4) ^ 2 + (y - 0.6) ^ 2 < 0.04 then return 4242, 1 end end end
         if k:match("^Create") then return function(self) return obj(k) end end
         return function() end
     end })
@@ -31,4 +33,8 @@ function GetPlayerFacing() return 0.5 end
 function IsShiftKeyDown() return false end
 function HideUIPanel() end
 C_Map = { GetBestMapForUnit = function() return 1420 end, GetPlayerMapPosition = function() return nil end }
-C_QuestLog = { GetQuestsOnMap = function() return {} end }
+C_QuestLog = { GetQuestsOnMap = function() return { { questID = 4242, x = 0.4, y = 0.6 } } end,
+               GetTitleForQuestID = function(id) return "Test quest " .. id end }
+function CreateVector2D(x, y) return { x = x, y = y } end
+C_Map.GetWorldPosFromMapPos = function(_, v) return 0, { x = 3000 - v.y * 4000, y = 2000 - v.x * 6000 } end
+function date() return "2026-10-07" end

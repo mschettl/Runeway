@@ -57,24 +57,6 @@ L.execute('''
     end
     upd(RunewayFrame, 0.05)
     print("lines created for quest areas:", CREATED.CreateLine or 0)
-    -- inner glow lines must lie inside the outline: compare distances from the area centre on screen
-    local cx, cy, ne = 0, 0, 0
-    for _, l in ipairs(ALL_LINES) do
-        local p = rawget(l, "_p0")
-        if rawget(l, "_shown") and p and rawget(l, "inner") then cx, cy, ne = cx + p[1], cy + p[2], ne + 1 end
-    end
-    cx, cy = cx / ne, cy / ne
-    local de, di, ni = 0, 0, 0
-    for _, l in ipairs(ALL_LINES) do
-        local inner = rawget(l, "inner")
-        if rawget(l, "_shown") and inner then
-            local p, q = rawget(l, "_p0"), rawget(inner[#inner], "_p0")
-            de = de + math.sqrt((p[1] - cx) ^ 2 + (p[2] - cy) ^ 2)
-            di = di + math.sqrt((q[1] - cx) ^ 2 + (q[2] - cy) ^ 2)
-            ni = ni + 1
-        end
-    end
-    print(("edge lines %d, mean distance from centre: edge %.1f px, innermost glow %.1f px"):format(ni, de / ni, di / ni))
     local A, G = NS.QuestAreaState()
     local a = A[4242]
     local loop = a.loops[1]

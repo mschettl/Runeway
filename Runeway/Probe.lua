@@ -8,6 +8,7 @@ end
 
 local frame, sampler
 local RES_DEFAULT, PER_FRAME = 64, 1000
+local warmup = 1.0                -- seconds before sampling; longer for the first draw after SetMapID
 local FINE_STEP, FINE_MAX, FINE_WINDOW = 1 / 1024, 200, 0.06   -- fine pass: map units, max cells per axis
 
 local function QuestTitle(questID)
@@ -52,7 +53,8 @@ local function SampleRect(f, questID, x0, y0, x1, y1, nx, ny, done)
     local rows, hits, other, errors = {}, 0, 0, 0
     local minX, minY, maxX, maxY = nx, ny, -1, -1
     local dx, dy = (x1 - x0) / nx, (y1 - y0) / ny
-    local i, wait = 0, 0.2           -- give the engine a moment to build the blob
+    local i, wait = 0, warmup        -- give the engine a moment to build the blob
+    warmup = 0.2
     sampler:SetScript("OnUpdate", function(self, e)
         if wait > 0 then wait = wait - e return end
         for _ = 1, PER_FRAME do
@@ -96,8 +98,17 @@ local function SampleQuest(f, q, res, done)
     SampleRect(f, q.questID, 0, 0, 1, 1, res, res, function(coarse)
         -- cross-check: sample at the player position vs. the game's own C_Minimap.IsInsideQuestBlob
         local mp = C_Map.GetPlayerMapPosition(f:GetMapID(), "player")
-        local px, py = mp and mp:GetXY()
-        local playerHit = px and select(2, pcall(f.UpdateMouseOverTooltip, f, px, py)) ~= nil
+        local px, py
+        if mp then px, py = mp:GetXY() end
+        local playerHit
+        if px then
+            local ok, a, b = pcall(f.UpdateMouseOverTooltip, f, px, py)
+            if not ok then
+                playerHit = "error: " .. tostring(a)
+            else
+                playerHit = (a ~= nil and (a == q.questID or (b and b > 0))) and true or false
+            end
+        end
         local inside = C_Minimap and C_Minimap.IsInsideQuestBlob and C_Minimap.IsInsideQuestBlob(q.questID)
         local x0, y0, x1, y1
         if coarse.bbox then
@@ -169,6 +180,7 @@ function Runeway_ProbeSample(mapID, quests, res, visible, prevMap)
     if not f then return end
     local ok, err = pcall(f.SetMapID, f, mapID)
     if not ok then Print("SetMapID failed: " .. tostring(err)) return end
+    warmup = 1.0
     f:SetAlpha(visible and 1 or 0)
     f:Show()
 
@@ -191,6 +203,13 @@ function Runeway_ProbeSample(mapID, quests, res, visible, prevMap)
             return
         end
         SampleQuest(f, q, res, function(r)
+            local blobs = GetQuestPOIBlobCount and GetQuestPOIBlobCount(q.questID) or 0
+            if blobs > 0 and r.coarse.hits == 0 and not (r.fine and r.fine.hits > 0) and not q.retried then
+                q.retried = true
+                Print(("  quest %d: %d blob(s) but no hits, retrying"):format(q.questID, blobs))
+                n = n - 1
+                return Next()
+            end
             RunewayDB.probe.quests[#RunewayDB.probe.quests + 1] = r
             local c, fi = r.coarse, r.fine
             Print(("  quest %d: player sample %s / game %s, coarse %d hits%s, fine %s"):format(r.questID,

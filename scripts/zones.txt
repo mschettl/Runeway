@@ -1,0 +1,2 @@
+# Zones built by scripts/build_raw.py (AreaTable names), extended stage by stage
+Tirisfal Glades

@@ -1,20 +1,52 @@
--- Runeway 0.5
--- Spielerzentriertes, mitdrehendes Konturen-Overlay (Linienbilder je ADT-Kachel in Weltkoordinaten)
+-- Runeway
+-- Player-centred, rotating contour overlay (line layers per ADT tile in world coordinates)
 
-local ADDON = ...
-local T = 1600 / 3                 -- Kantenlaenge einer ADT-Kachel in Yards (533,33)
+local ADDON, ns = ...               -- ns: shared with QuestAreas.lua
+local T = 1600 / 3                 -- edge length of an ADT tile in yards (533.33)
 local PATH = "Interface\\AddOns\\Runeway\\tiles\\"
 local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
 local ZOOM_MIN, ZOOM_MAX = 0.08, 5
 
+-- Tile layers, drawn bottom to top. Tiles are white; colours are applied with SetVertexColor.
+-- fill = walkable area, hatch = not walkable (mountains, water), lines on top.
+local LAYERS = { "fill", "hatch", "shade", "terrain", "water", "roads" }
+local LAYER_CODE = { fill = "f", hatch = "h", shade = "s", terrain = "t", water = "w", roads = "r" }
+local LAYER_LEVEL = { fill = 0, hatch = 1, shade = 2, terrain = 3, water = 4, roads = 5 }   -- texture sublevel
+local STYLE = 6            -- bump when the default look changes (see migration in ADDON_LOADED)
+
+-- One calm colour for all lines (Diablo IV style); quest areas glow blue like the minimap blobs
+local LINE = { 0.82, 0.86, 0.89 }
 local defaults = {
-    x = nil, y = nil, w = 700, h = 450,
+    x = nil, y = nil, w = 600,          -- square map (w = edge length)
     zoom = 1.5, alpha = 0.7, rotate = true, locked = false, shown = false,
+    colors = {
+        fill    = { r = 0.80, g = 0.64, b = 0.44, a = 0.07 },   -- warm brown like Diablo IV
+        hatch   = { r = 0.80, g = 0.84, b = 0.88, a = 0.22 },
+        shade   = { r = 0.05, g = 0.05, b = 0.06, a = 0.45 },
+        terrain = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
+        water   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
+        roads   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.4 },
+        questAreas = { r = 0.45, g = 0.78, b = 1.00, a = 1 },
+    },
+    layers = { fill = true, hatch = true, shade = true, terrain = true, water = true, roads = true, questAreas = true },
+    questAreaCache = {},     -- [mapID] = { areas = {}, groups = {} }, see QuestAreas.lua
 }
 local db
 
+-- Fills missing keys (also in nested tables) from the defaults
+local function ApplyDefaults(dst, src)
+    for key, v in pairs(src) do
+        if type(v) == "table" then
+            if type(dst[key]) ~= "table" then dst[key] = {} end
+            ApplyDefaults(dst[key], v)
+        elseif dst[key] == nil then
+            dst[key] = v
+        end
+    end
+end
+
 BINDING_HEADER_RUNEWAY = "Runeway"
-BINDING_NAME_RUNEWAY_TOGGLE = "Overlay-Karte ein/aus"
+BINDING_NAME_RUNEWAY_TOGGLE = "Toggle overlay map"
 
 local function Print(msg)
     print("|cff66ccffRuneway:|r " .. msg)
@@ -30,8 +62,12 @@ view:SetMovable(true)
 view:SetResizable(true)
 view:RegisterForDrag("LeftButton")
 view:Hide()
+-- position and size live in RunewayDB; keep WoW's layout cache from restoring an old size
+if view.SetDontSavePosition then view:SetDontSavePosition(true) end
+ns.view = view
+ns.db = function() return db end
 
--- Weiches Ausblenden zum Rand (wie PoE). Ohne Masken-Unterstuetzung: harter Zuschnitt
+-- Soft fade towards the edge (like PoE). Without mask support: hard clipping
 local fade
 if view.CreateMaskTexture then
     fade = view:CreateMaskTexture()
@@ -40,9 +76,19 @@ if view.CreateMaskTexture then
 else
     view:SetClipsChildren(true)
 end
-local function Fade(tex)
-    if fade then tex:AddMaskTexture(fade) end
+-- Moving textures: no snapping to whole screen pixels, otherwise they jump pixel by pixel while walking
+local function NoSnap(t)
+    if t.SetSnapToPixelGrid then
+        t:SetSnapToPixelGrid(false)
+        t:SetTexelSnappingBias(0)
+    end
 end
+ns.NoSnap = NoSnap
+
+local function Fade(tex)
+    if fade and tex.AddMaskTexture then tex:AddMaskTexture(fade) end
+end
+ns.Fade = Fade
 
 local canvas = CreateFrame("Frame", nil, view)
 canvas:SetAllPoints()
@@ -53,21 +99,26 @@ top:SetFrameLevel(canvas:GetFrameLevel() + 5)
 
 local editHint = top:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 editHint:SetPoint("TOP", 0, -4)
-editHint:SetText("Ziehen = verschieben  |  Mausrad = Zoom  |  Shift+Mausrad = Groesse  |  /rnw lock")
+editHint:SetText("Drag = move  |  Mouse wheel = zoom  |  Shift+wheel = size  |  /rnw lock")
 
 local status = top:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 status:SetPoint("BOTTOM", 0, 6)
 
--- Spielerpfeil, fest in der Mitte
-local arrow = top:CreateTexture(nil, "OVERLAY")
+-- Player arrow, fixed in the centre
+local arrowShadow = top:CreateTexture(nil, "OVERLAY", nil, 0)   -- dark silhouette for contrast
+arrowShadow:SetTexture(MEDIA .. "arrow.tga")
+arrowShadow:SetVertexColor(0, 0, 0, 0.75)
+arrowShadow:SetSize(27, 27)
+arrowShadow:SetPoint("CENTER")
+local arrow = top:CreateTexture(nil, "OVERLAY", nil, 1)
 arrow:SetTexture(MEDIA .. "arrow.tga")
-arrow:SetSize(40, 40)
+arrow:SetSize(23, 23)
 arrow:SetPoint("CENTER")
 
 ---------------------------------------------------------------------------
--- Weltkoordinaten -> Bildschirm
+-- World coordinates -> screen
 ---------------------------------------------------------------------------
--- UnitPosition liefert (Nord, West). Bildschirm: x nach rechts = Osten, y nach oben = Norden.
+-- UnitPosition returns (north, west). Screen: x right = east, y up = north.
 local pN, pW, cosA, sinA, k = 0, 0, 1, 0, 1
 
 local function ToScreen(n, w)
@@ -75,61 +126,151 @@ local function ToScreen(n, w)
     local sy = (n - pN) * k
     return sx * cosA - sy * sinA, sx * sinA + sy * cosA
 end
+ns.ToScreen = ToScreen
+ns.Player = function() return pN, pW, k end
 
 ---------------------------------------------------------------------------
--- Kontur-Kacheln
+-- Contour tiles
 ---------------------------------------------------------------------------
-local tileTex = {}     -- ["inst:c_r"] = Texture
+-- Each tile layer has one texture per zoom level (loaded once, then kept). Around each switch point the two
+-- neighbouring levels are cross-faded, so zooming is seamless; a level that is still loading hands its
+-- weight to a loaded one.
+local LODS = { 128, 256, 512 }
+local SWITCH = { 160, 360 }            -- on-screen tile size (px) where the next finer level takes over
+local BAND = 1.25                      -- cross-fade from SWITCH / BAND to SWITCH * BAND
+local tiles = {}                       -- ["inst:c_r:layer"] = { layer = name, [lod] = Texture }
+local frame = 0                        -- update counter; textures not used in the current update get hidden
 
-local function GetTileTex(inst, key, lod)
-    local id = inst .. ":" .. key
-    local t = tileTex[id]
+-- Note: on textures SetAlpha overwrites the vertex colour alpha, so opacity only goes through SetVertexColor
+local function ApplyColor(t, layer, weight)
+    local c = db.colors[layer]
+    t:SetVertexColor(c.r, c.g, c.b, c.a * (weight or 1))
+end
+
+local function TilePath(inst, key, layer, lod)
+    return PATH .. inst .. "\\" .. (lod < 512 and (lod .. "\\") or "") .. key .. "_" .. layer .. ".tga"
+end
+
+local function IsLoaded(t)
+    return not t.IsObjectLoaded or t:IsObjectLoaded()
+end
+
+local function GetTex(e, inst, key, lod)
+    local t = e[lod]
     if not t then
-        t = canvas:CreateTexture(nil, "ARTWORK")
+        t = canvas:CreateTexture(nil, "ARTWORK", nil, LAYER_LEVEL[e.layer])
         Fade(t)
-        tileTex[id] = t
-    end
-    if t.lod ~= lod then
-        t:SetTexture(PATH .. inst .. "\\" .. (lod < 512 and (lod .. "\\") or "") .. key .. ".tga")
-        t.lod = lod
+        NoSnap(t)
+        t:SetTexture(TilePath(inst, key, e.layer, lod))
+        e[lod] = t
     end
     return t
 end
 
+-- Weights of the zoom levels for an on-screen tile size: { [lod] = weight }
+local function LodWeights(size)
+    for i, sw in ipairs(SWITCH) do
+        if size < sw * BAND then
+            local lo, hi = LODS[i], LODS[i + 1]
+            if size <= sw / BAND then return lo, 1, hi, 0 end
+            local f = math.log(size * BAND / sw) / math.log(BAND * BAND)
+            f = f * f * (3 - 2 * f)
+            return lo, 1 - f, hi, f
+        end
+    end
+    return 512, 1, 256, 0
+end
+
+local function ApplyColors()
+    for _, e in pairs(tiles) do
+        for _, lod in ipairs(LODS) do
+            if e[lod] then ApplyColor(e[lod], e.layer, e[lod].weight) end
+        end
+    end
+    if ns.ApplyQuestAreaColor then ns.ApplyQuestAreaColor() end
+end
+
 local function HideTiles()
-    for _, t in pairs(tileTex) do t:Hide() end
+    for _, e in pairs(tiles) do
+        for _, lod in ipairs(LODS) do
+            if e[lod] then e[lod]:Hide() end
+        end
+    end
+end
+
+local function PlaceTex(t, x, y, size, angle, layer, weight)
+    t:ClearAllPoints()
+    t:SetPoint("CENTER", view, "CENTER", x, y)
+    t:SetSize(size, size)
+    t:SetRotation(angle)
+    if t.weight ~= weight then
+        t.weight = weight
+        ApplyColor(t, layer, weight)
+    end
+    t.frame = frame
+    t:Show()
 end
 
 local function UpdateTiles(inst, angle)
     local data = RunewayTiles and RunewayTiles[inst]
-    HideTiles()
-    if not data then return false end
+    frame = frame + 1
+    if not data then HideTiles() return false end
 
     local W, H = view:GetSize()
-    local reach = math.sqrt(W * W + H * H) / 2 / k + T   -- sichtbarer Radius in Yards plus Kachel
+    local reach = math.sqrt(W * W + H * H) / 2 / k + T   -- visible radius in yards plus one tile
     local size = T * k
-    local lod = (size < 160 and 128) or (size < 360 and 256) or 512   -- herausgezoomt: grobere Kacheln
+    local loA, wA, loB, wB = LodWeights(size)
 
-    for key in pairs(data) do
+    for key, have in pairs(data) do
         local c, r = key:match("(%d+)_(%d+)")
         c, r = tonumber(c), tonumber(r)
         local cn = (32 - r) * T - T / 2
         local cw = (32 - c) * T - T / 2
         if math.abs(cn - pN) < reach and math.abs(cw - pW) < reach then
-            local t = GetTileTex(inst, key, lod)
             local x, y = ToScreen(cn, cw)
-            t:ClearAllPoints()
-            t:SetPoint("CENTER", view, "CENTER", x, y)
-            t:SetSize(size, size)
-            t:SetRotation(angle)
-            t:Show()
+            for _, layer in ipairs(LAYERS) do
+                if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) then
+                    local id = inst .. ":" .. key .. ":" .. layer
+                    local e = tiles[id]
+                    if not e then e = { layer = layer }; tiles[id] = e end
+                    local a = GetTex(e, inst, key, loA)
+                    local b = wB > 0 and GetTex(e, inst, key, loB)
+                    local okA, okB = IsLoaded(a), b and IsLoaded(b)
+                    local ta, tb = wA, wB
+                    if not okA and okB then ta, tb = 0, 1 elseif okA and b and not okB then ta, tb = 1, 0 end
+                    if not okA and not okB then
+                        -- nothing loaded yet for these levels: keep any loaded level of this tile on screen
+                        for _, lod in ipairs(LODS) do
+                            local t = e[lod]
+                            if t and t ~= a and t ~= b and IsLoaded(t) then
+                                PlaceTex(t, x, y, size, angle, layer, 1)
+                                break
+                            end
+                        end
+                    end
+                    PlaceTex(a, x, y, size, angle, layer, okA and ta or 0)   -- shown at weight 0 while loading
+                    if b then PlaceTex(b, x, y, size, angle, layer, okB and tb or 0) end
+                end
+            end
+        end
+    end
+    for _, e in pairs(tiles) do
+        for _, lod in ipairs(LODS) do
+            local t = e[lod]
+            if t and t.frame ~= frame then
+                if t:IsShown() then t:Hide() end
+                if frame - t.frame > 800 then          -- unused for ~20 s: free the texture memory
+                    t:SetTexture(nil)
+                    e[lod] = nil
+                end
+            end
         end
     end
     return true
 end
 
 ---------------------------------------------------------------------------
--- Quest-Marker (Kartenposition -> Weltposition, einmal je Aktualisierung)
+-- Quest markers (map position -> world position, once per refresh)
 ---------------------------------------------------------------------------
 local quests = {}      -- { {n, w}, ... }
 local qpins = {}
@@ -140,49 +281,88 @@ local function WorldFromMap(mapID, x, y)
     if pos then return pos.x, pos.y end
 end
 
+-- Map position -> world (north, west). The axis order of GetWorldPosFromMapPos is checked once per map
+-- against the player position.
+local swapByMap = {}
+local function MapToWorld(mapID, x, y)
+    local a, b = WorldFromMap(mapID, x, y)
+    if not a then return end
+    local swap = swapByMap[mapID]
+    if swap == nil then
+        local mp = C_Map.GetPlayerMapPosition(mapID, "player")
+        local un, uw = UnitPosition("player")
+        if mp and un then
+            local pa, pb = WorldFromMap(mapID, mp:GetXY())
+            if pa then
+                swap = math.abs(pa - un) + math.abs(pb - uw) > math.abs(pb - un) + math.abs(pa - uw)
+                swapByMap[mapID] = swap
+            end
+        end
+    end
+    if swap then return b, a end
+    return a, b
+end
+ns.MapToWorld = MapToWorld
+
 local function RefreshQuests()
     wipe(quests)
     local mapID = C_Map.GetBestMapForUnit("player")
     if not (mapID and C_QuestLog and C_QuestLog.GetQuestsOnMap) then return end
-
-    -- Achsenreihenfolge der API einmal am Spieler pruefen
-    local swap = false
-    local mp = C_Map.GetPlayerMapPosition(mapID, "player")
-    local un, uw = UnitPosition("player")
-    if mp and un then
-        local a, b = WorldFromMap(mapID, mp:GetXY())
-        if a then swap = math.abs(a - un) + math.abs(b - uw) > math.abs(b - un) + math.abs(a - uw) end
-    end
-
     for _, q in ipairs(C_QuestLog.GetQuestsOnMap(mapID) or {}) do
-        local n, w = WorldFromMap(mapID, q.x, q.y)
+        local n, w = MapToWorld(mapID, q.x, q.y)
         if n then
-            if swap then n, w = w, n end
-            quests[#quests + 1] = { n, w }
+            local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
+                or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
+            quests[#quests + 1] = { n, w, questID = q.questID, done = done and true or false }
         end
     end
+end
+
+-- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
+-- Same look as the world map pins: dark round badge with gold rim, "?" for turn-in, yellow "..." in progress.
+local PIN_SIZE = 26
+local function SetAtlasOr(t, atlas, file)
+    local ok, res = pcall(t.SetAtlas, t, atlas)
+    if not ok or res == false then t:SetTexture(file) end
 end
 
 local function UpdateQuestPins()
-    for i, q in ipairs(quests) do
-        local t = qpins[i]
-        if not t then
-            t = top:CreateTexture(nil, "ARTWORK")
-            t:SetSize(14, 14)
-            t:SetTexture(MEDIA .. "dot.tga")
-            Fade(t)
-            qpins[i] = t
+    local n = 0
+    for _, q in ipairs(quests) do
+        if not (ns.HasQuestArea and ns.HasQuestArea(q.questID)) then
+            n = n + 1
+            local p = qpins[n]
+            if not p then
+                p = { back = top:CreateTexture(nil, "ARTWORK", nil, 0), icon = top:CreateTexture(nil, "ARTWORK", nil, 1) }
+                SetAtlasOr(p.back, "UI-QuestPoi-QuestNumber", MEDIA .. "dot.tga")
+                for _, t in ipairs({ p.back, p.icon }) do
+                    t:SetSize(PIN_SIZE, PIN_SIZE)
+                    Fade(t)
+                    NoSnap(t)
+                end
+                qpins[n] = p
+            end
+            if p.done ~= q.done then
+                p.done = q.done
+                SetAtlasOr(p.icon, q.done and "UI-QuestIcon-TurnIn-Normal" or "Quest-In-Progress-Icon-yellow",
+                    "Interface\\GossipFrame\\ActiveQuestIcon")
+            end
+            local x, y = ToScreen(q[1], q[2])
+            for _, t in ipairs({ p.back, p.icon }) do
+                t:ClearAllPoints()
+                t:SetPoint("CENTER", view, "CENTER", x, y)
+                t:Show()
+            end
         end
-        local x, y = ToScreen(q[1], q[2])
-        t:ClearAllPoints()
-        t:SetPoint("CENTER", view, "CENTER", x, y)
-        t:Show()
     end
-    for i = #quests + 1, #qpins do qpins[i]:Hide() end
+    for i = n + 1, #qpins do
+        qpins[i].back:Hide()
+        qpins[i].icon:Hide()
+    end
 end
 
 ---------------------------------------------------------------------------
--- Hauptschleife
+-- Main loop
 ---------------------------------------------------------------------------
 local elapsed = 0
 view:SetScript("OnUpdate", function(self, e)
@@ -193,7 +373,8 @@ view:SetScript("OnUpdate", function(self, e)
     local n, w, _, inst = UnitPosition("player")
     if not n then
         HideTiles()
-        status:SetText("Keine Position (Instanz?)")
+        if ns.HideQuestAreas then ns.HideQuestAreas() end
+        status:SetText("No position (instance?)")
         return
     end
     pN, pW, k = n, w, db.zoom
@@ -202,17 +383,19 @@ view:SetScript("OnUpdate", function(self, e)
     local angle = db.rotate and -facing or 0
     cosA, sinA = math.cos(angle), math.sin(angle)
     arrow:SetRotation(db.rotate and 0 or facing)
+    arrowShadow:SetRotation(db.rotate and 0 or facing)
 
     if UpdateTiles(inst, angle) then
         status:SetText("")
     else
-        status:SetText("Fuer dieses Gebiet gibt es noch keine Konturen")
+        status:SetText("No contours for this area yet")
     end
     UpdateQuestPins()
+    if ns.DrawQuestAreas then ns.DrawQuestAreas() end
 end)
 
 ---------------------------------------------------------------------------
--- Position / Groesse / Sperre
+-- Position / size / lock
 ---------------------------------------------------------------------------
 local function SavePos()
     db.x, db.y = view:GetCenter()
@@ -228,12 +411,13 @@ local function ApplyPos()
 end
 
 local function ApplySize()
-    view:SetSize(db.w, db.h)
+    db.h = nil
+    view:SetSize(db.w, db.w)
 end
 
 local function ApplyLock()
     local unlocked = not db.locked
-    view:EnableMouse(unlocked)          -- gesperrt: Klicks gehen durch
+    view:EnableMouse(unlocked)          -- locked: clicks pass through
     view:EnableMouseWheel(unlocked)
     editHint:SetShown(unlocked)
 end
@@ -245,13 +429,13 @@ end
 view:SetScript("OnDragStart", function(self) self:StartMoving() end)
 view:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
+    if self.SetUserPlaced then self:SetUserPlaced(false) end
     SavePos()
     ApplyPos()
 end)
 view:SetScript("OnMouseWheel", function(_, delta)
     if IsShiftKeyDown() then
-        db.w = math.max(200, math.min(2000, db.w + delta * 40))
-        db.h = math.max(150, math.min(1400, db.h + delta * 26))
+        db.w = math.max(200, math.min(1400, db.w + delta * 30))
         ApplySize()
     else
         SetZoom(db.zoom * (delta > 0 and 1.15 or 1 / 1.15))
@@ -260,7 +444,7 @@ end)
 view:SetScript("OnShow", RefreshQuests)
 
 ---------------------------------------------------------------------------
--- Position kopierbar anzeigen (/rnw pos)
+-- Show position as copyable text (/rnw pos)
 ---------------------------------------------------------------------------
 local copy
 local function ShowCopy(text)
@@ -279,7 +463,7 @@ local function ShowCopy(text)
 end
 
 ---------------------------------------------------------------------------
--- Umschalten
+-- Toggle
 ---------------------------------------------------------------------------
 function Runeway_Toggle()
     db.shown = not db.shown
@@ -310,21 +494,26 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         if arg1 ~= ADDON then return end
         RunewayDB = RunewayDB or {}
         db = RunewayDB
-        for key, v in pairs(defaults) do
-            if db[key] == nil then db[key] = v end
-        end
-        db.scale, db.style = nil, nil          -- Altlasten aus 0.2
-        view:SetAlpha(db.alpha)
+        local style = db.style or 0
+        if style < 2 then db.colors = nil end                              -- 2: Diablo IV style
+        if style < 3 and db.colors then db.colors.questAreas = nil end     -- 3: blue glow quest areas
+        if style < 4 and db.colors then db.colors.fill = nil end           -- 4: brown fill
+        if style < 6 and db.colors then db.colors.questAreas = nil end     -- 5/6: quest area colour
+        db.style = STYLE
+        ApplyDefaults(db, defaults)
+        canvas:SetAlpha(db.alpha)      -- map layers only; player arrow, quest marks and areas stay opaque
         ApplySize()
         ApplyPos()
         ApplyLock()
         CreateWorldMapButton()
-        if not fade then Print("Hinweis: Dieser Client unterstuetzt keine Masken, Rand wird hart abgeschnitten.") end
+        if not fade then Print("Note: this client does not support mask textures, the edge is clipped hard.") end
         self:UnregisterEvent("ADDON_LOADED")
         self:RegisterEvent("PLAYER_ENTERING_WORLD")
         self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
         self:RegisterEvent("QUEST_LOG_UPDATE")
     elseif event == "PLAYER_ENTERING_WORLD" then
+        ApplySize()            -- again after WoW's layout restore
+        ApplyPos()
         view:SetShown(db.shown)
         RefreshQuests()
     elseif view:IsShown() then
@@ -333,8 +522,15 @@ ev:SetScript("OnEvent", function(self, event, arg1)
 end)
 
 ---------------------------------------------------------------------------
--- Slash-Befehle
+-- Slash commands
 ---------------------------------------------------------------------------
+-- Layer key from a lower-cased slash argument ("questareas" -> "questAreas")
+local function LayerKey(name)
+    for key in pairs(defaults.layers) do
+        if key:lower() == name then return key end
+    end
+end
+
 SLASH_RUNEWAY1 = "/runeway"
 SLASH_RUNEWAY2 = "/rnw"
 SlashCmdList.RUNEWAY = function(msg)
@@ -346,39 +542,59 @@ SlashCmdList.RUNEWAY = function(msg)
     elseif cmd == "lock" or cmd == "unlock" then
         db.locked = (cmd == "lock")
         ApplyLock()
-        Print(db.locked and "gesperrt (Klicks gehen durch)" or "entsperrt")
+        Print(db.locked and "locked (clicks pass through)" or "unlocked")
     elseif cmd == "alpha" and n then
         db.alpha = math.max(5, math.min(100, n)) / 100
-        view:SetAlpha(db.alpha)
-        Print(("Deckkraft %d %%"):format(db.alpha * 100))
+        canvas:SetAlpha(db.alpha)
+        Print(("Opacity %d %%"):format(db.alpha * 100))
     elseif cmd == "zoom" and n then
         SetZoom(n)
         Print(("Zoom %.2f"):format(db.zoom))
     elseif cmd == "size" then
-        local w, h = arg:match("(%d+)%s+(%d+)")
-        if w then
-            db.w, db.h = tonumber(w), tonumber(h)
+        if n then
+            db.w = math.max(200, math.min(1400, n))
             ApplySize()
         end
-        Print(("Groesse %d x %d"):format(db.w, db.h))
+        Print(("Size %d x %d"):format(db.w, db.w))
     elseif cmd == "rotate" then
         db.rotate = not db.rotate
-        Print(db.rotate and "Karte dreht mit" or "Norden oben")
+        Print(db.rotate and "map rotates with the player" or "north up")
+    elseif cmd == "layer" and LayerKey(arg) then
+        local key = LayerKey(arg)
+        db.layers[key] = not db.layers[key]
+        Print(("%s %s"):format(key, db.layers[key] and "shown" or "hidden"))
+    elseif cmd == "color" then
+        local layer, r, g, b, a = arg:match("^(%a+)%s+([%d.]+)%s+([%d.]+)%s+([%d.]+)%s*([%d.]*)")
+        layer = layer and LayerKey(layer)
+        local c = layer and db.colors[layer]
+        if c then
+            c.r, c.g, c.b = tonumber(r), tonumber(g), tonumber(b)
+            c.a = tonumber(a) or c.a
+            ApplyColors()
+            Print(("%s colour %.2f %.2f %.2f, opacity %.2f"):format(layer, c.r, c.g, c.b, c.a))
+        else
+            Print("/rnw color fill|hatch|shade|terrain|water|roads|questareas R G B [A]   (0-1)")
+        end
+    elseif cmd == "probe" then
+        -- dev tool, not part of the release: add tools/Probe.lua to the .toc to use it
+        if Runeway_Probe then Runeway_Probe(arg) else Print("probe is a dev tool (tools/Probe.lua), not loaded") end
     elseif cmd == "pos" then
         local pn, pw, _, inst = UnitPosition("player")
         local mapID = C_Map.GetBestMapForUnit("player")
         ShowCopy(("%s %s %s map=%s facing=%.3f"):format(
             tostring(pn), tostring(pw), tostring(inst), tostring(mapID), GetPlayerFacing() or -1))
     elseif cmd == "reset" then
-        for key, v in pairs(defaults) do
-            if key ~= "shown" then db[key] = v end
-        end
-        view:SetAlpha(db.alpha)
+        local shown = db.shown
+        wipe(db)
+        ApplyDefaults(db, defaults)
+        db.shown = shown
+        ApplyColors()
+        canvas:SetAlpha(db.alpha)
         ApplySize()
         ApplyPos()
         ApplyLock()
-        Print("zurueckgesetzt")
+        Print("settings reset")
     else
-        Print("/rnw [toggle] | lock | unlock | alpha 5-100 | zoom 0.08-5 | size B H | rotate | pos | reset")
+        Print("/rnw [toggle] | lock | unlock | alpha 5-100 | zoom 0.08-5 | size N | rotate | layer NAME | color NAME R G B [A] | pos | reset")
     end
 end

@@ -15,6 +15,7 @@ from skimage.morphology import skeletonize
 from adt import read_area
 from raw_mosaic import Mosaic, load_listfile, SRC, LISTFILE
 from roads import prune
+import structures
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 OUT = os.path.join(ROOT, 'Runeway', 'tiles', '0')       # 0 = instance ID of the Eastern Kingdoms
@@ -112,6 +113,7 @@ def build(cols, rows):
     keepc[0] = False
     walk = keepc[lab]
     walk = ~blobs(~walk & present, MIN_BLOCK) & present        # fill small holes
+    walk &= ~structures.blocked(m)                              # building walls, towers (WMO / M2 exports)
 
     # Roads: road textures -> centre lines
     lf = load_listfile()
@@ -149,7 +151,11 @@ def line_layers(L, keep):
     edge[:3, :] = edge[-3:, :] = edge[:, :3] = edge[:, -3:] = True
     edge = cv2.dilate(edge.astype(np.uint8), np.ones((9, 9), np.uint8)) > 0
     # soft map end: round the chunk border, then fade in over EDGE_FADE px from the edge of the built zones
-    inside = ((cv2.GaussianBlur(keep.astype(np.float32), (0, 0), ZONE_SOFT / 2) > 0.5) & ~edge).astype(np.uint8)
+    inside = (cv2.GaussianBlur(keep.astype(np.float32), (0, 0), ZONE_SOFT / 2) > 0.5).astype(np.uint8)
+    # centre the fade on the zone border (mostly outwards), so places right at the border stay visible
+    r = int(EDGE_FADE * 0.6)
+    inside = cv2.dilate(inside, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1)))
+    inside = (inside.astype(bool) & ~edge).astype(np.uint8)
     dist = cv2.distanceTransform(np.pad(inside, 1), cv2.DIST_L2, 5)[1:-1, 1:-1]
     zf = np.clip(dist / EDGE_FADE, 0, 1)
     zf = zf * zf * (3 - 2 * zf)
@@ -288,7 +294,8 @@ def main(zone_names):
     keep |= sea & (cv2.dilate(keep.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0)
     keep = cv2.resize(keep.astype(np.uint8), (m.W, m.H), interpolation=cv2.INTER_NEAREST) > 0
     layers = line_layers(L, keep)
-    written = write_tiles(layers, cols, rows, tiles)
+    # every mosaic tile with content (the fade reaches a bit into neighbouring tiles)
+    written = write_tiles(layers, cols, rows, {(c, r) for c in cols for r in rows})
     os.makedirs(BUILD, exist_ok=True)
     half = lambda a: cv2.resize(a, (a.shape[1] // 2, a.shape[0] // 2), interpolation=cv2.INTER_AREA)
     cv2.imwrite(os.path.join(BUILD, 'preview_lines.png'), half(compose(layers)))

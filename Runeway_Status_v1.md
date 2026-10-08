@@ -167,6 +167,8 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 - **Quelle:** `Runeway_Strings.md` enthält alle sichtbaren Texte mit Schlüssel, Englisch und Deutsch (von Mario abgestimmt). `python scripts/make_locales.py` erzeugt daraus `Runeway/Locales/enUS.lua` und `deDE.lua` – nicht von Hand ändern, sondern die Liste pflegen und neu erzeugen.
 - **Laufzeit:** `enUS.lua` legt `ns.L` mit allen englischen Texten an; jede weitere Sprachdatei prüft `GetLocale()` und überschreibt nur ihre Schlüssel. Fehlt ein Schlüssel, bleibt der englische Text. Code verwendet nur `L.KEY`.
 - **Weitere Sprachen:** je eine Datei `Runeway/Locales/<locale>.lua` (Aufbau wie `deDE.lua`), in der `.toc` nach `enUS.lua` eintragen. Nicht übersetzt: Befehle, Ebenen-Namen in Befehlen, Entwickler-Ausgaben.
+- **Sprachen:** enUS (Quelle), deDE (von Mario abgestimmt, aus `Runeway_Strings.md` erzeugt) sowie frFR, esES, esMX, itIT, ptBR, ruRU, koKR, zhCN, zhTW (KI-Übersetzung, von Muttersprachlern noch nicht geprüft; Dateien von Hand gepflegt). Die Befehlshilfe (`USAGE`, `USAGE_COLOR`) bleibt in allen Sprachen englisch.
+- **Neue oder geänderte Texte:** in `Runeway_Strings.md` (Englisch, Deutsch) ändern, `make_locales.py` laufen lassen, dann die neun anderen Dateien ergänzen; `check_locales.py` meldet fehlende Schlüssel je Sprache.
 - **Prüfung:** `python tests/check_locales.py` – keine unbekannten Schlüssel, gleiche Platzhalter wie Englisch, Liste der noch englischen Texte je Sprache.
 
 ### Wichtige Laufzeit-Mechanik
@@ -386,7 +388,6 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 - **Prüfen:** ob `C_QuestLog.GetQuestsOnMap(Nachbarzone)` in Forever die Quests der Nachbarzone liefert, solange der Spieler nicht dort ist (Abschnitt 6: Bereiche kommen vom Server, nach dem Login auch ohne geöffnete Karte). Betroffen sind `QuestAreas.lua` (~Zeile 396) und die Questmarker in `Core.lua` (~Zeile 371).
 
 ### Später
-- **Weitere Sprachen:** frFR, esES, esMX, itIT, ptBR, ruRU, koKR, zhCN, zhTW als eigene Dateien in `Runeway/Locales/` (Aufbau wie `deDE.lua`), geprüft mit `tests/check_locales.py`; Englisch und Deutsch sind fertig.
 - **Weitere Städte:**
   - WMO als OBJ exportieren (wow.export, „Split WMO Groups“, ohne Texturen) und auf `data` legen.
   - Turm- oder Mauer-M2 in `M2_BLOCKERS` eintragen.
@@ -406,6 +407,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 
 ```bash
 python tests/check_locales.py                 # Sprachdateien: Schlüssel und Platzhalter wie enUS
+RUNEWAY_LOCALE=ruRU python tests/run_stub.py  # derselbe Test mit anderer Client-Sprache (Standard enUS)
 python tests/run_stub.py                      # lädt das Addon (Lua 5.1) gegen einen WoW-API-Stub, prüft Kacheln/Questbereiche/Zoom-Laden
 python tests/render_quest_outlines.py <SavedVariables/Runeway.lua>   # Questumrisse aus Probe-Daten mit dem Addon-Code
 python scripts/simulate.py                    # Darstellung aus den Kacheln

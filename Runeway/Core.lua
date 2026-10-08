@@ -218,9 +218,31 @@ local function PackOf(inst)
     return packOf[inst]
 end
 
--- Chat note for a data pack that cannot be loaded, named by its localized title
+-- Chat note for a data pack that cannot be loaded. The pack shows as a link in Runeway blue with its localized
+-- title ("[Eastern Kingdoms]"); a click opens a tooltip with pack, reason and fix, a second click closes it.
+local PACK_LINK = "|cff66ccff|Haddon:Runeway:pack:%s|h[%s]|h|r"
 local function PackFailed(pack)
-    Print(L.PACK_FAILED:format(packTitle[pack]))
+    Print(L.PACK_FAILED:format(PACK_LINK:format(pack, packTitle[pack])))
+end
+
+local packTipLink
+if EventRegistry and ItemRefTooltip then
+    local tip = ItemRefTooltip
+    tip:HookScript("OnTooltipCleared", function() packTipLink = nil end)   -- other content or closed
+    EventRegistry:RegisterCallback("SetItemRef", function(_, link)
+        local pack = link:match("^addon:Runeway:pack:(.+)$")
+        if not pack then return end
+        if tip:IsShown() and packTipLink == link then return tip:Hide() end
+        tip:SetOwner(UIParent, "ANCHOR_PRESERVE")
+        tip:ClearLines()
+        tip:SetPadding(16, 0)                                             -- room for the close button
+        tip:AddLine(packTitle[pack] or pack, 0.4, 0.8, 1)
+        tip:AddLine(L.PACK_TIP_ADDON:format(pack), 1, 1, 1)
+        tip:AddLine(L.PACK_TIP_STATUS:format(tostring(packTried[pack])), 1, 0.3, 0.3)
+        tip:AddLine(L.PACK_TIP_HINT:format(pack), nil, nil, nil, true)
+        tip:Show()
+        packTipLink = link
+    end, ns)
 end
 
 -- Loads the data pack of a map once; reports a pack that cannot be loaded (disabled, wrong version, ...)

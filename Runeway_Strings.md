@@ -145,6 +145,9 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `NO_POSITION` | Statuszeile der Karte | No position (instance?) | Keine Position (Instanz?) |
 | `NO_DATA` | Statuszeile der Karte | No contours for this area yet | Für dieses Gebiet gibt es noch keine Karte |
 | `PACK_FAILED` | Chat, wenn das Datenpaket der aktuellen Karte nicht lädt (Name des Pakets aus seinem Titel in der Client-Sprache, ohne „Runeway - “); die Karte bleibt dann ausgeblendet | Data pack %s not found. Map data could not be loaded. | Datenpaket %s nicht gefunden. Kartendaten konnten nicht geladen werden. |
+| `PACK_TIP_ADDON` | Tooltip des Paket-Links im Chat (Ordnername des Pakets) | Data pack: %s | Datenpaket: %s |
+| `PACK_TIP_STATUS` | Tooltip des Paket-Links (Grund in der Client-Sprache von Blizzard) | Status: %s | Status: %s |
+| `PACK_TIP_HINT` | Tooltip des Paket-Links, Hinweis zur Behebung (Ordnername) | Install the folder %s in Interface\AddOns, enable it in the addon list (character selection > AddOns) and restart WoW. | Ordner %s in Interface\AddOns installieren, in der Addon-Liste aktivieren (Charakterauswahl > AddOns) und WoW neu starten. |
 | `VIEW_MODE` | Statuszeile der Karte im Ansichtsmodus | View mode: drag to pan, /rnw view returns to the player | Ansichtsmodus: Ziehen verschiebt, /rnw view kehrt zum Spieler zurück |
 | `NO_MASKS` | Chat beim Laden | Note: this client does not support mask textures, the edge is clipped hard. | Hinweis: Dieser Client unterstützt keine Maskentexturen, der Rand wird hart abgeschnitten. |
 | `MSG_LOCKED` | Chat `/rnw lock` | locked (clicks pass through) | gesperrt (Klicks gehen durch) |

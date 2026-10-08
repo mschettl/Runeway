@@ -149,6 +149,13 @@ L.execute('''
     SlashCmdList.RUNEWAY("toggle")
     poll()
     print("after toggle shown:", tostring(RunewayFrame:IsShown()))
+    -- the pack link in that note: a click shows its tooltip, a second click closes it
+    EVENT_CALLBACKS.SetItemRef("addon:Runeway:pack:Runeway_Test", "[Test]", "LeftButton")
+    print("pack link tooltip shown:", tostring(ItemRefTooltip:IsShown()))
+    for _, line in ipairs(ItemRefTooltip.lines) do print("  " .. line) end
+    EVENT_CALLBACKS.SetItemRef("addon:Runeway:pack:Runeway_Test", "[Test]", "LeftButton")
+    print("second click shown:", tostring(ItemRefTooltip:IsShown()))
+    EVENT_CALLBACKS.SetItemRef("item:6948", "[Hearthstone]", "LeftButton")   -- other links are not ours
     POS[4] = 0
     poll()
     print("back on map 0 shown:", tostring(RunewayFrame:IsShown()))

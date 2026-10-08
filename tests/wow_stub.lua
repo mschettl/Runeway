@@ -132,6 +132,9 @@ function SetOverrideBinding(_, _, key, cmd) BINDINGS[key] = cmd end
 function ClearOverrideBindings() wipe(BINDINGS) end
 function GetBindingAction(key, override) return override and BINDINGS[key] or (key == "M" and "TOGGLEWORLDMAP" or "") end
 GameTooltip = obj("GameTooltip")
+ItemRefTooltip = obj("ItemRefTooltip")          -- tooltip of chat links: keeps its lines for the tests
+function ItemRefTooltip:ClearLines() self.lines = {} end
+function ItemRefTooltip:AddLine(text) self.lines[#self.lines + 1] = text end
 function GameTooltip_Hide() end
 ColorPickerFrame = obj("ColorPickerFrame")
 function ColorPickerFrame:SetupColorPickerAndShow(info) self.info = info end

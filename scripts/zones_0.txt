@@ -20,3 +20,14 @@ Searing Gorge
 Badlands
 Burning Steppes
 Riverglades
+# Stage 4 (south)
+Elwynn Forest
+Stormwind City
+Westfall
+Redridge Mountains
+Duskwood
+Deadwind Pass
+Swamp of Sorrows
+Blasted Lands
+Stranglethorn Vale
+Gillijim's Isle

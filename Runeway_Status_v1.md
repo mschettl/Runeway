@@ -379,13 +379,15 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
 | 1 | Tirisfal Glades, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains | im Spiel getestet (1.2) |
 | 2 (Norden) | Eastern Plaguelands, The Hinterlands, Arathi Highlands, Gilneas, Ruins of Gilneas | gebaut (285 Kacheln, 28,2 MB, 3,3 min, 2,3 GB RAM), im Spiel offen |
 | 3 (Mitte) | Wetlands, Dun Morogh, Loch Modan, Searing Gorge, Badlands, Burning Steppes, Riverglades | gebaut (Etappen 1–3: 499 Kacheln, 50,2 MB, 5,9 min, 3,2 GB RAM), im Spiel offen |
-| 4 (Süden) | Elwynn Forest, Stormwind City, Westfall, Redridge Mountains, Duskwood, Deadwind Pass, Swamp of Sorrows, Blasted Lands, Stranglethorn Vale, Gillijim's Isle | offen, im Probelauf ohne erkennbare Fehler |
+| 4 (Süden) | Elwynn Forest, Stormwind City, Westfall, Redridge Mountains, Duskwood, Deadwind Pass, Swamp of Sorrows, Blasted Lands, Stranglethorn Vale, Gillijim's Isle | gebaut (alle 27 Gebiete: 692 Kacheln, 69,7 MB, 8,7 min, 4,7 GB RAM), im Spiel offen |
 
 **Im Spiel prüfen (Etappe 2):** Übergänge Western Plaguelands ↔ Eastern Plaguelands, Hillsbrad ↔ Arathi, Arathi ↔ Hinterlands, Silverpine ↔ Gilneas; Dimmung beim Grenzübertritt; Küste im Norden der Eastern Plaguelands (weicher Rand statt Schraffur auf offenem Meer); Ladezeiten.
 
 **Im Spiel prüfen (Etappe 3):** Übergänge Arathi ↔ Wetlands (Thandol-Brücke), Wetlands ↔ Dun Morogh / Loch Modan, Dun Morogh ↔ Searing Gorge, Searing Gorge ↔ Burning Steppes, Badlands ↔ Riverglades; Lava in Searing Gorge und Burning Steppes (zählt bisher als Gelände); Ironforge (Innenraum, nicht kartiert); Saum unter den Linien bei starkem Zoom (seit der 128-px-Umstellung etwas weicher).
 
-**Dateigröße:** Alle 27 Gebiete ≈ 106 MB (Hochrechnung war 70 MB). Anteile: Linien `terrain` 32 MB, `shade` 31 MB, `hatch`-Maske 21 MB, `water` 13 MB, `roads` 5 MB, `fill` 4 MB; nach Stufe 512: 34 MB, 256: 55 MB, 128: 18 MB. Umgesetzt: `hatch`-Maske und `shade` nur in 128 (Etappen 1+2: 42,9 → 28,2 MB) und offenes Meer weggelassen (s. Zonen-Zuschnitt).
+**Im Spiel prüfen (Etappe 4):** Übergänge Dun Morogh / Burning Steppes ↔ Elwynn und Redridge, Elwynn ↔ Westfall / Duskwood / Redridge, Duskwood ↔ Deadwind Pass ↔ Swamp of Sorrows, Swamp of Sorrows ↔ Blasted Lands, Duskwood / Westfall ↔ Stranglethorn; Stormwind City (ohne Gebäudewände); Küsten von Westfall und Stranglethorn; Gillijim's Isle.
+
+**Dateigröße:** Alle 27 Gebiete 69,7 MB (Probelauf vor den Optimierungen: 106,5 MB). Werte des Probelaufs: Anteile: Linien `terrain` 32 MB, `shade` 31 MB, `hatch`-Maske 21 MB, `water` 13 MB, `roads` 5 MB, `fill` 4 MB; nach Stufe 512: 34 MB, 256: 55 MB, 128: 18 MB. Umgesetzt: `hatch`-Maske und `shade` nur in 128 (Etappen 1+2: 42,9 → 28,2 MB) und offenes Meer weggelassen (s. Zonen-Zuschnitt).
 
 **Bekannt aus der Vorschau:**
 - Stormwind City hat (wie andere Städte außer Undercity) keine Gebäude-Wände; dafür braucht es den WMO-Export (siehe „Weitere Städte“).

@@ -12,6 +12,32 @@ local MODES = {
     { "mapkey", "Map key (M)", "The world map key opens the overlay. The world map moves to the key bound to \"World map\"." },
     { "permanent", "Permanent", "The overlay is always shown (except when auto-hidden)." },
 }
+-- Quick commands: shown at the top of the settings (command, what it does)
+local COMMANDS = {
+    { "/rnw", "Show or hide the overlay" },
+    { "/rnw config", "Open these settings" },
+    { "/rnw lock  |  unlock", "Lock (clicks pass through) or unlock the map" },
+    { "/rnw alpha 5-100", "Map opacity in percent" },
+    { "/rnw zoom 0.08-5", "Zoom" },
+    { "/rnw size 200-1400", "Map size in pixels" },
+    { "/rnw rotate", "Rotate with the player or north up" },
+    { "/rnw edge 1-5", "Soft edge strength" },
+    { "/rnw mode key | mapkey | permanent", "How the overlay opens" },
+    { "/rnw layer NAME", "Show or hide a layer: fill, hatch, shade, terrain, water, roads, questareas" },
+    { "/rnw color NAME R G B [A]", "Layer colour and opacity, values 0-1" },
+    { "/rnw keys", "Show what the map key triggers" },
+    { "/rnw pos", "Position and map ID to copy" },
+    { "/rnw reset", "Reset all settings" },
+}
+
+-- Settings row: command on the left, description on the right (template in Options.xml)
+RunewayCommandRowMixin = CreateFromMixins(SettingsListElementMixin)
+function RunewayCommandRowMixin:Init(initializer)
+    SettingsListElementMixin.Init(self, initializer)
+    self.Text:SetPoint("RIGHT", self, "CENTER", -10, 0)   -- wider than the default label column
+    self.Desc:SetText(initializer.data.desc)
+end
+
 local AUTO_HIDE = {
     { "combat", "In combat" }, { "instance", "In instances" }, { "mounted", "Mounted, flying or on a taxi" },
     { "city", "In cities and inns (resting)" },
@@ -68,6 +94,11 @@ local function Build()
     local layout
     category, layout = Settings.RegisterVerticalLayoutCategory("Runeway")
     local function Header(text) layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(text)) end
+
+    Header("Quick commands")
+    for _, c in ipairs(COMMANDS) do
+        layout:AddInitializer(Settings.CreateElementInitializer("RunewayCommandRowTemplate", { name = c[1], desc = c[2] }))
+    end
 
     Header("Open with")
     local mode = Setting("mode", Settings.VarType.String, "Open with", function() ns.ApplyAll() end)

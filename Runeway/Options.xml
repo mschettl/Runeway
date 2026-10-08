@@ -1,0 +1,19 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <!-- Quick commands row: command (Text, from SettingsListElementTemplate) and its description -->
+    <Frame name="RunewayCommandRowTemplate" inherits="SettingsListElementTemplate" mixin="RunewayCommandRowMixin" virtual="true">
+        <Size x="280" y="26"/>
+        <Layers>
+            <Layer level="OVERLAY">
+                <FontString parentKey="Desc" inherits="GameFontHighlight" justifyH="LEFT" wordwrap="false">
+                    <Anchors>
+                        <Anchor point="LEFT" relativePoint="CENTER" x="0" y="0"/>
+                        <Anchor point="RIGHT" x="-20" y="0"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
+</Ui>

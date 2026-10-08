@@ -8,3 +8,4 @@ Tiles.lua
 Core.lua
 QuestAreas.lua
 Options.lua
+Options.xml

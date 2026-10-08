@@ -120,10 +120,6 @@ local top = CreateFrame("Frame", nil, view)
 top:SetAllPoints()
 top:SetFrameLevel(canvas:GetFrameLevel() + 5)
 
-local editHint = top:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-editHint:SetPoint("TOP", 0, -4)
-editHint:SetText("Drag = move  |  Wheel = zoom  |  Corner or Shift+wheel = size  |  /rnw config")
-
 local status = top:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 status:SetPoint("BOTTOM", 0, 6)
 
@@ -629,7 +625,6 @@ local function ApplyLock()
     local unlocked = not db.locked
     view:EnableMouse(unlocked)
     view:EnableMouseWheel(true)
-    editHint:SetShown(unlocked)
     grip:SetShown(unlocked)
     ShowBorder(unlocked and db.hover and view:IsMouseOver())
 end

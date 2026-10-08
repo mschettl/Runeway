@@ -153,9 +153,16 @@ Settings = {
         return { Add = function(_, v, label) d[#d + 1] = { value = v, label = label } end, GetData = function() return d end }
     end,
     RegisterAddOnCategory = function() end,
+    CreateElementInitializer = function(template, data) return { kind = "element", template = template, data = data } end,
     OpenToCategory = function(id) OPENED = id end,
 }
 MinimalSliderWithSteppersMixin = { Label = { Right = 1 } }
+SettingsListElementMixin = { Init = function() end }
+function CreateFromMixins(...)
+    local t = {}
+    for _, m in ipairs({ ... }) do for k, v in pairs(m) do t[k] = v end end
+    return t
+end
 function CreateSettingsListSectionHeaderInitializer(name) return { kind = "header", name = name } end
 function CreateSettingsButtonInitializer(name, text, click) return { kind = "button", click = click } end
 function CreateSettingsCheckboxSliderInitializer(cb, _, _, slider, options) return { kind = "checkslider", setting = cb, slider = slider, options = options } end

@@ -26,11 +26,33 @@ Ob WoW Forever alle Sprachen ausliefert, ist im Client zu prüfen; der Code fäl
 
 | Schlüssel | Englisch | Deutsch (Vorschlag) |
 |---|---|---|
+| `HEADER_COMMANDS` | Quick commands | Schnellbefehle |
 | `HEADER_OPEN` | Open with | Öffnen mit |
 | `HEADER_AUTOHIDE` | Hide automatically | Automatisch ausblenden |
 | `HEADER_WINDOW` | Window | Fenster |
 | `HEADER_DISPLAY` | Display | Darstellung |
 | `HEADER_LAYERS` | Layers | Ebenen |
+
+## 1a. Optionen – Schnellbefehle
+
+Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte Beschreibung.
+
+| Schlüssel | Befehl | Englisch | Deutsch (Vorschlag) |
+|---|---|---|---|
+| `CMD_TOGGLE` | /rnw | Show or hide the overlay | Overlay ein- oder ausblenden |
+| `CMD_CONFIG` | /rnw config | Open these settings | Diese Einstellungen öffnen |
+| `CMD_LOCK` | /rnw lock \| unlock | Lock (clicks pass through) or unlock the map | Karte sperren (Klicks gehen durch) oder entsperren |
+| `CMD_ALPHA` | /rnw alpha 5-100 | Map opacity in percent | Kartendeckkraft in Prozent |
+| `CMD_ZOOM` | /rnw zoom 0.08-5 | Zoom | Zoom |
+| `CMD_SIZE` | /rnw size 200-1400 | Map size in pixels | Kartengröße in Pixeln |
+| `CMD_ROTATE` | /rnw rotate | Rotate with the player or north up | Mit dem Spieler drehen oder Norden oben |
+| `CMD_EDGE` | /rnw edge 1-5 | Soft edge strength | Stärke des weichen Rands |
+| `CMD_MODE` | /rnw mode key \| mapkey \| permanent | How the overlay opens | Wie das Overlay geöffnet wird |
+| `CMD_LAYER` | /rnw layer NAME | Show or hide a layer: fill, hatch, shade, terrain, water, roads, questareas | Ebene ein- oder ausblenden: fill, hatch, shade, terrain, water, roads, questareas |
+| `CMD_COLOR` | /rnw color NAME R G B [A] | Layer colour and opacity, values 0-1 | Farbe und Deckkraft einer Ebene, Werte 0-1 |
+| `CMD_KEYS` | /rnw keys | Show what the map key triggers | Anzeigen, was die Kartentaste auslöst |
+| `CMD_POS` | /rnw pos | Position and map ID to copy | Position und Karten-ID zum Kopieren |
+| `CMD_RESET` | /rnw reset | Reset all settings | Alle Einstellungen zurücksetzen |
 
 ## 2. Optionen – Öffnen mit
 
@@ -96,7 +118,6 @@ Je Ebene drei Texte: Name (Häkchen), „… opacity“ (Regler, nur Suche/Toolt
 | `BINDING_TOGGLE` | Tastenbelegung | Toggle overlay map | Overlay-Karte ein/aus |
 | `BINDING_WORLDMAP` | Tastenbelegung | World map (map key mode) | Weltkarte (Modus Kartentaste) |
 | `WORLDMAP_BUTTON` | Knopf auf der Weltkarte | Overlay | Overlay |
-| `EDIT_HINT` | Karte entsperrt, Mausüberfahrt | Drag = move \| Wheel = zoom \| Corner or Shift+wheel = size \| /rnw config | Ziehen = verschieben \| Mausrad = zoomen \| Ecke oder Shift+Mausrad = Größe \| /rnw config |
 | `NO_POSITION` | Statuszeile der Karte | No position (instance?) | Keine Position (Instanz?) |
 | `NO_DATA` | Statuszeile der Karte | No contours for this area yet | Für dieses Gebiet gibt es noch keine Karte |
 | `NO_MASKS` | Chat beim Laden | Note: this client does not support mask textures, the edge is clipped hard. | Hinweis: Dieser Client unterstützt keine Maskentexturen, der Rand wird hart abgeschnitten. |

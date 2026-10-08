@@ -145,6 +145,9 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 - Position: `C_DeathInfo.GetCorpseMapPosition` auf der Spielerkarte, sonst auf deren Elternkarten (Friedhof in anderer Zone); einmal pro Sekunde gesucht, bis sie bekannt ist.
 - Liegt der Leichnam außerhalb des Sichtfelds, sitzt der Marker am Kartenrand in seiner Richtung.
 
+### Schnellbefehle
+- Ganz oben in den Einstellungen („Quick commands“): alle Slash-Befehle mit Beschreibung. Eigene Zeilenvorlage `RunewayCommandRowTemplate` (`Options.xml`, erbt `SettingsListElementTemplate`): Befehl links, Beschreibung rechts. Der frühere Bedienhinweis oben auf der entsperrten Karte ist entfernt.
+
 ### Lokalisierung (geplant)
 - Sichtbare Texte und Vorschläge: `Runeway_Strings.md`. Sprache nach `GetLocale()`, Rückfall Englisch.
 

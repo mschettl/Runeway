@@ -168,9 +168,9 @@ L.execute('''
     check("corpse marker while dead", corpseShown and not TEXTURE_OBJECTS[("Interface/Minimap/POIIcons"):gsub("/", string.char(92))]:IsShown())
     local za = NS.ZoneAlpha()
     check("zones: Tirisfal full, Silverpine dimmed", za[1] == 1 and math.abs(za[2] - db.zoneDim) < 0.02)
-    check("quick commands: 14 rows with description", kinds.element == 14 and INITS[2].data.desc ~= nil)
-    check("settings rows: 6 headers, 2 bindings, 7 layers",
-        kinds.header == 6 and kinds.binding == 2 and kinds.checkslider == 7 and kinds.color == 7)
+    check("main page: intro + 14 quick commands", kinds.element == 15 and INITS[1].data.text == NS.L.INTRO and INITS[3].data.desc ~= nil)
+    check("settings rows: 1 header, 2 bindings, 7 layers",
+        kinds.header == 1 and kinds.binding == 2 and kinds.checkslider == 7 and kinds.color == 7)
     check("mode dropdown has 3 entries", #INITS[17].options == 3)
     for var, st in pairs(SETTINGS) do
         if st:GetValue() == nil then check("setting reads a value: " .. var, false) end

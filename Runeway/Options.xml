@@ -16,4 +16,21 @@
             <OnLoad method="OnLoad"/>
         </Scripts>
     </Frame>
+    <!-- Paragraph row (intro text): wraps over the full width; height from the initializer's GetExtent -->
+    <Frame name="RunewayTextRowTemplate" inherits="SettingsListElementTemplate" mixin="RunewayTextRowMixin" virtual="true">
+        <Size x="280" y="90"/>
+        <Layers>
+            <Layer level="OVERLAY">
+                <FontString parentKey="Body" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP" wordwrap="true">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="37" y="-8"/>
+                        <Anchor point="BOTTOMRIGHT" x="-20" y="4"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
 </Ui>

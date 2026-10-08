@@ -26,6 +26,7 @@ Ob WoW Forever alle Sprachen ausliefert, ist im Client zu prüfen; der Code fäl
 
 | Schlüssel | Englisch | Deutsch |
 |---|---|---|
+| `INTRO` | Runeway shows a player-centred, rotating overlay map in the style of Diablo IV and Path of Exile: walkable areas, terrain and water lines, roads, and the quest areas of your current and adjacent zones. Open it with its own key, the map key or permanently. All settings are in the sub-entries on the left. | Runeway zeigt eine spielerzentrierte, mitdrehende Overlay-Karte im Stil von Diablo IV und Path of Exile: begehbare Bereiche, Gelände- und Wasserlinien, Wege sowie die Questbereiche deiner aktuellen und der angrenzenden Zonen. Öffnen lässt sie sich über eine eigene Taste, die Kartentaste oder dauerhaft. Alle Einstellungen findest du in den Unterpunkten links. |
 | `HEADER_COMMANDS` | Quick commands | Schnellbefehle |
 | `HEADER_OPEN` | Open with | Öffnen mit |
 | `HEADER_AUTOHIDE` | Hide automatically | Automatisch ausblenden |

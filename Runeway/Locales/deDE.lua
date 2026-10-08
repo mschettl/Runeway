@@ -2,6 +2,7 @@
 if GetLocale() ~= "deDE" then return end
 local ADDON, ns = ...
 local L = ns.L
+L.INTRO = "Runeway zeigt eine spielerzentrierte, mitdrehende Overlay-Karte im Stil von Diablo IV und Path of Exile: begehbare Bereiche, Gelände- und Wasserlinien, Wege sowie die Questbereiche deiner aktuellen und der angrenzenden Zonen. Öffnen lässt sie sich über eine eigene Taste, die Kartentaste oder dauerhaft. Alle Einstellungen findest du in den Unterpunkten links."
 L.HEADER_COMMANDS = "Schnellbefehle"
 L.HEADER_OPEN = "Öffnen mit"
 L.HEADER_AUTOHIDE = "Automatisch ausblenden"

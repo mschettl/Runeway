@@ -39,12 +39,20 @@ function RunewayCommandRowMixin:Init(initializer)
     self.Desc:SetText(initializer.data.desc)
 end
 
+-- Settings row with a wrapped paragraph (intro text); the row height comes from the initializer
+RunewayTextRowMixin = CreateFromMixins(SettingsListElementMixin)
+function RunewayTextRowMixin:Init(initializer)
+    SettingsListElementMixin.Init(self, initializer)
+    self.Text:Hide()
+    self.Body:SetText(initializer.data.text)
+end
+
 local AUTO_HIDE = {
     { "combat", L.HIDE_COMBAT }, { "instance", L.HIDE_INSTANCE }, { "mounted", L.HIDE_MOUNTED },
     { "city", L.HIDE_CITY },
 }
 
-local category
+local category, cat                 -- main category; category the settings below are added to
 
 -- Value at a dotted path in RunewayDB or in the defaults, e.g. "colors.fill.a"
 local function Get(tbl, path)
@@ -59,13 +67,13 @@ end
 
 -- Proxy setting bound to a db path; apply runs after every change
 local function Setting(path, varType, label, apply)
-    return Settings.RegisterProxySetting(category, "RUNEWAY_" .. path:upper():gsub("%.", "_"), varType, label,
+    return Settings.RegisterProxySetting(cat, "RUNEWAY_" .. path:upper():gsub("%.", "_"), varType, label,
         Get(ns.DEFAULTS, path), function() return Get(ns.db(), path) end,
         function(v) Set(path, v); if apply then apply(v) end end)
 end
 
 local function Check(path, label, tooltip, apply)
-    Settings.CreateCheckbox(category, Setting(path, Settings.VarType.Boolean, label, apply), tooltip)
+    Settings.CreateCheckbox(cat, Setting(path, Settings.VarType.Boolean, label, apply), tooltip)
 end
 
 local function SliderOptions(min, max, step, fmt)
@@ -75,7 +83,7 @@ local function SliderOptions(min, max, step, fmt)
 end
 
 local function Slider(path, label, min, max, step, fmt, apply, tooltip)
-    Settings.CreateSlider(category, Setting(path, Settings.VarType.Number, label, apply),
+    Settings.CreateSlider(cat, Setting(path, Settings.VarType.Number, label, apply),
         SliderOptions(min, max, step, fmt), tooltip)
 end
 
@@ -92,18 +100,25 @@ local function Binding(layout, action)
 end
 
 local function Build()
-    local layout
-    category, layout = Settings.RegisterVerticalLayoutCategory("Runeway")
-    local function Header(text) layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(text)) end
-
-    Header(L.HEADER_COMMANDS)
+    -- Main page: intro and quick commands; the settings are sub-entries in the tree on the left
+    local main
+    category, main = Settings.RegisterVerticalLayoutCategory("Runeway")
+    local intro = Settings.CreateElementInitializer("RunewayTextRowTemplate", { name = "", text = L.INTRO })
+    intro.GetExtent = function() return 90 end
+    main:AddInitializer(intro)
+    main:AddInitializer(CreateSettingsListSectionHeaderInitializer(L.HEADER_COMMANDS))
     for _, c in ipairs(COMMANDS) do
-        layout:AddInitializer(Settings.CreateElementInitializer("RunewayCommandRowTemplate", { name = c[1], desc = c[2] }))
+        main:AddInitializer(Settings.CreateElementInitializer("RunewayCommandRowTemplate", { name = c[1], desc = c[2] }))
     end
 
-    Header(L.HEADER_OPEN)
+    local layout
+    local function Page(name)
+        cat, layout = Settings.RegisterVerticalLayoutSubcategory(category, name)
+    end
+
+    Page(L.HEADER_OPEN)
     local mode = Setting("mode", Settings.VarType.String, L.OPEN_WITH, function() ns.ApplyAll() end)
-    Settings.CreateDropdown(category, mode, function()
+    Settings.CreateDropdown(cat, mode, function()
         local container = Settings.CreateControlTextContainer()
         for _, m in ipairs(MODES) do container:Add(m[1], m[2], m[3]) end
         return container:GetData()
@@ -111,19 +126,19 @@ local function Build()
     Binding(layout, "RUNEWAY_TOGGLE")
     Binding(layout, "RUNEWAY_WORLDMAP")
 
-    Header(L.HEADER_AUTOHIDE)
+    Page(L.HEADER_AUTOHIDE)
     for _, a in ipairs(AUTO_HIDE) do
         Check("autoHide." .. a[1], a[2], nil, function() ns.UpdateVisibility() end)
     end
 
-    Header(L.HEADER_WINDOW)
+    Page(L.HEADER_WINDOW)
     Check("rotate", L.ROTATE)
     Check("locked", L.LOCKED, L.LOCKED_TIP, function() ns.ApplyAll() end)
     Check("hover", L.HOVER, nil, function() ns.ApplyAll() end)
     Slider("w", L.SIZE, ns.SIZE_MIN, ns.SIZE_MAX, 10, function(v) return ("%d px"):format(v) end, function() ns.ApplyAll() end)
     layout:AddInitializer(CreateSettingsButtonInitializer(L.OVERLAY, L.SHOW_HIDE, function() Runeway_Toggle() end, nil, false))
 
-    Header(L.HEADER_DISPLAY)
+    Page(L.HEADER_DISPLAY)
     Slider("alpha", L.MAP_OPACITY, 0.05, 1, 0.01, Pct, function() ns.ApplyAll() end)
     Slider("zoom", L.ZOOM, ns.ZOOM_MIN, ns.ZOOM_MAX, 0.01, function(v) return ("%.2f"):format(v) end, function(v) ns.SetZoom(v) end)
     Slider("zoneDim", L.NEIGHBOUR_ZONES, 0, 1, 0.01, Pct, nil, L.NEIGHBOUR_ZONES_TIP)
@@ -135,27 +150,27 @@ local function Build()
     Check("questMerge", L.QUEST_MERGE, L.QUEST_MERGE_TIP)
 
     -- Layers: show + opacity in one row, colour in the row below
-    Header(L.HEADER_LAYERS)
+    Page(L.HEADER_LAYERS)
     local function Apply() ns.ApplyColors() end
     for _, layer in ipairs(ns.LAYER_KEYS) do
         local label, c = LAYER_LABELS[layer], "colors." .. layer
-        local shown = Settings.RegisterProxySetting(category, "RUNEWAY_LAYER_" .. layer:upper(), Settings.VarType.Boolean,
+        local shown = Settings.RegisterProxySetting(cat, "RUNEWAY_LAYER_" .. layer:upper(), Settings.VarType.Boolean,
             label, ns.DEFAULTS.layers[layer], function() return ns.db().layers[layer] end,
             function(v) ns.db().layers[layer] = v; Apply() end)
-        local opacity = Settings.RegisterProxySetting(category, "RUNEWAY_OPACITY_" .. layer:upper(), Settings.VarType.Number,
+        local opacity = Settings.RegisterProxySetting(cat, "RUNEWAY_OPACITY_" .. layer:upper(), Settings.VarType.Number,
             L.LAYER_OPACITY:format(label), ns.DEFAULTS.colors[layer].a, function() return ns.db().colors[layer].a end,
             function(v) ns.db().colors[layer].a = v; Apply() end)
         layout:AddInitializer(CreateSettingsCheckboxSliderInitializer(shown, label, nil, opacity,
             SliderOptions(0, 1, 0.01, Pct), L.LAYER_OPACITY:format(label)))
         local function Hex(col) return CreateColor(col.r, col.g, col.b):GenerateHexColor() end
-        local color = Settings.RegisterProxySetting(category, "RUNEWAY_COLOR_" .. layer:upper(), Settings.VarType.String,
+        local color = Settings.RegisterProxySetting(cat, "RUNEWAY_COLOR_" .. layer:upper(), Settings.VarType.String,
             L.LAYER_COLOUR:format(label), Hex(Get(ns.DEFAULTS, c)), function() return Hex(Get(ns.db(), c)) end,
             function(v)
                 local col = Get(ns.db(), c)
                 col.r, col.g, col.b = CreateColorFromHexString(v):GetRGB()
                 Apply()
             end)
-        Settings.CreateColorSwatch(category, color)
+        Settings.CreateColorSwatch(cat, color)
     end
 
     Settings.RegisterAddOnCategory(category)

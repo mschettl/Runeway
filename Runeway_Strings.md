@@ -66,6 +66,7 @@ Ob WoW Forever alle Sprachen ausliefert, ist im Client zu prüfen; der Code fäl
 | `SOFT_EDGE` | Soft edge | Weicher Rand |
 | `PLAYER_ARROW` | Player arrow | Spielerpfeil |
 | `QUEST_MARKS` | Quest marks | Questmarker |
+| `CORPSE_MARKER` | Corpse marker | Leichnam-Marker |
 | `QUEST_EDGE` | Quest area edge | Questbereich-Rand |
 | `QUEST_MERGE` | Combine overlapping quest areas | Überlappende Questbereiche zusammenfassen |
 | `QUEST_MERGE_TIP` | Quests whose areas overlap get one shared outline. Off: every quest keeps its own outline. | Quests mit überlappenden Bereichen erhalten einen gemeinsamen Umriss. Aus: jede Quest behält ihren eigenen Umriss. |
@@ -115,7 +116,7 @@ Je Ebene drei Texte: Name (Häkchen), „… opacity“ (Regler, nur Suche/Toolt
 | `USAGE_COLOR` | Chat, Hilfe | /rnw color fill\|hatch\|shade\|terrain\|water\|roads\|questareas R G B [A]   (0-1) | (Befehl bleibt, nur ggf. „(0-1)“) |
 | `USAGE` | Chat, Hilfe | /rnw [toggle] \| config \| lock \| unlock \| alpha 5-100 \| zoom 0.08-5 \| size N \| rotate \| edge 1-5 \| mode key\|mapkey\|permanent \| layer NAME \| color NAME R G B [A] \| keys \| pos \| reset | (Befehle bleiben englisch) |
 
-Der Leichnam-Marker hat keinen eigenen Text; das Symbol stammt aus dem Spiel.
+Der Leichnam-Marker selbst zeigt keinen Text; das Symbol stammt aus dem Spiel.
 
 ## 6. Entwickler-Ausgaben (bleiben Englisch)
 

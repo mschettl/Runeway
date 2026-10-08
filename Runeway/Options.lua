@@ -100,6 +100,7 @@ local function Build()
     Slider("edge", "Soft edge", 1, 5, 1, function(v) return ("%d"):format(v) end, function() ns.ApplyAll() end)
     Slider("arrowSize", "Player arrow", 12, 48, 1, function(v) return ("%d px"):format(v) end)
     Slider("pinSize", "Quest marks", 14, 48, 1, function(v) return ("%d px"):format(v) end)
+    Slider("corpseSize", "Corpse marker", 12, 48, 1, function(v) return ("%d px"):format(v) end)
     Slider("questEdge", "Quest area edge", 0.5, 2.5, 0.05, function(v) return ("%.2f x"):format(v) end)
     Check("questMerge", "Combine overlapping quest areas",
         "Quests whose areas overlap get one shared outline. Off: every quest keeps its own outline.")

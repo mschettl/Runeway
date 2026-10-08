@@ -92,7 +92,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `autoHide.combat/instance/mounted/city` | alle false (`city` = ausgeruht, also Städte und Gasthäuser) |
 | `hover` | true (Rahmen bei Mausüberfahrt, nur entsperrt) |
 | `edge` | 3 (Randstärke 1–5, Breite 0,12 / 0,25 / 0,38 / 0,55 / 0,75 des Radius) |
-| `arrowSize`, `pinSize`, `questEdge` | 25, 25, 0.8 (Faktor für die Breite der Questränder) |
+| `arrowSize`, `pinSize`, `corpseSize`, `questEdge` | 25, 25, 25, 0.8 (Faktor für die Breite der Questränder) |
 | `questMerge` | true: überlappende Questbereiche bekommen einen gemeinsamen Umriss |
 | `zoneDim` | 0.3: Deckkraft-Faktor der angrenzenden Zonen (Option „Neighbouring zones“) |
 | `questAreaCache` | `[mapID] = { areas, groups }`, Version über `questAreaCacheVersion` (2) |
@@ -141,7 +141,7 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 - **Laufzeit:** Die aktive Zone kommt aus der Spielerposition (Chunk-Raster), nicht aus der API; damit passt sie exakt zur Karte. Alle anderen Zonen werden mit `zoneDim` multipliziert, beim Zonenwechsel über ~0,4 s übergeblendet. Außerhalb der gebauten Zonen wird nichts gedimmt. Questbereiche werden nicht gedimmt.
 
 ### Leichnam-Marker
-- Solange der Spieler tot bzw. Geist ist (`UnitIsDeadOrGhost`), zeigt die Karte die Position des Leichnams mit Blizzards Weltkarten-Symbol (`Interface\Minimap\POIIcons`, Texturkoordinaten wie `CorpsePinTemplate`), Größe wie die Questmarker.
+- Solange der Spieler tot bzw. Geist ist (`UnitIsDeadOrGhost`), zeigt die Karte die Position des Leichnams mit Blizzards Weltkarten-Symbol (`Interface\Minimap\POIIcons`, Texturkoordinaten wie `CorpsePinTemplate`), Größe über die Option „Corpse marker“ (`corpseSize`, Standard 25 px wie Spieler- und Questmarker).
 - Position: `C_DeathInfo.GetCorpseMapPosition` auf der Spielerkarte, sonst auf deren Elternkarten (Friedhof in anderer Zone); einmal pro Sekunde gesucht, bis sie bekannt ist.
 - Liegt der Leichnam außerhalb des Sichtfelds, sitzt der Marker am Kartenrand in seiner Richtung.
 

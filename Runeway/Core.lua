@@ -31,7 +31,7 @@ local defaults = {
     autoHide = { combat = false, instance = false, mounted = false, city = false },
     hover = true,            -- unlocked: subtle frame while the mouse is over the map
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
-    arrowSize = 25, pinSize = 25, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
+    arrowSize = 25, pinSize = 25, corpseSize = 25, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
     questMerge = true,       -- overlapping quest areas as one combined outline
     zoneDim = 0.3,           -- opacity factor of the neighbouring zones (the player is not in)
     colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,
@@ -518,10 +518,10 @@ local function UpdateCorpse()
     if not corpseN then corpse:Hide() return end
     local x, y = ToScreen(corpseN, corpseW)
     local W, H = view:GetSize()
-    local edge = math.min(W, H) / 2 - db.pinSize                -- keep the whole icon inside the round map
+    local edge = math.min(W, H) / 2 - db.corpseSize             -- keep the whole icon inside the round map
     local d = math.sqrt(x * x + y * y)
     if d > edge then x, y = x * edge / d, y * edge / d end
-    corpse:SetSize(db.pinSize, db.pinSize)
+    corpse:SetSize(db.corpseSize, db.corpseSize)
     corpse:ClearAllPoints()
     corpse:SetPoint("CENTER", view, "CENTER", x, y)
     corpse:Show()

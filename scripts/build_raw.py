@@ -545,16 +545,6 @@ def main(map_id, zone_names):
     rows = list(range(min(r for _, r in tiles) - 1, max(r for _, r in tiles) + 2))
     print(f'map {map_id}: {len(tiles)} tiles, mosaic cols {cols[0]}-{cols[-1]} rows {rows[0]}-{rows[-1]}', flush=True)
 
-    # zone mask per chunk: zone land, plus sea chunks next to it (the coast belongs to the zone)
-    keep = np.zeros((len(rows) * 16, len(cols) * 16), bool)
-    sea = np.zeros_like(keep)
-    for (c, r), a in idx.items():
-        if c in cols and r in rows:
-            ys = slice((r - rows[0]) * 16, (r - rows[0] + 1) * 16)
-            xs = slice((c - cols[0]) * 16, (c - cols[0] + 1) * 16)
-            keep[ys, xs] = land(a)
-            sea[ys, xs] = np.isin(a, list(seas))
-    keep |= sea & (cv2.dilate(keep.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0)
     # zone number (1..n, order of zone_names) per chunk; chunks outside the built zones (sea, fade area)
     # belong to the nearest built zone
     order = [names[n.lower()] for n in zone_names]
@@ -574,6 +564,26 @@ def main(map_id, zone_names):
 
     L = masks(raw_masks(name, cols, rows))
     print('masks done', flush=True)
+    # zone mask per chunk: zone land, plus sea chunks next to it (the coast belongs to the zone). Open water
+    # chunks of a zone (no dry ground, connected to the mosaic border) count as sea, so the zone's ocean is
+    # kept only near its coast; enclosed lakes stay.
+    d = (L['present'] & ~L['water']).view(np.uint8)
+    d *= 255
+    dry = cv2.resize(d, (len(cols) * 16, len(rows) * 16), interpolation=cv2.INTER_AREA) > 5   # > 2 % dry
+    del d
+    keep = np.zeros((len(rows) * 16, len(cols) * 16), bool)
+    sea = np.zeros_like(keep)
+    for (c, r), a in idx.items():
+        if c in cols and r in rows:
+            ys = slice((r - rows[0]) * 16, (r - rows[0] + 1) * 16)
+            xs = slice((c - cols[0]) * 16, (c - cols[0] + 1) * 16)
+            keep[ys, xs] = land(a)
+            sea[ys, xs] = np.isin(a, list(seas))
+    _, lab = cv2.connectedComponents(np.pad(u8(~(keep & dry)), 1, constant_values=1), connectivity=4)
+    ocean = keep & ~dry & (lab[1:-1, 1:-1] == lab[0, 0])
+    sea |= ocean
+    keep &= ~ocean
+    keep |= sea & (cv2.dilate(keep.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0)
     G = map_lines(L)
     print('lines done', flush=True)
 

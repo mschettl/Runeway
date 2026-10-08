@@ -56,13 +56,13 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 
 | Datei | Inhalt |
 |---|---|
-| `Runeway.toc` | Interface 16001, Version 1.4.1, SavedVariables `RunewayDB`; lädt `Locales/*.lua`, `Tiles.lua`, `Core.lua`, `QuestAreas.lua`, `Profile.lua`, `Options.lua`, `Options.xml` |
+| `Runeway.toc` | Interface 16001, Version 1.4.1, SavedVariables `RunewayDB`; lädt `Locales/*.lua`, `tiles/0/Tiles.lua`, `Core.lua`, `QuestAreas.lua`, `Profile.lua`, `Options.lua`, `Options.xml` |
 | `Locales/` | Texte je Client-Sprache (`ns.L`): `enUS.lua` (Basis) und `deDE.lua` aus `Runeway_Strings.md` erzeugt, die übrigen neun von Hand gepflegt |
 | `Core.lua` | Fenster, Kacheln, Zoom, Drehung, Zonen-Dimmung, Questmarker, Leichnam, Mouse-over, Sichtbarkeit und Aufruf-Modi, Slash-Befehle, Standardwerte |
 | `QuestAreas.lua` | Questbereiche: Abtasten, Umriss, Zeichnen, Trefferprüfung für Mouse-over |
 | `Profile.lua` | Profil-Export/-Import und sein Dialog; Pfad-Hilfen `ns.GetPath`/`ns.SetPath` |
 | `Options.lua`, `Options.xml` | Einstellungen im Blizzard-Stil (`Settings.RegisterVerticalLayoutCategory` mit Proxy-Settings), eigene Zeilenvorlagen; wird bei `PLAYER_LOGIN` aufgebaut, weil die Tastenbelegungs-Zeilen `GetNumBindings` brauchen |
-| `Tiles.lua` | generiert: Kacheln mit ihren Ebenen (`["31_28"] = "fhstwr"`, Grenzkacheln als Zonenteile `"c_r_z<zone>"`) und `RunewayZones` |
+| `tiles/<Karten-ID>/Tiles.lua` | generiert, je Karte: `RunewayTiles[id]` (Kacheln mit ihren Ebenen, `["31_28"] = "fhstwr"`, Grenzkacheln als Zonenteile `"c_r_z<zone>"`) und `RunewayZones[id]` |
 | `Bindings.xml` | Tastenbelegungen `RUNEWAY_TOGGLE` und `RUNEWAY_WORLDMAP` |
 | `media/` | `hatch512/256/128.tga` (gemeinsames Schraffurmuster je Zoomstufe, erzeugt von `build_raw.py`), `fade1.tga`–`fade5.tga` (Ausblendmasken je Randstärke, `scripts/make_masks.py`), `arrow.tga` (Spielerpfeil), `edge.tga` (kantengeglättete Linientextur), `dot.tga` (Rückfall-Symbol) |
 | `tiles/0/[256/ \| 128/]<key>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Speicherbedarf siehe „Dateigröße“ unten |
@@ -142,7 +142,7 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 - **Modus `mapkey`:** Die Tasten von `TOGGLEWORLDMAP` (Rückfall `M`) lösen `RUNEWAY_TOGGLE` aus. Die Tasten der Belegung `RUNEWAY_WORLDMAP` („World map (map key mode)“) lösen per Override `TOGGLEWORLDMAP` aus. Gesetzt wird sie als normale Tastenbelegung, direkt auf der Runeway-Seite. `UPDATE_BINDINGS` wendet alles neu an; `/rnw keys` zeigt den Stand.
 
 ### Zonen-Dimmung
-- **Daten:** `Tiles.lua` enthält `RunewayZones[inst]`: Zonennamen (Nummer = Reihenfolge in `zones.txt`), die Zone je Kachel-Schlüssel und für Grenzkacheln die Zone jedes ihrer 16 × 16 Chunks.
+- **Daten:** `tiles/<id>/Tiles.lua` enthält `RunewayZones[id]`: Zonennamen (Nummer = Reihenfolge in `zones_<id>.txt`), die Zone je Kachel-Schlüssel und für Grenzkacheln die Zone jedes ihrer 16 × 16 Chunks (ein Zeichen je Chunk aus `1-9A-Za-z`, also bis 61 Zonen je Karte).
 - **Grenzkacheln:** werden beim Bauen pro Zone in Teile zerlegt (`<c>_<r>_z<zone>_<layer>.tga`), weich gewichtet über ~1 Chunk (`ZONE_FEATHER`); die Teile ergeben zusammen die Kachel. Chunks außerhalb der gebauten Zonen (Meer, Randausblendung) gehören zur nächstgelegenen gebauten Zone. Kosten: +4 MB für die 5 Zonen.
 - **Laufzeit:** Die aktive Zone kommt aus der Spielerposition (Chunk-Raster), nicht aus der API; damit passt sie exakt zur Karte. Alle anderen Zonen werden mit `zoneDim` multipliziert, beim Zonenwechsel über ~0,4 s übergeblendet. Außerhalb der gebauten Zonen wird nichts gedimmt. Questbereiche werden nicht gedimmt.
 
@@ -199,10 +199,13 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 
 **Bauen:**
 ```bash
-python scripts/build_raw.py               # Zonen aus scripts/zones.txt (aktuell: Etappe 1, 5 Zonen)
+python scripts/build_raw.py               # Karte 0, Zonen aus scripts/zones_0.txt
+python scripts/build_raw.py --map 1       # andere Karte (1 = Kalimdor, Ordner kalimdor), Zonen aus zones_1.txt
 python scripts/build_raw.py "Zone Name"   # einzelne Zone(n), Namen wie in AreaTable (AreaName_lang)
 ```
-Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `build/` (`preview_lines.png`, `preview_over_minimap.png`). Die Community-Listfile (`listfile.csv`) wird beim ersten Lauf geladen. Der Bereichsindex der ADTs wird in `build/area_index.npz` zwischengespeichert.
+Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `build/` (`preview_lines.png`, `preview_over_minimap.png`). Die Community-Listfile (`listfile.csv`) wird beim ersten Lauf geladen. Der Bereichsindex der ADTs wird in `build/area_index_<id>.npz` zwischengespeichert.
+
+**Block-Build:** Das Mosaik ist eine logische Gesamtkarte, gerechnet in Blöcken von 8 × 8 Kacheln (`BLOCK`) mit 1 Kachel Überlappung (`MARGIN`); behalten wird nur das Innere. Gleitkomma-Raster (Höhen, Steigung, Texturgewichte, Weichzeichnen, Linien, Randausblendung) gibt es nur je Block. Nicht-lokale Schritte (Entfernen kleiner Inseln und Flecken, Wege-Skelett und -Linienzüge, Umrisse) laufen auf 1-Byte-Masken der ganzen Karte; Umrisse und Wege werden einmal global vereinfacht und je Block nur gezeichnet. Ergebnis für Etappe 1 bitgleich zum früheren Gesamtbau (1241 Kacheln), Spitzen-RAM 3,8 → 1,7 GB, Laufzeit 146 → 108 s. Der RAM betrifft nur den Build auf dem Entwicklungsrechner, nicht das Addon.
 
 | Datei | Aufgabe |
 |---|---|
@@ -214,14 +217,14 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 | `simulate.py` | rendert die Lua-Darstellung aus den Kacheln (`build/sim.png`) |
 | `probe_view.py` | wertet `/rnw probe`-SavedVariables aus (Entwicklung) |
 | `make_masks.py` | erzeugt die Randmasken `media/fade1–5.tga` (Breiten wie `FADE_WIDTH` in `Core.lua`) |
-| `zones.txt` | zu bauende Zonen, wird etappenweise erweitert |
+| `zones_<id>.txt` | zu bauende Zonen je Karte, wird etappenweise erweitert |
 | `update_data_branch.ps1` | lokale Rohdaten als Commit auf `data` |
 
 **Algorithmus in Kürze:**
 - **Begehbar:** Steigung unter 50° und kein Wasser. Zerklüftete Hänge werden zu Blöcken geschlossen (`BLOCK_CLOSE`). Kleine begehbare Inseln mitten im Gebirge werden entfernt (`MIN_WALK`), außer sie grenzen an Wasser (`MIN_ISLAND`, z. B. die Insel im Brightwater Lake).
 - **Wasser:** MH2O-Oberfläche liegt über dem Gelände.
 - **Wege:** Texturen mit „road“ oder „path“ im Namen, ab Gewicht 0.3, als Mittellinie (Skelett). Das Skelett wird in Linienzüge zerlegt (`trace_paths`: zwischen Endpunkten und Kreuzungen, Schein-Kreuzungen an Pixeltreppen wieder verbunden), vereinfacht, per Chaikin geglättet und pro Zoomstufe mit derselben Strichbreite wie die Umrisse gezeichnet (`draw_lines`). Kein Mindestlängen-Filter je Zoomstufe, weil Wegstücke an Kreuzungen enden.
-- **Zonen-Zuschnitt:** über AreaTable (Unterzonen → Hauptzone). Zonennamen gelten nur für `ContinentID` 0; die AreaTable enthält gleichnamige Zonen anderer Kontinente (z. B. „Hillsbrad Foothills“ ID 16562, „Eastern Plaguelands“ ID 16028), die sonst die richtige ID überschrieben. Meeres-Chunks zählen nur in Küstennähe der Zone, denn „The Great Sea“ ist in der AreaTable eine Unterzone von Tirisfal.
+- **Zonen-Zuschnitt:** über AreaTable (Unterzonen → Hauptzone). Offenes Wasser einer Zone (Chunks ohne trockenen Boden, die mit dem Mosaikrand verbunden sind) zählt wie Meer und bleibt nur in Küstennähe; eingeschlossene Seen bleiben. Zonennamen gelten nur für `ContinentID` 0; die AreaTable enthält gleichnamige Zonen anderer Kontinente (z. B. „Hillsbrad Foothills“ ID 16562, „Eastern Plaguelands“ ID 16028), die sonst die richtige ID überschrieben. Meeres-Chunks zählen nur in Küstennähe der Zone, denn „The Great Sea“ ist in der AreaTable eine Unterzone von Tirisfal.
 - **Weicher Kartenrand:** `EDGE_FADE` = 160 px (~165 yd), mittig auf der Zonengrenze, also überwiegend nach außen. Kacheln, in die die Ausblendung reicht, werden mitgeschrieben.
 - **Linien je Zoomstufe:** aus den Umrissen neu gezeichnet, nicht verkleinert (`LINE_LOD`). Bei 512 px 2 px breit, bei 256/128 px 1 px kantengeglättet, stärker vereinfacht, ohne Kleinstteile.
 - **Schraffur:** Linienabstand je Stufe 9 / 6 / 4 px, über Kachelgrenzen fortlaufend.
@@ -322,7 +325,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 - **Rohdaten:** Kalimdor-ADTs, Instanz-WDTs und WMO-Exporte etappenweise per wow.export auf `data`. Größe des `data`-Branchs im Blick behalten (heute ~1,6 GB).
 
 **Reihenfolge:**
-1. **Fundament:** Block-Build mit Überlappung, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID im Addon.
+1. **Fundament:** Block-Build mit Überlappung, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID im Addon. **Erledigt**, siehe unten.
 2. **Östliche Königreiche:** alle Gebiete in Etappen (Tabelle unten), plus Questbereiche angrenzender Zonen.
 3. **Daten-Addons:** Aufteilung in Pakete, die beim Betreten geladen werden.
 4. **Kalimdor:** dieselbe Pipeline.
@@ -361,22 +364,30 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 - **Pipeline:** unverändert nutzbar (gleiches Split-ADT- und WMO-Format), Eingabe ist der wow.export-Export des jeweiligen Clients. Die Parameter (Steigung, Wege-Texturen) brauchen eventuell Feinjustierung für neuere Gebiete.
 - **Konsequenz schon jetzt:** Datenpfade und Paketnamen nicht fest an „Forever“ binden, sondern über Spielversion und Karten-ID auflösen; dann ist Retail nur ein weiterer Datensatz.
 
-### Nächstes Paket (neue Session): Fundament, dann weitere Zonen
-
-**Ziel:** Roadmap Schritt 1 (Fundament), danach die nächsten Etappen der Östlichen Königreiche.
+### Fundament (erledigt) und Etappen der Östlichen Königreiche
 
 **Fundament:**
-1. **Block-Build:** `build_raw.py` rechnet in Blöcken (z. B. 8 × 8 Kacheln) mit 1–2 Kacheln Überlappung und schreibt nur das Innere. Ergebnis identisch zum Gesamtbau, RAM-Bedarf konstant. Nicht-lokale Schritte (Entfernen kleiner Inseln `MIN_WALK`/`MIN_ISLAND`, Wegstücke) brauchen einen ausreichend breiten Rand oder eine globale Vorstufe auf grobem Raster.
-2. **Schraffur in Weltkoordinaten:** Die Phase des Musters hängt heute an ganzen Linien pro Kachel (`hatch_pattern`), das passt bereits blockübergreifend; beim Umbau prüfen, dass das so bleibt.
-3. **Kachelliste pro Karten-ID:** `Tiles.lua` und `RunewayZones` sind schon nach Instanz-ID geschlüsselt (`[0]`); Laufzeit und Build so verallgemeinern, dass weitere Karten (Kalimdor = 1, Instanzen) nur ein weiterer Datensatz sind.
+- **Block-Build:** siehe Abschnitt 4. Etappe 1 bitgleich zum alten Gesamtbau. Probelauf mit allen 27 Gebieten in einem Lauf: 9,6 min, 4,7 GB Spitzen-RAM (alter Gesamtbau hochgerechnet ~22 GB), 769 Kacheln, 106,5 MB.
+- **Schraffur in Weltkoordinaten:** unverändert gültig. Das Muster hat eine ganze Zahl Linien pro Kachel und ist damit an Kachelgrenzen (= Weltkoordinaten) ausgerichtet; Blöcke beginnen immer an Kachelgrenzen.
+- **Kachelliste pro Karten-ID:** `tiles/<id>/Tiles.lua` setzt `RunewayTiles[id]` und `RunewayZones[id]`; Build mit `--map <id>` und `zones_<id>.txt`. Die Laufzeit indiziert die Liste einmal nach `"c_r"` und besucht pro Frame nur die Kacheln um den Spieler. Zonen-Chunks: ein Zeichen je Chunk (`1-9A-Za-z`), bis 61 Zonen je Karte.
+- **Kalimdor später:** Ordner `kalimdor` (Karte 1) mit ADTs auf `data` ablegen, `zones_1.txt` anlegen, `build_raw.py --map 1`, `tiles\1\Tiles.lua` in die `.toc`.
 
-**Ausgangslage für weitere Zonen:**
-- Die ADTs der kompletten Östlichen Königreiche liegen auf `data`; für die Kartenebenen ist kein neuer Export nötig. Minimap-PNGs (nur für die Vorschau) gibt es nur für Tirisfal.
-- `build_raw.py` baut alle Zonen aus `zones.txt` als ein Mosaik. Immer alle Zonen zusammen bauen, nie einzeln nacheinander (Grenzkacheln, Zonenteile, Randausblendung).
-- Pro Zone die Vorschauen prüfen (Begehbarkeit, Wege, Wasser, Zonengrenze, Küste). Die Parameter (`BLOCK_CLOSE`, `MIN_WALK`, `MIN_ISLAND`, Weg-Gewicht 0.3) sind an Tirisfal kalibriert und haben für Etappe 1 gepasst.
-- Im Spiel: Übergang über Zonengrenzen, Dimmung, Zoom, Ladezeiten.
-- Größe je Etappe messen; Hochrechnung ≈ 70 MB für die Östlichen Königreiche (Abschnitt 3, „Dateigröße“).
-- Andere Städte (Ironforge, Stormwind) brauchen eigene WMO-Exporte, siehe „Weitere Städte“.
+**Etappen** (Gruppen von Nord nach Süd; immer alle Zonen aus `zones_0.txt` zusammen bauen, neue Zonen unten anhängen, weil die Zeilennummer die Zonennummer ist):
+
+| Etappe | Gebiete | Stand |
+|---|---|---|
+| 1 | Tirisfal Glades, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains | im Spiel getestet (1.2) |
+| 2 (Norden) | Eastern Plaguelands, The Hinterlands, Arathi Highlands, Gilneas, Ruins of Gilneas | gebaut (285 Kacheln, 42,9 MB, 3,3 min, 2,3 GB RAM), im Spiel offen |
+| 3 (Mitte) | Wetlands, Dun Morogh, Loch Modan, Searing Gorge, Badlands, Burning Steppes, Riverglades | offen, im Probelauf ohne erkennbare Fehler |
+| 4 (Süden) | Elwynn Forest, Stormwind City, Westfall, Redridge Mountains, Duskwood, Deadwind Pass, Swamp of Sorrows, Blasted Lands, Stranglethorn Vale, Gillijim's Isle | offen, im Probelauf ohne erkennbare Fehler |
+
+**Im Spiel prüfen (Etappe 2):** Übergänge Western Plaguelands ↔ Eastern Plaguelands, Hillsbrad ↔ Arathi, Arathi ↔ Hinterlands, Silverpine ↔ Gilneas; Dimmung beim Grenzübertritt; Küste im Norden der Eastern Plaguelands (weicher Rand statt Schraffur auf offenem Meer); Ladezeiten.
+
+**Dateigröße:** Alle 27 Gebiete ≈ 106 MB (Hochrechnung war 70 MB). Anteile: Linien `terrain` 32 MB, `shade` 31 MB, `hatch`-Maske 21 MB, `water` 13 MB, `roads` 5 MB, `fill` 4 MB; nach Stufe 512: 34 MB, 256: 55 MB, 128: 18 MB. Hebel, falls nötig: `hatch`-Maske und `shade` nur in 128 statt 256 speichern (weiche Flächen), offenes Meer weglassen (erledigt, s. Zonen-Zuschnitt).
+
+**Bekannt aus der Vorschau:**
+- Stormwind City hat (wie andere Städte außer Undercity) keine Gebäude-Wände; dafür braucht es den WMO-Export (siehe „Weitere Städte“).
+- Lava (MH2O-Typ Magma, Searing Gorge, Burning Steppes) wird übersprungen und zählt damit als Gelände; ggf. als nicht begehbar markieren.
 
 ### Später
 - **Weitere Städte:**

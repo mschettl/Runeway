@@ -1,6 +1,14 @@
-# Zones built by scripts/build_raw.py (AreaTable names), extended stage by stage
+# Zones of map 0 (Eastern Kingdoms) built by scripts/build_raw.py (AreaTable names), extended stage by stage.
+# Zone number = line order; append new zones at the end.
+# Stage 1
 Tirisfal Glades
 Silverpine Forest
 Western Plaguelands
 Hillsbrad Foothills
 Alterac Mountains
+# Stage 2 (north)
+Eastern Plaguelands
+The Hinterlands
+Arathi Highlands
+Gilneas
+Ruins of Gilneas

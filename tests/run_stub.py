@@ -31,7 +31,10 @@ L.execute('''
     ADDON_LIST, LOADED_ADDONS, DISABLED_ADDONS, ADDON_DISABLED = {}, {}, {}, "Disabled"
     local read = ...
     C_AddOns.GetNumAddOns = function() return #ADDON_LIST end
-    C_AddOns.GetAddOnInfo = function(i) return ADDON_LIST[i].name end
+    C_AddOns.GetAddOnInfo = function(i)
+        local a = ADDON_LIST[i]
+        return a.name, a.meta["Title-" .. LOCALE] or a.meta.Title
+    end
     C_AddOns.GetAddOnMetadata = function(name, field)
         if name == "Runeway" and field == "Version" then return TOC_VERSION end
         for _, a in ipairs(ADDON_LIST) do if a.name == name then return a.meta[field] end end
@@ -55,7 +58,8 @@ add('Runeway', L.table_from({'Version': 'x'}), L.table_from([]))
 for name in packs:
     meta, files = read_toc(name)
     add(name, L.table_from(meta), L.table_from(files))
-add('Runeway_Test', L.table_from({'X-Runeway-Maps': '1'}), L.table_from([]))   # pack of map 1, switched off
+add('Runeway_Test', L.table_from({'X-Runeway-Maps': '1', 'Title': 'Runeway - Test Lands', 'Title-deDE': 'Runeway - Testlande'}),
+    L.table_from([]))   # pack of map 1, switched off
 L.execute('DISABLED_ADDONS.Runeway_Test = true')
 for f in (*LOCALES, 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Profile.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
     src = open(os.path.join(ROOT, f), encoding='utf8').read()

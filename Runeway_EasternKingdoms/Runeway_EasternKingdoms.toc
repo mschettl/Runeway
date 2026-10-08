@@ -1,6 +1,26 @@
 ## Interface: 16001
 ## Title: Runeway - Eastern Kingdoms
 ## Notes: Map data of Runeway (Eastern Kingdoms), loaded when needed
+## Title-deDE: Runeway - Östliche Königreiche
+## Notes-deDE: Kartendaten von Runeway (Östliche Königreiche), werden bei Bedarf geladen
+## Title-frFR: Runeway - Royaumes de l'Est
+## Notes-frFR: Données de carte de Runeway (Royaumes de l'Est), chargées si nécessaire
+## Title-esES: Runeway - Reinos del Este
+## Notes-esES: Datos de mapa de Runeway (Reinos del Este), se cargan cuando se necesitan
+## Title-esMX: Runeway - Reinos del Este
+## Notes-esMX: Datos de mapa de Runeway (Reinos del Este), se cargan cuando se necesitan
+## Title-itIT: Runeway - Regni Orientali
+## Notes-itIT: Dati della mappa di Runeway (Regni Orientali), caricati quando servono
+## Title-ptBR: Runeway - Reinos do Leste
+## Notes-ptBR: Dados de mapa do Runeway (Reinos do Leste), carregados quando necessário
+## Title-ruRU: Runeway - Восточные королевства
+## Notes-ruRU: Данные карты Runeway (Восточные королевства), загружаются по необходимости
+## Title-koKR: Runeway - 동부 왕국
+## Notes-koKR: Runeway 지도 데이터(동부 왕국), 필요할 때 불러옴
+## Title-zhCN: Runeway - 东部王国
+## Notes-zhCN: Runeway 地图数据（东部王国），按需加载
+## Title-zhTW: Runeway - 東部王國
+## Notes-zhTW: Runeway 地圖資料（東部王國），需要時載入
 ## Version: 1.6
 ## Dependencies: Runeway
 ## LoadOnDemand: 1

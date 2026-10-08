@@ -199,7 +199,7 @@ end
 ---------------------------------------------------------------------------
 -- Data packs: the tiles of each map live in a load-on-demand addon (Runeway_EasternKingdoms, ...) whose .toc
 -- names its maps ("## X-Runeway-Maps: 0"). The pack of a map is loaded when the map is first needed.
-local packOf, packTried = nil, {}
+local packOf, packTitle, packTried = nil, {}, {}
 local function PackOf(inst)
     if not packOf then
         packOf = {}
@@ -207,16 +207,20 @@ local function PackOf(inst)
         local num, info, meta = api.GetNumAddOns or GetNumAddOns, api.GetAddOnInfo or GetAddOnInfo,
             api.GetAddOnMetadata or GetAddOnMetadata
         for i = 1, num and num() or 0 do
-            local name = info(i)
-            for id in (meta(name, "X-Runeway-Maps") or ""):gmatch("%d+") do packOf[tonumber(id)] = name end
+            local name, title = info(i)
+            for id in (meta(name, "X-Runeway-Maps") or ""):gmatch("%d+") do
+                packOf[tonumber(id)] = name
+                -- shown name: the pack's title in the client language ("Runeway - Eastern Kingdoms") without "Runeway - "
+                packTitle[name] = title and title:gsub("^Runeway %- ", "") or name:gsub("^Runeway_", "")
+            end
         end
     end
     return packOf[inst]
 end
 
--- Chat note for a data pack that cannot be loaded, named without the "Runeway_" prefix
+-- Chat note for a data pack that cannot be loaded, named by its localized title
 local function PackFailed(pack)
-    Print(L.PACK_FAILED:format((pack:gsub("^Runeway_", ""))))
+    Print(L.PACK_FAILED:format(packTitle[pack]))
 end
 
 -- Loads the data pack of a map once; reports a pack that cannot be loaded (disabled, wrong version, ...)

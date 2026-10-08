@@ -1,6 +1,7 @@
 # Builds the overlay tiles from the RAW ADT export: white layers fill / hatch / shade / terrain / water / roads
 # per ADT tile and zoom level, clipped to the selected zones, plus the tile list and preview images.
 #   python scripts/build_raw.py [--map ID] ["Zone Name" ...]    default: map 0, zones in scripts/zones_<ID>.txt
+#   python scripts/build_raw.py [--map ID] --toc                 only rewrite the pack .toc
 # The mosaic is one logical map, computed in blocks of BLOCK x BLOCK tiles with MARGIN tiles of overlap; only
 # the inner part of a block is kept. Float rasters (heights, slopes, blurs, lines) exist per block only;
 # whole-map steps that are not local (small islands, road paths, outlines) run on 1-byte masks of the mosaic.
@@ -23,7 +24,26 @@ import structures
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 # Data pack (load-on-demand addon) per map ID: <pack>/tiles/<map ID>/ holds the tile files and Tiles.lua
-PACKS = {0: ('Runeway_EasternKingdoms', 'Eastern Kingdoms'), 1: ('Runeway_Kalimdor', 'Kalimdor')}
+# Pack titles in the addon list ("Runeway - <name>") per client language, names as in Blizzard's localized clients;
+# the core shows the same name (without "Runeway - ") in its chat notes.
+PACKS = {
+    0: ('Runeway_EasternKingdoms', dict(
+        enUS='Eastern Kingdoms', deDE='Östliche Königreiche', frFR="Royaumes de l'Est", esES='Reinos del Este',
+        esMX='Reinos del Este', itIT='Regni Orientali', ptBR='Reinos do Leste', ruRU='Восточные королевства',
+        koKR='동부 왕국', zhCN='东部王国', zhTW='東部王國')),
+    1: ('Runeway_Kalimdor', dict(
+        enUS='Kalimdor', deDE='Kalimdor', frFR='Kalimdor', esES='Kalimdor', esMX='Kalimdor', itIT='Kalimdor',
+        ptBR='Kalimdor', ruRU='Калимдор', koKR='칼림도어', zhCN='卡利姆多', zhTW='卡林多')),
+}
+PACK_NOTES = dict(
+    enUS='Map data of Runeway (%s), loaded when needed', deDE='Kartendaten von Runeway (%s), werden bei Bedarf geladen',
+    frFR='Données de carte de Runeway (%s), chargées si nécessaire',
+    esES='Datos de mapa de Runeway (%s), se cargan cuando se necesitan',
+    esMX='Datos de mapa de Runeway (%s), se cargan cuando se necesitan',
+    itIT='Dati della mappa di Runeway (%s), caricati quando servono',
+    ptBR='Dados de mapa do Runeway (%s), carregados quando necessário',
+    ruRU='Данные карты Runeway (%s), загружаются по необходимости', koKR='Runeway 지도 데이터(%s), 필요할 때 불러옴',
+    zhCN='Runeway 地图数据（%s），按需加载', zhTW='Runeway 地圖資料（%s），需要時載入')
 BUILD = os.path.join(ROOT, 'build')                      # cache and previews (not in git)
 AREATABLE = os.path.join(MAPS, '..', 'AreaTable.csv')
 MAP_NAMES = {0: 'azeroth', 1: 'kalimdor'}                # map ID (= instance ID of UnitPosition) -> wow.export folder
@@ -496,14 +516,16 @@ def write_tiles_lua(path, map_id, zone_names, state):
 def write_pack_toc(map_id):
     """<pack>/<pack>.toc: load on demand, needs the core addon; X-Runeway-Maps tells the core which maps it holds.
     Interface and version follow Runeway/Runeway.toc."""
-    pack, title = PACKS[map_id]
+    pack, names = PACKS[map_id]
     core = open(os.path.join(ROOT, 'Runeway', 'Runeway.toc')).read()
     meta = lambda key: re.search(rf'^## {key}: (.+)$', core, re.M)[1].strip()
-    with open(os.path.join(ROOT, pack, pack + '.toc'), 'w', newline='\n') as fh:
-        fh.write(f'## Interface: {meta("Interface")}\n## Title: Runeway - {title}\n'
-                 f'## Notes: Map data of Runeway ({title}), loaded when needed\n## Version: {meta("Version")}\n'
-                 f'## Dependencies: Runeway\n## LoadOnDemand: 1\n## X-Runeway-Maps: {map_id}\n\n'
-                 f'tiles\\{map_id}\\Tiles.lua\n')
+    with open(os.path.join(ROOT, pack, pack + '.toc'), 'w', encoding='utf8', newline='\n') as fh:
+        fh.write(f'## Interface: {meta("Interface")}\n')
+        for loc, name in names.items():
+            suffix = '' if loc == 'enUS' else '-' + loc
+            fh.write(f'## Title{suffix}: Runeway - {name}\n## Notes{suffix}: {PACK_NOTES[loc] % name}\n')
+        fh.write(f'## Version: {meta("Version")}\n## Dependencies: Runeway\n## LoadOnDemand: 1\n'
+                 f'## X-Runeway-Maps: {map_id}\n\ntiles\\{map_id}\\Tiles.lua\n')
 
 
 # RGBA as the defaults in Core.lua (drawn in LAYERS order)
@@ -635,6 +657,9 @@ if __name__ == '__main__':
     map_id = 0
     if args[:1] == ['--map']:
         map_id, args = int(args[1]), args[2:]
+    if args[:1] == ['--toc']:          # only rewrite the pack .toc (e.g. after a version change)
+        write_pack_toc(map_id)
+        sys.exit()
     zl = args or [l.strip() for l in open(os.path.join(os.path.dirname(__file__), f'zones_{map_id}.txt'))
                   if l.strip() and not l.startswith('#')]
     main(map_id, zl)

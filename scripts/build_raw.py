@@ -1,6 +1,9 @@
-# Builds the overlay tiles from the RAW ADT export: white layers terrain / water / roads / shade
-# per ADT tile and zoom level, clipped to the selected zones, plus Tiles.lua and preview images.
-#   python scripts/build_raw.py ["Zone Name" ...]      default: zones listed in scripts/zones.txt
+# Builds the overlay tiles from the RAW ADT export: white layers fill / hatch / shade / terrain / water / roads
+# per ADT tile and zoom level, clipped to the selected zones, plus the tile list and preview images.
+#   python scripts/build_raw.py [--map ID] ["Zone Name" ...]    default: map 0, zones in scripts/zones_<ID>.txt
+# The mosaic is one logical map, computed in blocks of BLOCK x BLOCK tiles with MARGIN tiles of overlap; only
+# the inner part of a block is kept. Float rasters (heights, slopes, blurs, lines) exist per block only;
+# whole-map steps that are not local (small islands, road paths, outlines) run on 1-byte masks of the mosaic.
 import os
 import re
 import sys
@@ -14,15 +17,17 @@ from collections import defaultdict
 from PIL import Image
 from skimage.morphology import skeletonize
 from adt import read_area
-from raw_mosaic import Mosaic, load_listfile, SRC, LISTFILE
+from raw_mosaic import Mosaic, load_listfile, MAPS, LISTFILE
 from roads import prune
 import structures
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
-OUT = os.path.join(ROOT, 'Runeway', 'tiles', '0')       # 0 = instance ID of the Eastern Kingdoms
-TILES_LUA = os.path.join(ROOT, 'Runeway', 'Tiles.lua')
+TILES = os.path.join(ROOT, 'Runeway', 'tiles')           # tiles/<map ID>/: tile files and Tiles.lua
 BUILD = os.path.join(ROOT, 'build')                      # cache and previews (not in git)
-AREATABLE = os.path.join(SRC, '..', '..', 'AreaTable.csv')
+AREATABLE = os.path.join(MAPS, '..', 'AreaTable.csv')
+MAP_NAMES = {0: 'azeroth', 1: 'kalimdor'}                # map ID (= instance ID of UnitPosition) -> wow.export folder
+BLOCK = 8                  # tiles per block side
+MARGIN = 1                 # tiles of overlap around a block; every local filter reaches less than one tile
 LISTFILE_URL = 'https://github.com/wowdev/wow-listfile/releases/latest/download/community-listfile.csv'
 
 P = 512                    # pixels per ADT tile (~1.04 yd/px)
@@ -50,8 +55,8 @@ EDGE_FADE = 160            # px (~165 yd); everything fades out towards the edge
 
 # --- zones ------------------------------------------------------------------
 
-def zone_of_area():
-    """AreaTable: area ID -> top-level zone ID, and zone name -> zone ID."""
+def zone_of_area(map_id):
+    """AreaTable: area ID -> top-level zone ID, and zone name -> zone ID (zones of this map only)."""
     rows = {int(r['ID']): r for r in csv.DictReader(open(AREATABLE, encoding='utf8'), delimiter=';')}
     top = {}
     for i in rows:
@@ -60,20 +65,21 @@ def zone_of_area():
             z = int(rows[z]['ParentAreaID'])
         top[i] = z
     names = {rows[i]['AreaName_lang'].lower(): i for i in rows
-             if int(rows[i]['ParentAreaID']) == 0 and rows[i]['ContinentID'] == '0'}    # 0 = Eastern Kingdoms
+             if int(rows[i]['ParentAreaID']) == 0 and rows[i]['ContinentID'] == str(map_id)}
     seas = {i for i in rows if re.search(r'\b(sea|ocean)\b', rows[i]['AreaName_lang'].lower())}
     return top, names, seas
 
 
-def area_index():
-    """Area IDs of all ADT chunks, cached: {(c, r): 16x16 array}."""
-    cache = os.path.join(BUILD, 'area_index.npz')
+def area_index(map_id):
+    """Area IDs of all ADT chunks of a map, cached: {(c, r): 16x16 array}."""
+    name = MAP_NAMES[map_id]
+    cache = os.path.join(BUILD, f'area_index_{map_id}.npz')
     if os.path.exists(cache):
         d = np.load(cache)
         return {tuple(map(int, k.split('_'))): d[k] for k in d.files}
     idx = {}
-    for p in glob.glob(os.path.join(SRC, 'azeroth_*_*.adt')):
-        mt = re.search(r'azeroth_(\d+)_(\d+)\.adt$', p)
+    for p in glob.glob(os.path.join(MAPS, name, f'{name}_*_*.adt')):
+        mt = re.search(rf'{name}_(\d+)_(\d+)\.adt$', p)
         if mt:
             idx[(int(mt[1]), int(mt[2]))] = read_area(p)
     os.makedirs(BUILD, exist_ok=True)
@@ -81,58 +87,107 @@ def area_index():
     return idx
 
 
+# --- blocks -----------------------------------------------------------------
+
+def blocks(n_cols, n_rows):
+    """Blocks of the mosaic as tile index ranges (i0, i1, j0, j1): the inner part and the window read with
+    MARGIN tiles of overlap (clipped to the mosaic)."""
+    for j in range(0, n_rows, BLOCK):
+        for i in range(0, n_cols, BLOCK):
+            inner = (i, min(i + BLOCK, n_cols), j, min(j + BLOCK, n_rows))
+            win = (max(0, i - MARGIN), min(n_cols, inner[1] + MARGIN),
+                   max(0, j - MARGIN), min(n_rows, inner[3] + MARGIN))
+            yield inner, win
+
+
+def px(rng, s=P, base=(0, 0, 0, 0)):
+    """Pixel slices (rows, cols) of a tile range at s pixels per tile, relative to the range `base`."""
+    return (slice((rng[2] - base[2]) * s, (rng[3] - base[2]) * s),
+            slice((rng[0] - base[0]) * s, (rng[1] - base[0]) * s))
+
+
 # --- masks ------------------------------------------------------------------
+
+def u8(m):
+    """Bool mask as uint8 without a copy."""
+    return m.view(np.uint8) if m.dtype == bool else m.astype(np.uint8)
+
 
 def blobs(m, min_area):
     """Drops connected components smaller than min_area."""
-    n, lab, st, _ = cv2.connectedComponentsWithStats(m.astype(np.uint8), connectivity=8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(u8(m), connectivity=8)
     keep = np.zeros(n, bool)
     keep[1:] = st[1:, cv2.CC_STAT_AREA] >= min_area
     return keep[lab]
 
 
-def smooth(m, sigma):
-    """Rounds mask outlines (blur + threshold)."""
-    return cv2.GaussianBlur(m.astype(np.float32), (0, 0), sigma) > 0.5
+def smooth(m, sigma, strip=2048):
+    """Rounds mask outlines (blur + threshold); in row strips, so the float raster stays small."""
+    pad = int(4 * sigma) + 2                                   # > kernel radius
+    out = np.empty(m.shape, bool)
+    for y in range(0, m.shape[0], strip):
+        y0, y1 = max(0, y - pad), min(m.shape[0], y + strip + pad)
+        b = cv2.GaussianBlur(m[y0:y1].astype(np.float32), (0, 0), sigma) > 0.5
+        out[y:y + strip] = b[y - y0:y - y0 + strip]
+    return out
 
 
-def build(cols, rows):
-    m = Mosaic(cols, rows, P)
-    m.build_terrain()
-    present = m.present & ~cv2.dilate((~m.present).astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
+def raw_masks(name, cols, rows):
+    """Per-pixel masks of the mosaic from the ADT data, computed block by block: present, water (MH2O surface
+    above terrain, smoothed), steep (slope only), road (road texture weight, smoothed), built (structures)."""
+    shape = (len(rows) * P, len(cols) * P)
+    R = {k: np.zeros(shape, bool) for k in ('present', 'water', 'steep', 'road', 'built')}
+    lf = load_listfile()
+    names = sorted({n for n in lf.values() if any(k in n for k in ROAD_KEYS)})
+    for inner, win in blocks(len(cols), len(rows)):
+        m = Mosaic(cols[win[0]:win[1]], rows[win[2]:win[3]], P, name)
+        if not any(True for _ in m.tiles()):
+            continue
+        m.build_terrain()
+        present = m.present & ~cv2.dilate(u8(~m.present), np.ones((3, 3), np.uint8)).astype(bool)
+        a = dict(present=present, water=smooth(m.water, 1.5) & present, steep=m.slope_deg() > MAX_SLOPE,
+                 road=smooth(m.build_textures(lf, names) > ROAD_MIN, 1.5), built=structures.blocked(m))
+        dst, src = px(inner), px(inner, P, win)
+        for k, v in a.items():
+            R[k][dst] = v[src]
+        print(f'  raw block cols {cols[inner[0]]}-{cols[inner[1] - 1]} rows {rows[inner[2]]}-{rows[inner[3] - 1]}', flush=True)
+    if structures.USED:
+        print('structures:', len(structures.USED), 'placements, e.g.', list(structures.USED.values())[:3])
+    return R
 
+
+def masks(R):
+    """Whole-map masks (walk, water, road centre lines, present) from the raw masks; consumes R."""
+    present = R['present']
     # Water: exact MH2O surface above terrain
-    water = smooth(m.water, 1.5) & present
-    water = blobs(water, MIN_WATER)
+    water = blobs(R.pop('water'), MIN_WATER)
 
     # Terrain: walkable = not steep, not water
-    steep = (m.slope_deg() > MAX_SLOPE) & ~water
+    steep = R.pop('steep') & ~water
     k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (BLOCK_CLOSE, BLOCK_CLOSE))
-    steep = cv2.morphologyEx(steep.astype(np.uint8), cv2.MORPH_CLOSE, k).astype(bool)
+    steep = cv2.morphologyEx(u8(steep), cv2.MORPH_CLOSE, k).astype(bool)
     steep = blobs(steep, MIN_BLOCK)
     walk = present & ~steep & ~water
+    del steep
     walk = smooth(walk, 4)
     # drop small walkable patches inside mountains, but keep islands and shore strips (they touch water)
-    n, lab, st, _ = cv2.connectedComponentsWithStats(walk.astype(np.uint8), connectivity=8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(u8(walk), connectivity=8)
     shore = np.zeros(n, bool)
-    shore[np.unique(lab[walk & (cv2.dilate(water.astype(np.uint8), np.ones((7, 7), np.uint8)) > 0)])] = True
+    shore[np.unique(lab[walk & (cv2.dilate(u8(water), np.ones((7, 7), np.uint8)) > 0)])] = True
     area = st[:, cv2.CC_STAT_AREA]
     keepc = (area >= MIN_WALK) | (shore & (area >= MIN_ISLAND))
     keepc[0] = False
     walk = keepc[lab]
+    del lab
     walk = ~blobs(~walk & present, MIN_BLOCK) & present        # fill small holes
-    walk &= ~structures.blocked(m)                              # building walls, towers (WMO / M2 exports)
+    walk &= ~R.pop('built')                                     # building walls, towers (WMO / M2 exports)
 
     # Roads: road textures -> centre lines
-    lf = load_listfile()
-    names = sorted({n for n in lf.values() if any(k in n for k in ROAD_KEYS)})
-    rw = m.build_textures(lf, names)
-    road = smooth(rw > ROAD_MIN, 1.5)
-    road = cv2.morphologyEx(road.astype(np.uint8), cv2.MORPH_CLOSE,
+    road = cv2.morphologyEx(u8(R.pop('road')), cv2.MORPH_CLOSE,
                             cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))).astype(bool) & ~water
     sk = prune(skeletonize(road).astype(np.uint8) * 255, 12) > 0
     sk = blobs(sk, ROAD_MIN_LEN)
-    return m, dict(walk=walk, water=water, road=sk, present=present)
+    return dict(walk=walk, water=water, road=sk, present=present)
 
 
 # Lines are drawn per zoom level from the outlines (not shrunk from the 512 image): same stroke width at
@@ -230,12 +285,11 @@ def trace_paths(sk):
     return [np.array(p[0], np.float64) for p in paths if p]
 
 
-def draw_lines(lines, shape, s, closed):
-    """Outlines (closed) or road paths (open, smoothed) at zoom level s (pixels per tile) on a canvas of
-    the scaled mosaic; same stroke width for both."""
-    min_len, eps, width = LINE_LOD[s]
+def prepare_lines(lines, s, closed):
+    """Outlines (closed) or road paths (open, smoothed) for zoom level s (pixels per tile): simplified points
+    in 1/16 px of the scaled mosaic and their bounding boxes, so each block draws only its own lines."""
+    min_len, eps, _ = LINE_LOD[s]
     f = s / P
-    out = np.zeros(shape, np.uint8)
     pts = []
     for c in lines:
         c = c.reshape(-1, 1, 2).astype(np.float32)
@@ -245,22 +299,44 @@ def draw_lines(lines, shape, s, closed):
         if not closed:
             a = chaikin(a)
         pts.append(np.round(a * f * 16).astype(np.int32))
-    cv2.polylines(out, pts, closed, 255, width, cv2.LINE_AA, shift=4)
+    box = np.array([(*p.min(0), *p.max(0)) for p in pts], np.int64).reshape(-1, 4) // 16
+    return pts, box, closed
+
+
+def draw_lines(prep, s, x0, y0, shape):
+    """Draws prepared lines of zoom level s on a canvas showing the scaled mosaic from pixel (x0, y0);
+    same stroke width for outlines and roads."""
+    pts, box, closed = prep
+    width = LINE_LOD[s][2]
+    out = np.zeros(shape, np.uint8)
+    h, w = shape
+    sel = np.nonzero((box[:, 2] >= x0 - 4) & (box[:, 0] < x0 + w + 4) &
+                     (box[:, 3] >= y0 - 4) & (box[:, 1] < y0 + h + 4))[0]
+    if len(sel):
+        off = np.array([x0 * 16, y0 * 16], np.int32)
+        cv2.polylines(out, [pts[i] - off for i in sel], closed, 255, width, cv2.LINE_AA, shift=4)
     if width == 1:                                             # thin anti-aliased strokes: lift the faint pixels
         out = np.clip(out.astype(np.float32) * 1.4, 0, 255).astype(np.uint8)
     return out
 
 
-def line_layers(L, keep):
-    """White layers (alpha 0..255). fill (walkable area) and blocked (source of the hatch layer: mountains,
-    water) at full resolution; lines (terrain, water, roads) and the dark shade under them per zoom level:
-    {'fill': ..., 'blocked': ..., 512: {...}, 256: {...}, 128: {...}}.
-    keep: mask of the selected zones; everything outside fades out."""
-    H, W = L['walk'].shape
+def map_lines(L):
+    """Whole-map line sources: per zoom level the prepared terrain, water and road lines, the mosaic edge
+    (missing tiles, border) and the area near water (no terrain line on the shore)."""
     edge = ~L['present']                                       # missing tiles and mosaic border
     edge[:3, :] = edge[-3:, :] = edge[:, :3] = edge[:, -3:] = True
-    edge = cv2.dilate(edge.astype(np.uint8), np.ones((9, 9), np.uint8)) > 0
-    # soft map end: round the chunk border, then fade in over EDGE_FADE px from the edge of the built zones
+    edge = cv2.dilate(u8(edge), np.ones((9, 9), np.uint8)) > 0
+    near_water = cv2.dilate(u8(L['water']), np.ones((9, 9), np.uint8))
+    walk_c, water_c = contours(L['walk']), contours(L['water'])
+    road_p = trace_paths(L['road'])
+    lines = {s: dict(terrain=prepare_lines(walk_c, s, True), water=prepare_lines(water_c, s, True),
+                     roads=prepare_lines(road_p, s, False)) for s in LODS}
+    return dict(lines=lines, edge=edge, near_water=near_water)
+
+
+def zone_fade(keep, edge):
+    """Soft map end (0..1): rounds the chunk border of the selected zones (keep), then fades in over
+    EDGE_FADE px from the edge of the built zones."""
     inside = (cv2.GaussianBlur(keep.astype(np.float32), (0, 0), ZONE_SOFT / 2) > 0.5).astype(np.uint8)
     # centre the fade on the zone border (mostly outwards), so places right at the border stay visible
     r = int(EDGE_FADE * 0.6)
@@ -270,21 +346,31 @@ def line_layers(L, keep):
     zf = np.clip(dist / EDGE_FADE, 0, 1)
     zf = (zf * zf * (3 - 2 * zf)).astype(np.float32)
     zf[edge] = 0
-    out = dict(fill=(L['walk'] * 255 * zf).astype(np.uint8),
-               blocked=((L['present'] & ~L['walk']) * 255 * zf).astype(np.uint8))
+    return zf
 
-    walk_c, water_c = contours(L['walk']), contours(L['water'])
-    # shore: terrain line only where the walk edge borders steep ground, not water
-    near_water = cv2.dilate(L['water'].astype(np.uint8), np.ones((9, 9), np.uint8))
-    road_p = trace_paths(L['road'])
+
+def block_layers(L, G, keep, inner, win):
+    """White layers (alpha 0..255) of one block, computed on its window and cut to the inner part.
+    fill (walkable area) and blocked (source of the hatch layer: mountains, water) at full resolution;
+    lines (terrain, water, roads) and the dark shade under them per zoom level:
+    {'fill': ..., 'blocked': ..., 512: {...}, 256: {...}, 128: {...}}.
+    keep: chunk mask of the selected zones (whole mosaic); everything outside fades out."""
+    wy, wx = px(win)
+    H, W = wy.stop - wy.start, wx.stop - wx.start
+    k = keep[win[2] * 16:win[3] * 16, win[0] * 16:win[1] * 16]
+    zf = zone_fade(np.repeat(np.repeat(k, 32, 0), 32, 1), G['edge'][wy, wx])
+    iy, ix = px(inner, P, win)
+    walk, present = L['walk'][wy, wx], L['present'][wy, wx]
+    out = dict(fill=(walk * 255 * zf)[iy, ix].astype(np.uint8),
+               blocked=((present & ~walk) * 255 * zf)[iy, ix].astype(np.uint8))
     for s in LODS:
         f = s / P
         shape = (int(H * f), int(W * f))
         size = (shape[1], shape[0])
-        terrain = draw_lines(walk_c, shape, s, True)
-        water = draw_lines(water_c, shape, s, True)
-        terrain[cv2.resize(near_water, size, interpolation=cv2.INTER_NEAREST) > 0] = 0
-        roads = draw_lines(road_p, shape, s, False)
+        lines = G['lines'][s]
+        terrain, water, roads = (draw_lines(lines[n], s, win[0] * s, win[2] * s, shape)
+                                 for n in ('terrain', 'water', 'roads'))
+        terrain[cv2.resize(G['near_water'][wy, wx], size, interpolation=cv2.INTER_NEAREST) > 0] = 0
         z = zf if s == P else cv2.resize(zf, size, interpolation=cv2.INTER_AREA)
         layer = {}
         for n, a in (('terrain', terrain), ('water', water), ('roads', roads)):
@@ -292,7 +378,8 @@ def line_layers(L, keep):
         k = 7 if s == P else 3
         shade = cv2.dilate(np.maximum(np.maximum(layer['terrain'], layer['water']), layer['roads']), np.ones((k, k), np.uint8))
         layer['shade'] = (cv2.GaussianBlur(shade, (0, 0), 1.5 if s == P else 0.8).astype(np.float32) * 0.65).astype(np.uint8)
-        out[s] = layer
+        sy, sx = px(inner, s, win)
+        out[s] = {n: np.ascontiguousarray(a[sy, sx]) for n, a in layer.items()}
     return out
 
 
@@ -338,70 +425,71 @@ def zone_weights(zgrid, c0, r0, n):
     return w / np.maximum(w.sum(0), 1e-6)
 
 
-def write_tiles(layers, cols, rows, tiles, zgrid, zone_names):
-    """Writes Runeway/tiles/0/[lod/]<key>_<layer>.tga and Tiles.lua; returns {key: 'twrs'}.
+ZONE_DIGITS = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'   # zone number -> one character
+
+
+def write_block(out_dir, layers, inner, cols, rows, zgrid, n_zones, state):
+    """Writes the tiles of one block to tiles/<map>/[lod/]<key>_<layer>.tga and records them in state.
     key = "<c>_<r>" for tiles inside one zone; tiles on a zone border are split into one part per zone,
     key = "<c>_<r>_z<zone>", each part weighted by its zone (soft transition, parts add up to the tile)."""
-    shutil.rmtree(OUT, ignore_errors=True)
-    for s in LODS:
-        os.makedirs(OUT if s == P else os.path.join(OUT, str(s)), exist_ok=True)
-    for s in LODS:
-        save_tga(hatch_pattern(s), os.path.join(MEDIA, f'hatch{s}.tga'))
-    written, tile_zone, chunk_zones = {}, {}, {}
-    for c, r in sorted(tiles):
-        ys = slice((r - rows[0]) * P, (r - rows[0] + 1) * P)
-        xs = slice((c - cols[0]) * P, (c - cols[0] + 1) * P)
-        g = zgrid[(r - rows[0]) * 16:(r - rows[0] + 1) * 16, (c - cols[0]) * 16:(c - cols[0] + 1) * 16]
-        present = [int(z) for z in np.unique(g)]
-        if len(present) == 1:
-            parts = [(f'{c}_{r}', present[0], None)]
-        else:
-            w = zone_weights(zgrid, (c - cols[0]) * 16, (r - rows[0]) * 16, len(zone_names))
-            parts = [(f'{c}_{r}_z{z}', z, w[z - 1]) for z in present]
-            chunk_zones[f'{c}_{r}'] = ''.join(str(int(z)) for z in g.flatten())   # row by row, north first
-        for key, z, wz in parts:
-            have = ''
-            for n in LAYERS:
-                area = n in ('fill', 'hatch')
-                src = layers['blocked' if n == 'hatch' else n] if area else layers[P][n]
-                blk = np.ascontiguousarray(src[ys, xs])
-                if wz is not None:
-                    blk = (blk * wz).astype(np.uint8)
-                if blk.max() < 8:
-                    continue
-                have += n[0]
-                for s in FILE_LODS.get(n, LODS):
-                    d = OUT if s == P else os.path.join(OUT, str(s))
-                    if area:
-                        img = downscale(blk, s, False)
-                    else:                                  # lines: drawn at this zoom level
-                        img = np.ascontiguousarray(layers[s][n][(r - rows[0]) * s:(r - rows[0] + 1) * s,
-                                                                 (c - cols[0]) * s:(c - cols[0] + 1) * s])
-                        if wz is not None:
-                            img = (img * cv2.resize(wz, (s, s), interpolation=cv2.INTER_AREA)).astype(np.uint8)
-                    save_tga(img, os.path.join(d, f'{key}_{n}.tga'))
-            if have:
-                written[key] = have
-                tile_zone[key] = z
-    with open(TILES_LUA, 'w', newline='\n') as fh:
-        fh.write('-- generated by scripts/build_raw.py: tiles per instance ("col_row" = layers present:\n')
+    written, tile_zone, chunk_zones = state
+    for j in range(inner[2], inner[3]):
+        for i in range(inner[0], inner[1]):
+            c, r = cols[i], rows[j]
+            g = zgrid[j * 16:(j + 1) * 16, i * 16:(i + 1) * 16]
+            present = [int(z) for z in np.unique(g)]
+            if len(present) == 1:
+                parts = [(f'{c}_{r}', present[0], None)]
+            else:
+                w = zone_weights(zgrid, i * 16, j * 16, n_zones)
+                parts = [(f'{c}_{r}_z{z}', z, w[z - 1]) for z in present]
+                chunk_zones[f'{c}_{r}'] = ''.join(ZONE_DIGITS[int(z) - 1] for z in g.flatten())   # row by row, north first
+            ti = (i, i + 1, j, j + 1)
+            for key, z, wz in parts:
+                have = ''
+                for n in LAYERS:
+                    area = n in ('fill', 'hatch')
+                    src = layers['blocked' if n == 'hatch' else n] if area else layers[P][n]
+                    blk = np.ascontiguousarray(src[px(ti, P, inner)])
+                    if wz is not None:
+                        blk = (blk * wz).astype(np.uint8)
+                    if blk.max() < 8:
+                        continue
+                    have += n[0]
+                    for s in FILE_LODS.get(n, LODS):
+                        d = out_dir if s == P else os.path.join(out_dir, str(s))
+                        if area:
+                            img = downscale(blk, s, False)
+                        else:                                  # lines: drawn at this zoom level
+                            img = np.ascontiguousarray(layers[s][n][px(ti, s, inner)])
+                            if wz is not None:
+                                img = (img * cv2.resize(wz, (s, s), interpolation=cv2.INTER_AREA)).astype(np.uint8)
+                        save_tga(img, os.path.join(d, f'{key}_{n}.tga'))
+                if have:
+                    written[key] = have
+                    tile_zone[key] = z
+
+
+def write_tiles_lua(path, map_id, zone_names, state):
+    written, tile_zone, chunk_zones = state
+    with open(path, 'w', newline='\n') as fh:
+        fh.write(f'-- generated by scripts/build_raw.py: tiles of map {map_id} ("col_row" = layers present:\n')
         fh.write('-- f = fill, h = hatch, s = shade, t = terrain, w = water, r = roads).\n')
         fh.write('-- Tiles on a zone border are split into one part per zone: "col_row_z<zone>".\n')
-        fh.write('RunewayTiles = {\n    [0] = {\n')
+        fh.write(f'RunewayTiles = RunewayTiles or {{}}\nRunewayTiles[{map_id}] = {{\n')
         for key, h in sorted(written.items()):
-            fh.write(f'        ["{key}"] = "{h}",\n')
-        fh.write('    },\n}\n')
-        fh.write('-- Zones: names (index = zone number), zone per tile key, and per border tile the zone of each\n')
-        fh.write('-- of its 16 x 16 chunks (row by row from north, columns from west)\n')
-        fh.write('RunewayZones = {\n    [0] = {\n        names = { ')
-        fh.write(', '.join(f'"{n}"' for n in zone_names) + ' },\n        tile = {\n')
+            fh.write(f'    ["{key}"] = "{h}",\n')
+        fh.write('}\n')
+        fh.write('-- Zones: names (index = zone number), zone per tile key, and per border tile the zone of each of its\n')
+        fh.write(f'-- 16 x 16 chunks (row by row from north, columns from west; one character per chunk: {ZONE_DIGITS[:12]}...)\n')
+        fh.write(f'RunewayZones = RunewayZones or {{}}\nRunewayZones[{map_id}] = {{\n    names = {{ ')
+        fh.write(', '.join(f'"{n}"' for n in zone_names) + ' },\n    tile = {\n')
         for key, z in sorted(tile_zone.items()):
-            fh.write(f'            ["{key}"] = {z},\n')
-        fh.write('        },\n        chunks = {\n')
+            fh.write(f'        ["{key}"] = {z},\n')
+        fh.write('    },\n    chunks = {\n')
         for key, g in sorted(chunk_zones.items()):
-            fh.write(f'            ["{key}"] = "{g}",\n')
-        fh.write('        },\n    },\n}\n')
-    return written
+            fh.write(f'        ["{key}"] = "{g}",\n')
+        fh.write('    },\n}\n')
 
 
 # RGBA as the defaults in Core.lua (drawn in LAYERS order)
@@ -421,9 +509,9 @@ def compose(layers, base=None):
     return out.clip(0, 255).astype(np.uint8)
 
 
-def minimap(cols, rows):
+def minimap(name, cols, rows):
     img = np.zeros((len(rows) * P, len(cols) * P, 3), np.uint8)
-    for f in glob.glob(os.path.join(SRC, 'minimap', 'map*.png')):
+    for f in glob.glob(os.path.join(MAPS, name, 'minimap', 'map*.png')):
         c, r = map(int, re.findall(r'map(\d+)_(\d+)', f)[0])
         if c in cols and r in rows:
             t = cv2.imread(f)
@@ -433,17 +521,20 @@ def minimap(cols, rows):
     return img
 
 
-def main(zone_names):
+def main(map_id, zone_names):
+    name = MAP_NAMES[map_id]
     if not os.path.exists(LISTFILE):
         print('downloading listfile ...')
         urllib.request.urlretrieve(LISTFILE_URL, LISTFILE)
-    top, names, seas = zone_of_area()
+    top, names, seas = zone_of_area(map_id)
     zones = set()
     for n in zone_names:
         if n.lower() not in names:
-            sys.exit(f'unknown zone: {n}')
+            sys.exit(f'unknown zone on map {map_id}: {n}')
         zones.add(names[n.lower()])
-    idx = area_index()
+    if len(zone_names) > len(ZONE_DIGITS):
+        sys.exit(f'at most {len(ZONE_DIGITS)} zones per map')
+    idx = area_index(map_id)
     zone_of = np.vectorize(lambda x: top.get(int(x), int(x)))
     land = lambda a: np.isin(zone_of(a), list(zones)) & ~np.isin(a, list(seas))
     tiles = {k for k, a in idx.items() if land(a).any()}
@@ -452,8 +543,8 @@ def main(zone_names):
     # mosaic with one tile margin for clean borders
     cols = list(range(min(c for c, _ in tiles) - 1, max(c for c, _ in tiles) + 2))
     rows = list(range(min(r for _, r in tiles) - 1, max(r for _, r in tiles) + 2))
-    print(f'{len(tiles)} tiles, mosaic cols {cols[0]}-{cols[-1]} rows {rows[0]}-{rows[-1]}')
-    m, L = build(cols, rows)
+    print(f'map {map_id}: {len(tiles)} tiles, mosaic cols {cols[0]}-{cols[-1]} rows {rows[0]}-{rows[-1]}', flush=True)
+
     # zone mask per chunk: zone land, plus sea chunks next to it (the coast belongs to the zone)
     keep = np.zeros((len(rows) * 16, len(cols) * 16), bool)
     sea = np.zeros_like(keep)
@@ -464,8 +555,6 @@ def main(zone_names):
             keep[ys, xs] = land(a)
             sea[ys, xs] = np.isin(a, list(seas))
     keep |= sea & (cv2.dilate(keep.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0)
-    keep = cv2.resize(keep.astype(np.uint8), (m.W, m.H), interpolation=cv2.INTER_NEAREST) > 0
-    layers = line_layers(L, keep)
     # zone number (1..n, order of zone_names) per chunk; chunks outside the built zones (sea, fade area)
     # belong to the nearest built zone
     order = [names[n.lower()] for n in zone_names]
@@ -482,20 +571,44 @@ def main(zone_names):
     nearest = np.zeros(lab.max() + 1, np.uint8)
     nearest[lab[ys, xs]] = zgrid[ys, xs]
     zgrid = nearest[lab]
-    # every mosaic tile with content (the fade reaches a bit into neighbouring tiles)
-    written = write_tiles(layers, cols, rows, {(c, r) for c in cols for r in rows}, zgrid,
-                          [n for n in zone_names])
-    os.makedirs(BUILD, exist_ok=True)
+
+    L = masks(raw_masks(name, cols, rows))
+    print('masks done', flush=True)
+    G = map_lines(L)
+    print('lines done', flush=True)
+
+    out_dir = os.path.join(TILES, str(map_id))
+    shutil.rmtree(out_dir, ignore_errors=True)
+    for s in LODS:
+        os.makedirs(out_dir if s == P else os.path.join(out_dir, str(s)), exist_ok=True)
+    for s in LODS:
+        save_tga(hatch_pattern(s), os.path.join(MEDIA, f'hatch{s}.tga'))
+    # previews at half resolution; every mosaic tile with content is written (the fade reaches a bit into
+    # neighbouring tiles)
+    pv = np.zeros((len(rows) * P // 2, len(cols) * P // 2, 3), np.uint8)
+    pm = np.zeros_like(pv)
     half = lambda a: cv2.resize(a, (a.shape[1] // 2, a.shape[0] // 2), interpolation=cv2.INTER_AREA)
-    flat = dict(layers[P], fill=layers['fill'], blocked=layers['blocked'])
-    cv2.imwrite(os.path.join(BUILD, 'preview_lines.png'), half(compose(flat)))
-    cv2.imwrite(os.path.join(BUILD, 'preview_over_minimap.png'),
-                half(compose(flat, (minimap(cols, rows) * 0.45).astype(np.uint8))))
-    size = sum(os.path.getsize(os.path.join(d, f)) for d, _, fs in os.walk(OUT) for f in fs)
-    print(f'{len(written)} tiles written, {size / 1e6:.1f} MB, previews in build/')
+    state = ({}, {}, {})
+    for inner, win in blocks(len(cols), len(rows)):
+        layers = block_layers(L, G, keep, inner, win)
+        write_block(out_dir, layers, inner, cols, rows, zgrid, len(zone_names), state)
+        flat = dict(layers[P], fill=layers['fill'], blocked=layers['blocked'])
+        dst = px(inner, P // 2)
+        pv[dst] = half(compose(flat))
+        pm[dst] = half(compose(flat, (minimap(name, cols[inner[0]:inner[1]], rows[inner[2]:inner[3]]) * 0.45).astype(np.uint8)))
+    write_tiles_lua(os.path.join(out_dir, 'Tiles.lua'), map_id, zone_names, state)
+    os.makedirs(BUILD, exist_ok=True)
+    cv2.imwrite(os.path.join(BUILD, 'preview_lines.png'), pv)
+    cv2.imwrite(os.path.join(BUILD, 'preview_over_minimap.png'), pm)
+    size = sum(os.path.getsize(os.path.join(d, f)) for d, _, fs in os.walk(out_dir) for f in fs)
+    print(f'{len(state[0])} tiles written, {size / 1e6:.1f} MB, previews in build/')
 
 
 if __name__ == '__main__':
-    zl = sys.argv[1:] or [l.strip() for l in open(os.path.join(os.path.dirname(__file__), 'zones.txt'))
-                          if l.strip() and not l.startswith('#')]
-    main(zl)
+    args = sys.argv[1:]
+    map_id = 0
+    if args[:1] == ['--map']:
+        map_id, args = int(args[1]), args[2:]
+    zl = args or [l.strip() for l in open(os.path.join(os.path.dirname(__file__), f'zones_{map_id}.txt'))
+                  if l.strip() and not l.startswith('#')]
+    main(map_id, zl)

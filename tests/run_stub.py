@@ -19,7 +19,7 @@ end })''')
 LOCALES = ['Runeway/Locales/enUS.lua'] + sorted(f'Runeway/Locales/{os.path.basename(p)}' for p in glob.glob(os.path.join(ROOT, 'Runeway', 'Locales', '*.lua')) if not p.endswith('enUS.lua'))
 L.execute('LOCALE = ...', os.environ.get('RUNEWAY_LOCALE', 'enUS'))   # client language for this run
 L.execute('TOC_VERSION = ...', re.search(r'## Version: (\S+)', open(os.path.join(ROOT, 'Runeway', 'Runeway.toc')).read())[1])
-for f in (*LOCALES, 'Runeway/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Profile.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
+for f in (*LOCALES, 'Runeway/tiles/0/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Profile.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
     src = open(os.path.join(ROOT, f), encoding='utf8').read()
     L.execute('NS = NS or {}; local f = assert(loadstring(..., "@' + f + '")); f("Runeway", NS)', src)
 
@@ -288,8 +288,9 @@ L.execute('''
     view:GetScript("OnUpdate")(view, 0.05)
 ''')
 
-# optional WoW APIs the stub leaves out on purpose, and the SavedVariables table before the first login
-known = {'GetMouseFoci', 'GetMouseFocus', 'RunewayDB', 'CORPSE_RED'}
+# optional WoW APIs the stub leaves out on purpose, the SavedVariables table before the first login and the
+# tile tables the first map data file creates
+known = {'GetMouseFoci', 'GetMouseFocus', 'RunewayDB', 'CORPSE_RED', 'RunewayTiles', 'RunewayZones'}
 undefined = {k: v for k, v in L.eval('UNDEFINED_GLOBALS').items() if k not in known}
 print('undefined globals read:', (str(undefined) + '  FAIL') if undefined else 'none')
 # every referenced texture file must exist

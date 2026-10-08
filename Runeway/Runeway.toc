@@ -15,7 +15,7 @@ Locales\ruRU.lua
 Locales\koKR.lua
 Locales\zhCN.lua
 Locales\zhTW.lua
-Tiles.lua
+tiles\0\Tiles.lua
 Core.lua
 QuestAreas.lua
 Profile.lua

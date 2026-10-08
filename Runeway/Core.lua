@@ -280,6 +280,7 @@ end
 -- Zone dimming: the zone the player stands in is drawn in full, all other zones with db.zoneDim.
 -- The zone comes from the tile data (zone per tile, per chunk on border tiles), so it matches the map.
 local zoneAlpha, lastZoneTime = {}, nil      -- [zone] = current factor, eased towards the target
+local ZONE_DIGITS = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"   -- one character per chunk
 local function ActiveZone(zones)
     local fc, fr = 32 - pW / T, 32 - pN / T
     local c, r = math.floor(fc), math.floor(fr)
@@ -287,7 +288,7 @@ local function ActiveZone(zones)
     local g = zones.chunks[key]
     if g then
         local i = math.floor((fr - r) * 16) * 16 + math.floor((fc - c) * 16) + 1
-        return tonumber(g:sub(i, i))
+        return ZONE_DIGITS:find(g:sub(i, i), 1, true)
     end
     return zones.tile[key]
 end
@@ -307,10 +308,31 @@ end
 
 ns.ZoneAlpha = function() return zoneAlpha end     -- for tests
 
+-- Tile list of a map (tiles/<map>/Tiles.lua) indexed by "c_r": { { key, layers }, ... } (several parts on
+-- zone border tiles), built on first use
+local tileIndex = {}
+local function TileIndex(inst)
+    local idx = tileIndex[inst]
+    if idx == nil then
+        local data = RunewayTiles and RunewayTiles[inst]
+        idx = false
+        if data then
+            idx = {}
+            for key, have in pairs(data) do
+                local cr = key:match("^%d+_%d+")
+                idx[cr] = idx[cr] or {}
+                table.insert(idx[cr], { key, have })
+            end
+        end
+        tileIndex[inst] = idx
+    end
+    return idx
+end
+
 local function UpdateTiles(inst, angle)
-    local data = RunewayTiles and RunewayTiles[inst]
+    local idx = TileIndex(inst)
     frame = frame + 1
-    if not data then HideTiles() return false end
+    if not idx then HideTiles() return false end
     local zones = RunewayZones and RunewayZones[inst]
     if zones then UpdateZoneAlpha(zones) end
 
@@ -319,41 +341,47 @@ local function UpdateTiles(inst, angle)
     local size = T * k
     local loA, wA, loB, wB = LodWeights(size)
 
-    for key, have in pairs(data) do
-        local c, r = key:match("(%d+)_(%d+)")
-        c, r = tonumber(c), tonumber(r)
-        local cn = (32 - r) * T - T / 2
-        local cw = (32 - c) * T - T / 2
-        if math.abs(cn - pN) < reach and math.abs(cw - pW) < reach then
-            local x, y = ToScreen(cn, cw)
-            local zf = zones and zoneAlpha[zones.tile[key]] or 1
-            for _, layer in ipairs(LAYERS) do
-                if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) and (layer ~= "hatch" or fade) then
-                    local id = inst .. ":" .. key .. ":" .. layer
-                    local e = tiles[id]
-                    if not e then e = { layer = layer }; tiles[id] = e end
-                    -- levels not stored for this layer: the nearest stored one, cross-fade only between two files
-                    local fl = FILE_LOD[layer]
-                    local la, lb, ta, tb = loA, loB, wA, wB
-                    if fl then la, lb = fl[loA], fl[loB] end
-                    if la == lb then ta, tb = 1, 0 end
-                    local a = GetTex(e, inst, key, la)
-                    local b = tb > 0 and GetTex(e, inst, key, lb)
-                    if e.mask then PlaceMask(e.mask, x, y, size, angle) end
-                    local okA, okB = IsLoaded(a), b and IsLoaded(b)
-                    if not okA and okB then ta, tb = 0, 1 elseif okA and b and not okB then ta, tb = 1, 0 end
-                    if not okA and not okB then
-                        -- nothing loaded yet for these levels: keep any loaded level of this tile on screen
-                        for _, lod in ipairs(LODS) do
-                            local t = e[lod]
-                            if t and t ~= a and t ~= b and IsLoaded(t) then
-                                PlaceTex(t, x, y, size, angle, layer, zf)
-                                break
+    local n = math.ceil(reach / T)
+    local pc, pr = math.floor(32 - pW / T), math.floor(32 - pN / T)
+    for r = pr - n, pr + n do
+        for c = pc - n, pc + n do
+            local cn = (32 - r) * T - T / 2
+            local cw = (32 - c) * T - T / 2
+            local list = idx[c .. "_" .. r]
+            if list and math.abs(cn - pN) < reach and math.abs(cw - pW) < reach then
+                local x, y = ToScreen(cn, cw)
+                for _, part in ipairs(list) do
+                    local key, have = part[1], part[2]
+                    local zf = zones and zoneAlpha[zones.tile[key]] or 1
+                    for _, layer in ipairs(LAYERS) do
+                        if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) and (layer ~= "hatch" or fade) then
+                            local id = inst .. ":" .. key .. ":" .. layer
+                            local e = tiles[id]
+                            if not e then e = { layer = layer }; tiles[id] = e end
+                            -- levels not stored for this layer: the nearest stored one, cross-fade only between two files
+                            local fl = FILE_LOD[layer]
+                            local la, lb, ta, tb = loA, loB, wA, wB
+                            if fl then la, lb = fl[loA], fl[loB] end
+                            if la == lb then ta, tb = 1, 0 end
+                            local a = GetTex(e, inst, key, la)
+                            local b = tb > 0 and GetTex(e, inst, key, lb)
+                            if e.mask then PlaceMask(e.mask, x, y, size, angle) end
+                            local okA, okB = IsLoaded(a), b and IsLoaded(b)
+                            if not okA and okB then ta, tb = 0, 1 elseif okA and b and not okB then ta, tb = 1, 0 end
+                            if not okA and not okB then
+                                -- nothing loaded yet for these levels: keep any loaded level of this tile on screen
+                                for _, lod in ipairs(LODS) do
+                                    local t = e[lod]
+                                    if t and t ~= a and t ~= b and IsLoaded(t) then
+                                        PlaceTex(t, x, y, size, angle, layer, zf)
+                                        break
+                                    end
+                                end
                             end
+                            PlaceTex(a, x, y, size, angle, layer, okA and ta * zf or 0)   -- shown at weight 0 while loading
+                            if b then PlaceTex(b, x, y, size, angle, layer, okB and tb * zf or 0) end
                         end
                     end
-                    PlaceTex(a, x, y, size, angle, layer, okA and ta * zf or 0)   -- shown at weight 0 while loading
-                    if b then PlaceTex(b, x, y, size, angle, layer, okB and tb * zf or 0) end
                 end
             end
         end

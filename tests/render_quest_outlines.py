@@ -12,7 +12,7 @@ from lupa import lua51       # WoW runs Lua 5.1
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 L = lua51.LuaRuntime(unpack_returned_tuples=True)
 L.execute(open(os.path.join(ROOT, 'tests', 'wow_stub.lua')).read())
-for f in ('Tiles.lua', 'Core.lua', 'QuestAreas.lua'):
+for f in ('tiles/0/Tiles.lua', 'Core.lua', 'QuestAreas.lua'):
     src = open(os.path.join(ROOT, 'Runeway', f), encoding='utf8').read()
     L.execute('NS = NS or {}; local f = assert(loadstring(..., "@' + f + '")); f("Runeway", NS)', src)
 L.execute(open(sys.argv[1], encoding='utf8').read())
@@ -26,7 +26,7 @@ T = 1600 / 3
 SCALE = 2                                            # render at 2x the half-size preview = full resolution
 base = cv2.imread(os.path.join(ROOT, 'build', 'preview_lines.png'))
 base = cv2.resize(base, (base.shape[1] * SCALE, base.shape[0] * SCALE), interpolation=cv2.INTER_LINEAR).astype(np.float32)
-keys = [tuple(map(int, k)) for k in re.findall(r'\["(\d+)_(\d+)"\]', open(os.path.join(ROOT, 'Runeway', 'Tiles.lua')).read())]
+keys = [tuple(map(int, k)) for k in re.findall(r'\["(\d+)_(\d+)"\]', open(os.path.join(ROOT, 'Runeway', 'tiles', '0', 'Tiles.lua')).read())]
 c0, r0 = min(c for c, _ in keys) - 1, min(r for _, r in keys) - 1
 ppt = base.shape[1] / (max(c for c, _ in keys) + 2 - c0)
 core = np.zeros(base.shape[:2], np.float32)

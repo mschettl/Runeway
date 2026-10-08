@@ -4,7 +4,7 @@
 local ADDON, ns = ...               -- ns: shared by all addon files
 local L = ns.L                      -- texts in the client language (Locales/)
 local T = 1600 / 3                 -- edge length of an ADT tile in yards (533.33)
-local PATH = "Interface\\AddOns\\Runeway\\tiles\\"
+local ADDONS = "Interface\\AddOns\\"
 local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
 local ZOOM_MIN, ZOOM_MAX = 0.08, 5
 local SIZE_MIN, SIZE_MAX = 200, 1400
@@ -196,8 +196,44 @@ local function ApplyColor(t, layer, weight)
     t:SetVertexColor(c.r, c.g, c.b, c.a * (weight or 1))
 end
 
+---------------------------------------------------------------------------
+-- Data packs: the tiles of each map live in a load-on-demand addon (Runeway_EasternKingdoms, ...) whose .toc
+-- names its maps ("## X-Runeway-Maps: 0"). The pack of a map is loaded when the map is first needed.
+local packOf, packTried = nil, {}
+local function PackOf(inst)
+    if not packOf then
+        packOf = {}
+        local api = C_AddOns or {}
+        local num, info, meta = api.GetNumAddOns or GetNumAddOns, api.GetAddOnInfo or GetAddOnInfo,
+            api.GetAddOnMetadata or GetAddOnMetadata
+        for i = 1, num and num() or 0 do
+            local name = info(i)
+            for id in (meta(name, "X-Runeway-Maps") or ""):gmatch("%d+") do packOf[tonumber(id)] = name end
+        end
+    end
+    return packOf[inst]
+end
+
+-- Loads the data pack of a map once; reports a pack that cannot be loaded (disabled, wrong version, ...)
+local function LoadPack(inst)
+    local pack = inst and PackOf(inst)
+    if not pack or packTried[pack] then return end
+    packTried[pack] = true
+    local loaded, reason = (C_AddOns and C_AddOns.LoadAddOn or LoadAddOn)(pack)
+    if not loaded then
+        packTried[pack] = _G["ADDON_" .. tostring(reason)] or tostring(reason)
+        Print(L.PACK_FAILED:format(pack, packTried[pack]))
+    end
+end
+
+-- Reason text when the pack of a map could not be loaded, else nil
+local function PackError(inst)
+    local state = packTried[PackOf(inst) or false]
+    return type(state) == "string" and state or nil
+end
+
 local function TilePath(inst, key, layer, lod)
-    return PATH .. inst .. "\\" .. (lod < 512 and (lod .. "\\") or "") .. key .. "_" .. layer .. ".tga"
+    return ADDONS .. PackOf(inst) .. "\\tiles\\" .. inst .. "\\" .. (lod < 512 and (lod .. "\\") or "") .. key .. "_" .. layer .. ".tga"
 end
 
 local function IsLoaded(t)
@@ -316,6 +352,7 @@ local tileIndex = {}
 local function TileIndex(inst)
     local idx = tileIndex[inst]
     if idx == nil then
+        LoadPack(inst)
         local data = RunewayTiles and RunewayTiles[inst]
         idx = false
         if data then
@@ -726,7 +763,8 @@ view:SetScript("OnUpdate", function(self, e)
     if UpdateTiles(inst, angle) then
         status:SetText(viewAt and L.VIEW_MODE or "")
     else
-        status:SetText(L.NO_DATA)
+        local err = PackError(inst)
+        status:SetText(err and L.PACK_FAILED:format(PackOf(inst), err) or L.NO_DATA)
     end
     UpdateQuestPins()
     UpdateCorpse()
@@ -1013,6 +1051,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         ApplySize()            -- again after WoW's layout restore
         ApplyPos()
         ApplyBindings()
+        LoadPack(select(4, UnitPosition("player")))   -- behind the loading screen rather than on the first frame
         UpdateVisibility()
         RefreshQuests()
     elseif event == "ADDON_ACTION_BLOCKED" or event == "ADDON_ACTION_FORBIDDEN" then
@@ -1041,6 +1080,7 @@ end)
 -- Centre (north, west) of a mapped zone whose name contains `name` (lower case), or nil and the list of
 -- mapped zones
 local function ZoneCentre(inst, name)
+    LoadPack(inst)
     local zones = RunewayZones and RunewayZones[inst]
     if not zones then return end
     for z, zn in ipairs(zones.names) do

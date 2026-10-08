@@ -1,0 +1,9 @@
+## Interface: 16001
+## Title: Runeway - Eastern Kingdoms
+## Notes: Map data of Runeway (Eastern Kingdoms), loaded when needed
+## Version: 1.6
+## Dependencies: Runeway
+## LoadOnDemand: 1
+## X-Runeway-Maps: 0
+
+tiles\0\Tiles.lua

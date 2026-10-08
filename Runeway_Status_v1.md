@@ -1,4 +1,4 @@
-# Runeway – Stand Version 1.5 und Übergabe
+# Runeway – Stand Version 1.6 (Entwicklung) und Übergabe
 
 Diese Datei fasst den kompletten Stand zusammen, damit eine neue Session nahtlos weitermachen kann. Sie ersetzt den Chatverlauf. Vorgaben und Ziele stehen in `Runeway_Prompt_v1.md`, Arbeitsregeln in `CLAUDE.md`, alle sichtbaren Texte in `Runeway_Strings.md`.
 
@@ -8,7 +8,7 @@ Diese Datei fasst den kompletten Stand zusammen, damit eine neue Session nahtlos
 
 Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forever** (Interface 16001) im Stil von Path of Exile und Diablo IV.
 
-**Funktionen (Stand 1.5, alles im Spiel getestet):**
+**Funktionen (Stand 1.5 im Spiel getestet; 1.6 Datenpakete gebaut, im Spiel noch zu prüfen):**
 - **Karte:** alle 27 Gebiete der Östlichen Königreiche aus den RAW-Spieldaten (Etappen 1–4, Abschnitt 8) mit begehbarer Fläche, Schraffur für nicht begehbare Bereiche, Gelände-, Wasser- und Weglinien; Ruinen von Lordaeron als Stadt. Angrenzende Zonen gedimmt, nahtloser Zoom, frei einstellbare Breite und Höhe, ovale Randausblendung.
 - **Quests:** Questbereiche wie auf der Weltkarte (auch aus angrenzenden Zonen), Questmarker für Punktziele, Tooltips und Hervorhebung beim Überfahren.
 - **Leichnam-Marker** im Tod, am Kartenrand in Richtung des Leichnams, wenn er außerhalb liegt.
@@ -26,8 +26,9 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 | 1.4 | Profil-Export und -Import |
 | 1.4.1 | Aufräumen (u. a. Fehler beim Hervorheben des Leichnams behoben), Version im Chat beim Login und oben in den Einstellungen |
 | 1.5 | Östliche Königreiche komplett (27 Gebiete, Etappen 2–4), Block-Build, Kachelliste pro Karten-ID, Schraffur-Maske und Saum nur in 128 px, offenes Meer ausgeblendet, Ansichtsmodus `/rnw view` |
+| 1.6 | Datenpakete: Kacheln als LoadOnDemand-Addon `Runeway_EasternKingdoms`, geladen beim Betreten der Karte (in Arbeit, im Spiel noch zu prüfen) |
 
-**Versionierung:** Zweite Stelle = abgeschlossener, im Spiel getesteter Schritt, der nach `main` geht; dritte Stelle = Korrekturen ohne neue Funktion; 2.0 = Route zum Questziel. Geplant: 1.6 Datenpakete (beim Betreten laden), 1.7 Kalimdor, 1.8+ Städte, Höhlen/Minen, Dungeons. Eine öffentliche Veröffentlichung (z. B. CurseForge) wird davon getrennt entschieden, sinnvoll frühestens nach den Datenpaketen (Ordnerumbau).
+**Versionierung:** Zweite Stelle = abgeschlossener, im Spiel getesteter Schritt, der nach `main` geht; dritte Stelle = Korrekturen ohne neue Funktion; 2.0 = Route zum Questziel. Geplant: 1.7 Kalimdor, 1.8+ Städte, Höhlen/Minen, Dungeons. Eine öffentliche Veröffentlichung (z. B. CurseForge) wird davon getrennt entschieden, sinnvoll frühestens nach den Datenpaketen (Ordnerumbau).
 
 ---
 
@@ -55,22 +56,30 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 
 ---
 
-## 3. Addon (Ordner `Runeway/`)
+## 3. Addon (Ordner `Runeway/`) und Datenpakete (`Runeway_<Kontinent>/`)
+
+Seit 1.6 besteht das Release aus zwei Ordnern, die beide nach `Interface\AddOns` gehören: das Kern-Addon `Runeway` (Code, Medien, Texte) und je Kontinent ein Datenpaket, bisher `Runeway_EasternKingdoms` (Karte 0, ~78 MB).
 
 | Datei | Inhalt |
 |---|---|
-| `Runeway.toc` | Interface 16001, Version 1.4.1, SavedVariables `RunewayDB`; lädt `Locales/*.lua`, `tiles/0/Tiles.lua`, `Core.lua`, `QuestAreas.lua`, `Profile.lua`, `Options.lua`, `Options.xml` |
+| `Runeway.toc` | Interface 16001, Version 1.6, SavedVariables `RunewayDB`; lädt `Locales/*.lua`, `Core.lua`, `QuestAreas.lua`, `Profile.lua`, `Options.lua`, `Options.xml` |
 | `Locales/` | Texte je Client-Sprache (`ns.L`): `enUS.lua` (Basis) und `deDE.lua` aus `Runeway_Strings.md` erzeugt, die übrigen neun von Hand gepflegt |
 | `Core.lua` | Fenster, Kacheln, Zoom, Drehung, Zonen-Dimmung, Questmarker, Leichnam, Mouse-over, Sichtbarkeit und Aufruf-Modi, Slash-Befehle, Standardwerte |
 | `QuestAreas.lua` | Questbereiche: Abtasten, Umriss, Zeichnen, Trefferprüfung für Mouse-over |
 | `Profile.lua` | Profil-Export/-Import und sein Dialog; Pfad-Hilfen `ns.GetPath`/`ns.SetPath` |
 | `Options.lua`, `Options.xml` | Einstellungen im Blizzard-Stil (`Settings.RegisterVerticalLayoutCategory` mit Proxy-Settings), eigene Zeilenvorlagen; wird bei `PLAYER_LOGIN` aufgebaut, weil die Tastenbelegungs-Zeilen `GetNumBindings` brauchen |
-| `tiles/<Karten-ID>/Tiles.lua` | generiert, je Karte: `RunewayTiles[id]` (Kacheln mit ihren Ebenen, `["31_28"] = "fhstwr"`, Grenzkacheln als Zonenteile `"c_r_z<zone>"`) und `RunewayZones[id]` |
+| `Runeway_<Paket>/Runeway_<Paket>.toc` | generiert von `build_raw.py`: `## LoadOnDemand: 1`, `## Dependencies: Runeway`, `## X-Runeway-Maps: <Karten-ID>`, Interface und Version wie `Runeway.toc`; lädt `tiles\<id>\Tiles.lua` |
+| `Runeway_<Paket>/tiles/<Karten-ID>/Tiles.lua` | generiert, je Karte: `RunewayTiles[id]` (Kacheln mit ihren Ebenen, `["31_28"] = "fhstwr"`, Grenzkacheln als Zonenteile `"c_r_z<zone>"`) und `RunewayZones[id]` |
 | `Bindings.xml` | Tastenbelegungen `RUNEWAY_TOGGLE` und `RUNEWAY_WORLDMAP` |
 | `media/` | `hatch512/256/128.tga` (gemeinsames Schraffurmuster je Zoomstufe, erzeugt von `build_raw.py`), `fade1.tga`–`fade5.tga` (Ausblendmasken je Randstärke, `scripts/make_masks.py`), `arrow.tga` (Spielerpfeil), `edge.tga` (kantengeglättete Linientextur), `dot.tga` (Rückfall-Symbol) |
-| `tiles/0/[256/ \| 128/]<key>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Speicherbedarf siehe „Dateigröße“ unten |
+| `Runeway_<Paket>/tiles/0/[256/ \| 128/]<key>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Speicherbedarf siehe „Dateigröße“ unten |
 
 `tools/Probe.lua` ist ein Entwicklungswerkzeug und nicht im Release (siehe Abschnitt 6).
+
+### Datenpakete laden (`Core.lua`, `PackOf`/`LoadPack`)
+- **Zuordnung:** Beim ersten Bedarf liest der Kern alle installierten Addons (`C_AddOns.GetNumAddOns`/`GetAddOnInfo`) und deren Feld `X-Runeway-Maps` (Karten-IDs, durch Leerzeichen oder Komma getrennt). Paketnamen sind damit nicht im Code festgelegt; ein späteres Retail-Paket bräuchte zusätzlich eine Unterscheidung nach Spieltyp.
+- **Laden:** `C_AddOns.LoadAddOn(paket)` einmal je Paket, sobald eine Karte gebraucht wird: bei `PLAYER_ENTERING_WORLD` (hinter dem Ladebildschirm), sonst beim ersten Kachelzugriff (`TileIndex`) bzw. bei `/rnw view <Gebiet>`. Kachelpfade: `Interface\AddOns\<paket>\tiles\<id>\…`.
+- **Fehler:** Lädt ein Paket nicht (z. B. in der Addon-Liste deaktiviert), meldet der Chat einmal „Map data <Paket> could not be loaded: <Grund>“ (`L.PACK_FAILED`, Grund über Blizzards `ADDON_<REASON>`-Texte), die Statuszeile zeigt dasselbe, die Karte bleibt leer. Ohne Paket für die Karte: wie bisher „No contours for this area yet“.
 
 ### Ebenen (Zeichenreihenfolge, Kennbuchstabe in `Tiles.lua`)
 `fill` (f, begehbar) → `hatch` (h, Schraffur nicht begehbar) → `shade` (s, dunkler Saum) → `terrain` (t) → `water` (w) → `roads` (r). Darüber `questAreas` (Linien aus `QuestAreas.lua`), Questmarker und Spielerpfeil.
@@ -207,7 +216,7 @@ python scripts/build_raw.py               # Karte 0, Zonen aus scripts/zones_0.t
 python scripts/build_raw.py --map 1       # andere Karte (1 = Kalimdor, Ordner kalimdor), Zonen aus zones_1.txt
 python scripts/build_raw.py "Zone Name"   # einzelne Zone(n), Namen wie in AreaTable (AreaName_lang)
 ```
-Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `build/` (`preview_lines.png`, `preview_over_minimap.png`). Die Community-Listfile (`listfile.csv`) wird beim ersten Lauf geladen. Der Bereichsindex der ADTs wird in `build/area_index_<id>.npz` zwischengespeichert.
+Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc` (Paket je Karte in `PACKS`, `build_raw.py`: 0 = `Runeway_EasternKingdoms`, 1 = `Runeway_Kalimdor`) und Vorschauen nach `build/` (`preview_lines.png`, `preview_over_minimap.png`). Die Community-Listfile (`listfile.csv`) wird beim ersten Lauf geladen. Der Bereichsindex der ADTs wird in `build/area_index_<id>.npz` zwischengespeichert.
 
 **Block-Build:** Das Mosaik ist eine logische Gesamtkarte, gerechnet in Blöcken von 8 × 8 Kacheln (`BLOCK`) mit 1 Kachel Überlappung (`MARGIN`); behalten wird nur das Innere. Gleitkomma-Raster (Höhen, Steigung, Texturgewichte, Weichzeichnen, Linien, Randausblendung) gibt es nur je Block. Nicht-lokale Schritte (Entfernen kleiner Inseln und Flecken, Wege-Skelett und -Linienzüge, Umrisse) laufen auf 1-Byte-Masken der ganzen Karte; Umrisse und Wege werden einmal global vereinfacht und je Block nur gezeichnet. Ergebnis für Etappe 1 bitgleich zum früheren Gesamtbau (1241 Kacheln), Spitzen-RAM 3,8 → 1,7 GB, Laufzeit 146 → 108 s. Der RAM betrifft nur den Build auf dem Entwicklungsrechner, nicht das Addon.
 
@@ -315,7 +324,7 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
 
 **Architektur-Grundsätze:**
 - **Laufzeit bleibt kachelbasiert:** Kacheln in Weltkoordinaten, geladen nach Sichtfeld, keine Zonen im Addon. Zonen-Maps zur Laufzeit zusammenzusetzen ist ausdrücklich verworfen (doppelte Texturen und Überblend-Artefakte an Grenzen).
-- **Pro Karten-ID ein Kachelsatz:** `tiles/<mapID>/…` (heute `tiles/0` = Östliche Königreiche). Die Instanz-ID kommt aus `UnitPosition` (4. Wert); `Tiles.lua` führt die Kachelliste pro Karten-ID.
+- **Pro Karten-ID ein Kachelsatz:** `<Paket>/tiles/<mapID>/…` (heute `Runeway_EasternKingdoms/tiles/0`). Die Instanz-ID kommt aus `UnitPosition` (4. Wert); `Tiles.lua` führt die Kachelliste pro Karten-ID.
 - **Bauen als logische Gesamtkarte, gerechnet in Blöcken:** z. B. 8×8 Kacheln mit 1–2 Kacheln Überlappungsrand, geschrieben wird nur das Innere. Das Ergebnis ist identisch zu einem Gesamtbau, der RAM-Bedarf bleibt konstant. Schraffur-Phase an Weltkoordinaten statt am Mosaik-Ursprung ausrichten. Nicht-lokal und deshalb mit breitem Rand oder global auf grobem Raster: das Entfernen kleiner Inseln (`MIN_WALK`, `MIN_ISLAND`) und das Zusammensetzen der Wegstücke.
 - **Zwei Pipelines, ein Kachelformat:**
 
@@ -331,7 +340,7 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
 **Reihenfolge:**
 1. **Fundament:** Block-Build mit Überlappung, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID im Addon. **Erledigt**, siehe unten.
 2. **Östliche Königreiche:** alle Gebiete in Etappen (Tabelle unten), plus Questbereiche angrenzender Zonen. **Erledigt** (1.5).
-3. **Daten-Addons:** Aufteilung in Pakete, die beim Betreten geladen werden.
+3. **Daten-Addons:** Aufteilung in Pakete, die beim Betreten geladen werden. **Umgesetzt (1.6)**, im Spiel noch zu prüfen.
 4. **Kalimdor:** dieselbe Pipeline.
 5. **WMO-Grundriss-Pipeline mit Etagen:** zuerst Städte (Ironforge, Stormwind), Undercity unterirdisch, dann Höhlen und Minen.
 6. **Dungeons und Raids.**
@@ -374,7 +383,7 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
 - **Block-Build:** siehe Abschnitt 4. Etappe 1 bitgleich zum alten Gesamtbau. Probelauf mit allen 27 Gebieten in einem Lauf: 9,6 min, 4,7 GB Spitzen-RAM (alter Gesamtbau hochgerechnet ~22 GB), 769 Kacheln, 106,5 MB.
 - **Schraffur in Weltkoordinaten:** unverändert gültig. Das Muster hat eine ganze Zahl Linien pro Kachel und ist damit an Kachelgrenzen (= Weltkoordinaten) ausgerichtet; Blöcke beginnen immer an Kachelgrenzen.
 - **Kachelliste pro Karten-ID:** `tiles/<id>/Tiles.lua` setzt `RunewayTiles[id]` und `RunewayZones[id]`; Build mit `--map <id>` und `zones_<id>.txt`. Die Laufzeit indiziert die Liste einmal nach `"c_r"` und besucht pro Frame nur die Kacheln um den Spieler. Zonen-Chunks: ein Zeichen je Chunk (`1-9A-Za-z`), bis 61 Zonen je Karte.
-- **Kalimdor später:** Ordner `kalimdor` (Karte 1) mit ADTs auf `data` ablegen, `zones_1.txt` anlegen, `build_raw.py --map 1`, `tiles\1\Tiles.lua` in die `.toc`.
+- **Kalimdor später:** Ordner `kalimdor` (Karte 1) mit ADTs auf `data` ablegen, `zones_1.txt` anlegen, `build_raw.py --map 1`; Paket `Runeway_Kalimdor` samt `.toc` entsteht dabei.
 
 **Etappen** (Gruppen von Nord nach Süd; immer alle Zonen aus `zones_0.txt` zusammen bauen, neue Zonen unten anhängen, weil die Zeilennummer die Zonennummer ist):
 
@@ -423,12 +432,14 @@ RUNEWAY_LOCALE=ruRU python tests/run_stub.py  # derselbe Test mit anderer Client
 python tests/run_stub.py                      # lädt das Addon (Lua 5.1) gegen einen WoW-API-Stub: Kacheln, Questbereiche, Optionen, Profil, Mouse-over; meldet versehentliche globale Variablen
 python tests/render_quest_outlines.py <SavedVariables/Runeway.lua>   # Questumrisse aus Probe-Daten mit dem Addon-Code
 python scripts/simulate.py                    # Darstellung aus den Kacheln
-cd <repo> && zip -r build/Runeway-<version>.zip Runeway
+cd <repo> && zip -r build/Runeway-<version>.zip Runeway Runeway_EasternKingdoms
 ```
 
 **Testwerkzeug `/rnw probe`:** Nur in Entwicklungsbuilds; dazu `tools/Probe.lua` in den Addon-Ordner kopieren und in der `.toc` eintragen. Es tastet die Questbereiche der aktuellen Zone ab und speichert sie in `RunewayDB.probe`. Die Auswertung macht `scripts/probe_view.py`.
 
-**Installation:** Alten Ordner `Interface\AddOns\Runeway` löschen, das ZIP dort entpacken und WoW komplett neu starten. Neue Dateien (Kacheln, Einträge in der `.toc`, `Bindings.xml`) lädt WoW erst nach einem Neustart; reine Lua-Änderungen an bestehenden Dateien reichen mit `/reload`.
+**Installation:** Alte Ordner `Interface\AddOns\Runeway` und `Runeway_*` löschen, das ZIP dort entpacken (beide Ordner) und WoW komplett neu starten. Neue Dateien (Kacheln, Einträge in der `.toc`, `Bindings.xml`) lädt WoW erst nach einem Neustart; reine Lua-Änderungen an bestehenden Dateien reichen mit `/reload`.
+
+**Im Spiel prüfen (1.6):** beide Ordner installiert, WoW neu starten; in der Addon-Liste erscheint „Runeway - Eastern Kingdoms“ (bei Bedarf geladen); Login in den Östlichen Königreichen zeigt die Karte sofort; `/rnw view <Gebiet>` funktioniert; Paket in der Addon-Liste deaktivieren → Chat- und Statuszeilen-Meldung, keine Lua-Fehler; Kalimdor bzw. Instanz → „No contours …“.
 
 **Regressionsliste (vor jedem Release im Spiel prüfen, Stand 1.4 alles bestanden; 1.5: Punkte 1–2 für Etappen 2–4 über den Ansichtsmodus geprüft):**
 1. **Karte:** Look wie im Diablo-Screenshot; Zoom nahtlos ohne Flackern oder Kachelkanten; Schraffur deckungsgleich mit den Geländelinien; Ruinen von Lordaeron erkennbar.
@@ -450,8 +461,8 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway
 ```text
 Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch claude/dreamy-lovelace-efolxg.
 Lies zuerst CLAUDE.md, Runeway_Status_v1.md und Runeway_Prompt_v1.md.
-Version 1.5 ist abgeschlossen und in main gemergt (Östliche Königreiche komplett, Block-Build, Kachelliste pro Karten-ID, Ansichtsmodus /rnw view).
+Version 1.5 ist in main gemergt. Version 1.6 (Datenpakete: Kacheln als LoadOnDemand-Addon Runeway_EasternKingdoms, Laden beim Betreten) ist auf dem Entwicklungsbranch umgesetzt, aber im Spiel noch nicht geprüft (Abschnitt 9, „Im Spiel prüfen (1.6)“).
 Langfristziel, Architektur und Versionsplan: Runeway_Status_v1.md, Abschnitte 1 und 8.
-Aufgabe dieser Session: Datenpakete (Roadmap Schritt 3, Version 1.6): Kacheln je Kontinent als LoadOnDemand-Addon, beim Betreten laden.
+Aufgabe dieser Session: Ergebnisse des Spieltests von 1.6 einarbeiten, dann Kalimdor (Roadmap Schritt 4, Version 1.7).
 Rohdaten liegen auf dem Branch data (git fetch origin data, siehe Abschnitt 2). Kommunikation Deutsch, Code Englisch.
 ```

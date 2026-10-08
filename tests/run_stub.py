@@ -19,7 +19,45 @@ end })''')
 LOCALES = ['Runeway/Locales/enUS.lua'] + sorted(f'Runeway/Locales/{os.path.basename(p)}' for p in glob.glob(os.path.join(ROOT, 'Runeway', 'Locales', '*.lua')) if not p.endswith('enUS.lua'))
 L.execute('LOCALE = ...', os.environ.get('RUNEWAY_LOCALE', 'enUS'))   # client language for this run
 L.execute('TOC_VERSION = ...', re.search(r'## Version: (\S+)', open(os.path.join(ROOT, 'Runeway', 'Runeway.toc')).read())[1])
-for f in (*LOCALES, 'Runeway/tiles/0/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Profile.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
+# installed addons: the core plus every data pack folder (<pack>/<pack>.toc) for C_AddOns; LoadAddOn runs the
+# pack's files. DISABLED_ADDONS makes LoadAddOn fail like a pack switched off in the addon list.
+def read_toc(name):
+    toc = open(os.path.join(ROOT, name, name + '.toc'), encoding='utf8').read()
+    meta = dict(re.findall(r'^## ([\w-]+): (.*?)\s*$', toc, re.M))
+    files = [ln.strip() for ln in toc.splitlines() if ln.strip() and not ln.startswith('#')]
+    return meta, files
+packs = sorted(n for n in os.listdir(ROOT) if n.startswith('Runeway_') and os.path.isfile(os.path.join(ROOT, n, n + '.toc')))
+L.execute('''
+    ADDON_LIST, LOADED_ADDONS, DISABLED_ADDONS, ADDON_DISABLED = {}, {}, {}, "Disabled"
+    local read = ...
+    C_AddOns.GetNumAddOns = function() return #ADDON_LIST end
+    C_AddOns.GetAddOnInfo = function(i) return ADDON_LIST[i].name end
+    C_AddOns.GetAddOnMetadata = function(name, field)
+        if name == "Runeway" and field == "Version" then return TOC_VERSION end
+        for _, a in ipairs(ADDON_LIST) do if a.name == name then return a.meta[field] end end
+    end
+    C_AddOns.LoadAddOn = function(name)
+        if DISABLED_ADDONS[name] then return false, "DISABLED" end
+        for _, a in ipairs(ADDON_LIST) do
+            if a.name == name then
+                for _, f in ipairs(a.files) do
+                    local path = name .. "/" .. f:gsub(string.char(92), "/")
+                    assert(loadstring(read(path), "@" .. path))(name, {})
+                end
+                LOADED_ADDONS[#LOADED_ADDONS + 1] = name
+                return true
+            end
+        end
+        return false, "MISSING"
+    end''', lambda path: open(os.path.join(ROOT, path), encoding='utf8').read())
+add = L.eval('function(name, meta, files) table.insert(ADDON_LIST, { name = name, meta = meta, files = files }) end')
+add('Runeway', L.table_from({'Version': 'x'}), L.table_from([]))
+for name in packs:
+    meta, files = read_toc(name)
+    add(name, L.table_from(meta), L.table_from(files))
+add('Runeway_Test', L.table_from({'X-Runeway-Maps': '1'}), L.table_from([]))   # pack of map 1, switched off
+L.execute('DISABLED_ADDONS.Runeway_Test = true')
+for f in (*LOCALES, 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Profile.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
     src = open(os.path.join(ROOT, f), encoding='utf8').read()
     L.execute('NS = NS or {}; local f = assert(loadstring(..., "@' + f + '")); f("Runeway", NS)', src)
 
@@ -33,6 +71,7 @@ L.execute('''
     fire("ADDON_LOADED", "Runeway")
     fire("PLAYER_LOGIN")
     fire("PLAYER_ENTERING_WORLD")
+    print("data packs loaded at login:", table.concat(LOADED_ADDONS, ", "), RunewayTiles and RunewayTiles[0] and "ok" or "FAIL")
     SlashCmdList.RUNEWAY("toggle")
     local upd = RunewayFrame:GetScript("OnUpdate")
     upd(RunewayFrame, 0.05)
@@ -91,6 +130,12 @@ L.execute('''
     SlashCmdList.RUNEWAY("layer questareas")
     SlashCmdList.RUNEWAY("color questareas 1 0.5 0")
     SlashCmdList.RUNEWAY("color fill 1 1 1 0.1")
+    upd(RunewayFrame, 0.05)
+    -- a map whose data pack is switched off: reported once in the chat and in the status line, map stays empty
+    POS[4] = 1
+    upd(RunewayFrame, 0.05)
+    upd(RunewayFrame, 0.05)
+    POS[4] = 0
     upd(RunewayFrame, 0.05)
     SlashCmdList.RUNEWAY("reset")
     POS[1] = nil
@@ -242,7 +287,7 @@ L.execute('''
     local hiddenElsewhere = not tg:IsShown()
     EVENT_CALLBACKS["Settings.CategoryChanged"](SETTINGS_MAIN)
     check("show/hide button only on Runeway pages", hiddenElsewhere and tg:IsShown())
-    check("main page: version, intro, 15 quick commands (+ profile text)", kinds.element == 18 and INITS[1].data.text:find("1.5", 1, true) and INITS[2].data.text == NS.L.INTRO and INITS[4].data.desc ~= nil)
+    check("main page: version, intro, 15 quick commands (+ profile text)", kinds.element == 18 and INITS[1].data.text:find(TOC_VERSION, 1, true) and INITS[2].data.text == NS.L.INTRO and INITS[4].data.desc ~= nil)
     check("settings rows: 1 header, 2 bindings, 7 layers",
         kinds.header == 1 and kinds.binding == 2 and kinds.layerrow == 7)
     local dropdown

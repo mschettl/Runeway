@@ -22,7 +22,8 @@ from roads import prune
 import structures
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
-TILES = os.path.join(ROOT, 'Runeway', 'tiles')           # tiles/<map ID>/: tile files and Tiles.lua
+# Data pack (load-on-demand addon) per map ID: <pack>/tiles/<map ID>/ holds the tile files and Tiles.lua
+PACKS = {0: ('Runeway_EasternKingdoms', 'Eastern Kingdoms'), 1: ('Runeway_Kalimdor', 'Kalimdor')}
 BUILD = os.path.join(ROOT, 'build')                      # cache and previews (not in git)
 AREATABLE = os.path.join(MAPS, '..', 'AreaTable.csv')
 MAP_NAMES = {0: 'azeroth', 1: 'kalimdor'}                # map ID (= instance ID of UnitPosition) -> wow.export folder
@@ -492,6 +493,19 @@ def write_tiles_lua(path, map_id, zone_names, state):
         fh.write('    },\n}\n')
 
 
+def write_pack_toc(map_id):
+    """<pack>/<pack>.toc: load on demand, needs the core addon; X-Runeway-Maps tells the core which maps it holds.
+    Interface and version follow Runeway/Runeway.toc."""
+    pack, title = PACKS[map_id]
+    core = open(os.path.join(ROOT, 'Runeway', 'Runeway.toc')).read()
+    meta = lambda key: re.search(rf'^## {key}: (.+)$', core, re.M)[1].strip()
+    with open(os.path.join(ROOT, pack, pack + '.toc'), 'w', newline='\n') as fh:
+        fh.write(f'## Interface: {meta("Interface")}\n## Title: Runeway - {title}\n'
+                 f'## Notes: Map data of Runeway ({title}), loaded when needed\n## Version: {meta("Version")}\n'
+                 f'## Dependencies: Runeway\n## LoadOnDemand: 1\n## X-Runeway-Maps: {map_id}\n\n'
+                 f'tiles\\{map_id}\\Tiles.lua\n')
+
+
 # RGBA as the defaults in Core.lua (drawn in LAYERS order)
 COLORS = dict(fill=(0, 0, 0, 0.10), hatch=(0.80, 0.84, 0.88, 0.20), shade=(0, 0, 0, 0.45),
               terrain=(0.82, 0.86, 0.89, 0.85), water=(0.82, 0.86, 0.89, 0.80), roads=(0.92, 0.72, 0.28, 0.65))
@@ -587,7 +601,8 @@ def main(map_id, zone_names):
     G = map_lines(L)
     print('lines done', flush=True)
 
-    out_dir = os.path.join(TILES, str(map_id))
+    pack = PACKS[map_id][0]
+    out_dir = os.path.join(ROOT, pack, 'tiles', str(map_id))
     shutil.rmtree(out_dir, ignore_errors=True)
     for s in LODS:
         os.makedirs(out_dir if s == P else os.path.join(out_dir, str(s)), exist_ok=True)
@@ -607,6 +622,7 @@ def main(map_id, zone_names):
         pv[dst] = half(compose(flat))
         pm[dst] = half(compose(flat, (minimap(name, cols[inner[0]:inner[1]], rows[inner[2]:inner[3]]) * 0.45).astype(np.uint8)))
     write_tiles_lua(os.path.join(out_dir, 'Tiles.lua'), map_id, zone_names, state)
+    write_pack_toc(map_id)
     os.makedirs(BUILD, exist_ok=True)
     cv2.imwrite(os.path.join(BUILD, 'preview_lines.png'), pv)
     cv2.imwrite(os.path.join(BUILD, 'preview_over_minimap.png'), pm)

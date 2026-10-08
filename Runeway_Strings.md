@@ -144,6 +144,7 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `LOADED` | Chat beim Login | v%s loaded. | v%s geladen. |
 | `NO_POSITION` | Statuszeile der Karte | No position (instance?) | Keine Position (Instanz?) |
 | `NO_DATA` | Statuszeile der Karte | No contours for this area yet | Für dieses Gebiet gibt es noch keine Karte |
+| `PACK_FAILED` | Chat und Statuszeile, wenn das Datenpaket einer Karte nicht lädt (Paketname, Grund) | Map data %s could not be loaded: %s | Kartendaten %s konnten nicht geladen werden: %s |
 | `VIEW_MODE` | Statuszeile der Karte im Ansichtsmodus | View mode: drag to pan, /rnw view returns to the player | Ansichtsmodus: Ziehen verschiebt, /rnw view kehrt zum Spieler zurück |
 | `NO_MASKS` | Chat beim Laden | Note: this client does not support mask textures, the edge is clipped hard. | Hinweis: Dieser Client unterstützt keine Maskentexturen, der Rand wird hart abgeschnitten. |
 | `MSG_LOCKED` | Chat `/rnw lock` | locked (clicks pass through) | gesperrt (Klicks gehen durch) |

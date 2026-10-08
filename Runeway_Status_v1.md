@@ -75,8 +75,8 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 
 ### Dateigröße
-- **Gespeicherte Zoomstufen je Ebene** (`FILE_LODS` in `build_raw.py`, `FILE_LOD` in `Core.lua`): Linien (`terrain`, `water`, `roads`) in 512/256/128, `shade` in 256/128 (die 512-Stufe nutzt 256), `fill` nur in 128. Fallen zwei Zoomstufen auf dieselbe Datei, wird nicht überblendet.
-- **Schraffur:** Die Kachel `256/<c>_<r>_hatch.tga` ist nur noch die Maske der nicht begehbaren Fläche. Die Linien kommen aus `media/hatch<lod>.tga` (ganze Zahl Linien pro Kachel: 57 / 43 / 32, daher über Kachelgrenzen fortlaufend). Die Maske ist eine `MaskTexture`, die wie die Kachel platziert und gedreht wird; jede Schraffur-Textur hat damit zwei Masken (Randausblendung + Fläche). Ohne Masken-Unterstützung entfällt die Schraffur.
+- **Gespeicherte Zoomstufen je Ebene** (`FILE_LODS` in `build_raw.py`, `FILE_LOD` in `Core.lua`): Linien (`terrain`, `water`, `roads`) in 512/256/128, `shade`, `hatch`-Maske und `fill` nur in 128 (weiche Flächen; seit Etappe 2, −34 % Dateigröße; bei starkem Zoom ist der Saum etwas breiter und weicher). Fallen zwei Zoomstufen auf dieselbe Datei, wird nicht überblendet.
+- **Schraffur:** Die Kachel `128/<c>_<r>_hatch.tga` ist nur noch die Maske der nicht begehbaren Fläche. Die Linien kommen aus `media/hatch<lod>.tga` (ganze Zahl Linien pro Kachel: 57 / 43 / 32, daher über Kachelgrenzen fortlaufend). Die Maske ist eine `MaskTexture`, die wie die Kachel platziert und gedreht wird; jede Schraffur-Textur hat damit zwei Masken (Randausblendung + Fläche). Ohne Masken-Unterstützung entfällt die Schraffur.
 - **Ergebnis:** 5 Zonen 17,3 MB Kacheln + 0,8 MB Muster (vorher 68,5 MB, also −75 %). Hochrechnung: Östliche Königreiche ≈ 70 MB, beide Kontinente ≈ 140 MB. Im Spiel belegen nur die Kacheln im Sichtfeld Speicher (Freigabe nach ~20 s), unabhängig von der Zahl der Zonen.
 
 ### Standardwerte (`RunewayDB`)
@@ -377,13 +377,13 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
 | Etappe | Gebiete | Stand |
 |---|---|---|
 | 1 | Tirisfal Glades, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains | im Spiel getestet (1.2) |
-| 2 (Norden) | Eastern Plaguelands, The Hinterlands, Arathi Highlands, Gilneas, Ruins of Gilneas | gebaut (285 Kacheln, 42,9 MB, 3,3 min, 2,3 GB RAM), im Spiel offen |
+| 2 (Norden) | Eastern Plaguelands, The Hinterlands, Arathi Highlands, Gilneas, Ruins of Gilneas | gebaut (285 Kacheln, 28,2 MB, 3,3 min, 2,3 GB RAM), im Spiel offen |
 | 3 (Mitte) | Wetlands, Dun Morogh, Loch Modan, Searing Gorge, Badlands, Burning Steppes, Riverglades | offen, im Probelauf ohne erkennbare Fehler |
 | 4 (Süden) | Elwynn Forest, Stormwind City, Westfall, Redridge Mountains, Duskwood, Deadwind Pass, Swamp of Sorrows, Blasted Lands, Stranglethorn Vale, Gillijim's Isle | offen, im Probelauf ohne erkennbare Fehler |
 
 **Im Spiel prüfen (Etappe 2):** Übergänge Western Plaguelands ↔ Eastern Plaguelands, Hillsbrad ↔ Arathi, Arathi ↔ Hinterlands, Silverpine ↔ Gilneas; Dimmung beim Grenzübertritt; Küste im Norden der Eastern Plaguelands (weicher Rand statt Schraffur auf offenem Meer); Ladezeiten.
 
-**Dateigröße:** Alle 27 Gebiete ≈ 106 MB (Hochrechnung war 70 MB). Anteile: Linien `terrain` 32 MB, `shade` 31 MB, `hatch`-Maske 21 MB, `water` 13 MB, `roads` 5 MB, `fill` 4 MB; nach Stufe 512: 34 MB, 256: 55 MB, 128: 18 MB. Hebel, falls nötig: `hatch`-Maske und `shade` nur in 128 statt 256 speichern (weiche Flächen), offenes Meer weglassen (erledigt, s. Zonen-Zuschnitt).
+**Dateigröße:** Alle 27 Gebiete ≈ 106 MB (Hochrechnung war 70 MB). Anteile: Linien `terrain` 32 MB, `shade` 31 MB, `hatch`-Maske 21 MB, `water` 13 MB, `roads` 5 MB, `fill` 4 MB; nach Stufe 512: 34 MB, 256: 55 MB, 128: 18 MB. Umgesetzt: `hatch`-Maske und `shade` nur in 128 (Etappen 1+2: 42,9 → 28,2 MB) und offenes Meer weggelassen (s. Zonen-Zuschnitt).
 
 **Bekannt aus der Vorschau:**
 - Stormwind City hat (wie andere Städte außer Undercity) keine Gebäude-Wände; dafür braucht es den WMO-Export (siehe „Weitere Städte“).

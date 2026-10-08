@@ -17,10 +17,10 @@ local LAYERS = { "fill", "hatch", "shade", "terrain", "water", "roads" }
 local LAYER_CODE = { fill = "f", hatch = "h", shade = "s", terrain = "t", water = "w", roads = "r" }
 local LAYER_LEVEL = { fill = 0, hatch = 1, shade = 2, terrain = 3, water = 4, roads = 5 }   -- texture sublevel
 -- Zoom levels stored per layer (FILE_LODS in scripts/build_raw.py); a missing level uses the nearest stored one.
--- hatch: the tile file is only the mask of the not walkable area (256 px); the lines are one shared pattern
+-- hatch: the tile file is only the mask of the not walkable area (128 px); the lines are one shared pattern
 -- per zoom level (media/hatch<lod>.tga), cut out by that mask.
-local FILE_LOD = { fill = { [128] = 128, [256] = 128, [512] = 128 }, shade = { [128] = 128, [256] = 256, [512] = 256 } }
-local HATCH_MASK_LOD = 256
+local FILE_LOD = { fill = { [128] = 128, [256] = 128, [512] = 128 }, shade = { [128] = 128, [256] = 128, [512] = 128 } }
+local HATCH_MASK_LOD = 128
 local STYLE = 6            -- bump when the default colours change: resets the saved colours once (ADDON_LOADED)
 
 -- One calm colour for terrain and water lines (Diablo IV style)

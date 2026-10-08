@@ -19,8 +19,8 @@ pN, pW = (float(sys.argv[1]), float(sys.argv[2])) if len(sys.argv) > 2 else (191
 k = float(sys.argv[3]) if len(sys.argv) > 3 else 1.5
 OUT = sys.argv[4] if len(sys.argv) > 4 else os.path.join(ROOT, 'build', 'sim.png')
 
-FILE_LOD = dict(fill={128: 128, 256: 128, 512: 128}, shade={128: 128, 256: 256, 512: 256})   # as in Core.lua
-HATCH_MASK_LOD = 256
+FILE_LOD = dict(fill={128: 128, 256: 128, 512: 128}, shade={128: 128, 256: 128, 512: 128})   # as in Core.lua
+HATCH_MASK_LOD = 128
 # tile keys: "c_r", or "c_r_z<zone>" for the zone parts of a border tile (RunewayZones is not needed here)
 lua = open(os.path.join(ROOT, 'Runeway', 'tiles', '0', 'Tiles.lua')).read().split('RunewayZones')[0]
 tiles = dict(re.findall(r'\["(\d+_\d+(?:_z\d+)?)"\] = "(\w+)"', lua))

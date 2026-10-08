@@ -36,7 +36,7 @@ LAYERS = ('fill', 'hatch', 'shade', 'terrain', 'water', 'roads')
 # Zoom levels stored per layer (file size). Soft area layers need little resolution; the addon draws a
 # missing level with the nearest stored one. hatch = mask of the not walkable area: the hatch lines come
 # from one shared pattern per zoom level (media/hatch<lod>.tga), cut out by this mask at runtime.
-FILE_LODS = dict(fill=(128,), hatch=(256,), shade=(256, 128))
+FILE_LODS = dict(fill=(128,), hatch=(128,), shade=(128,))
 HATCH = {512: 57, 256: 43, 128: 32}   # hatch lines per tile and zoom level (spacing ~9 / 6 / 4 px)
 MEDIA = os.path.join(ROOT, 'Runeway', 'media')
 MAX_SLOPE = 50             # degrees; steeper terrain counts as not walkable

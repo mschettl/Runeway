@@ -1,4 +1,4 @@
-# Runeway – Stand Version 1.4.1 und Übergabe
+# Runeway – Stand Version 1.5 und Übergabe
 
 Diese Datei fasst den kompletten Stand zusammen, damit eine neue Session nahtlos weitermachen kann. Sie ersetzt den Chatverlauf. Vorgaben und Ziele stehen in `Runeway_Prompt_v1.md`, Arbeitsregeln in `CLAUDE.md`, alle sichtbaren Texte in `Runeway_Strings.md`.
 
@@ -8,11 +8,11 @@ Diese Datei fasst den kompletten Stand zusammen, damit eine neue Session nahtlos
 
 Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forever** (Interface 16001) im Stil von Path of Exile und Diablo IV.
 
-**Funktionen (Stand 1.4, alles im Spiel getestet):**
-- **Karte:** fünf Zonen aus den RAW-Spieldaten (Tirisfal, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains) mit begehbarer Fläche, Schraffur für nicht begehbare Bereiche, Gelände-, Wasser- und Weglinien; Ruinen von Lordaeron als Stadt. Angrenzende Zonen gedimmt, nahtloser Zoom, frei einstellbare Breite und Höhe, ovale Randausblendung.
+**Funktionen (Stand 1.5, alles im Spiel getestet):**
+- **Karte:** alle 27 Gebiete der Östlichen Königreiche aus den RAW-Spieldaten (Etappen 1–4, Abschnitt 8) mit begehbarer Fläche, Schraffur für nicht begehbare Bereiche, Gelände-, Wasser- und Weglinien; Ruinen von Lordaeron als Stadt. Angrenzende Zonen gedimmt, nahtloser Zoom, frei einstellbare Breite und Höhe, ovale Randausblendung.
 - **Quests:** Questbereiche wie auf der Weltkarte (auch aus angrenzenden Zonen), Questmarker für Punktziele, Tooltips und Hervorhebung beim Überfahren.
 - **Leichnam-Marker** im Tod, am Kartenrand in Richtung des Leichnams, wenn er außerhalb liegt.
-- **Bedienung:** drei Aufruf-Modi (eigene Taste, Kartentaste M, dauerhaft), automatisches Ausblenden, gesperrt/klickdurchlässig oder verschiebbar, Mausrad-Zoom abschaltbar, Slash-Befehle.
+- **Bedienung:** drei Aufruf-Modi (eigene Taste, Kartentaste M, dauerhaft), automatisches Ausblenden, gesperrt/klickdurchlässig oder verschiebbar, Mausrad-Zoom abschaltbar, Ansichtsmodus (`/rnw view`) zum Betrachten anderer Orte, Slash-Befehle.
 - **Einstellungen** im Blizzard-Stil mit Unterpunkten, Profil-Export/-Import als Text, Lokalisierung in allen elf Client-Sprachen.
 
 **Versionen:**
@@ -25,6 +25,9 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 | 1.3 | Lokalisierung in elf Sprachen (außer Deutsch KI-Übersetzungen, Französisch im Spiel geprüft) |
 | 1.4 | Profil-Export und -Import |
 | 1.4.1 | Aufräumen (u. a. Fehler beim Hervorheben des Leichnams behoben), Version im Chat beim Login und oben in den Einstellungen |
+| 1.5 | Östliche Königreiche komplett (27 Gebiete, Etappen 2–4), Block-Build, Kachelliste pro Karten-ID, Schraffur-Maske und Saum nur in 128 px, offenes Meer ausgeblendet, Ansichtsmodus `/rnw view` |
+
+**Versionierung:** Zweite Stelle = abgeschlossener, im Spiel getesteter Schritt, der nach `main` geht; dritte Stelle = Korrekturen ohne neue Funktion; 2.0 = Route zum Questziel. Geplant: 1.6 Datenpakete (beim Betreten laden), 1.7 Kalimdor, 1.8+ Städte, Höhlen/Minen, Dungeons. Eine öffentliche Veröffentlichung (z. B. CurseForge) wird davon getrennt entschieden, sinnvoll frühestens nach den Datenpaketen (Ordnerumbau).
 
 ---
 
@@ -32,7 +35,7 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 
 | Branch | Inhalt |
 |---|---|
-| `main` | Freigegebener Stand, je Version ein PR (zuletzt 1.4, mschettl/Runeway#7). |
+| `main` | Freigegebener Stand, je Version ein PR (zuletzt 1.5). |
 | `claude/dreamy-lovelace-efolxg` | Entwicklungsbranch (Addon, Build-Skripte, Tests, diese Datei). |
 | `data` (orphan) | Rohdaten aus wow.export, nie auf `main`. ~1,6 GB. |
 
@@ -295,7 +298,7 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
 
 | Punkt | Status |
 |---|---|
-| 3.1 RAW-Daten (Begehbarkeit aus Steigung, Wasser aus MH2O, Wege aus Texturen, Zonen-Zuschnitt, Tirisfal) | **erledigt** für Tirisfal; Etappe 1 (Silverpine, Western Plaguelands, Hillsbrad, Alterac) in 1.2 erledigt und im Spiel getestet; weitere Zonen offen |
+| 3.1 RAW-Daten (Begehbarkeit aus Steigung, Wasser aus MH2O, Wege aus Texturen, Zonen-Zuschnitt, Tirisfal) | **erledigt** für Tirisfal; Etappe 1 (Silverpine, Western Plaguelands, Hillsbrad, Alterac) in 1.2 erledigt und im Spiel getestet; alle Östlichen Königreiche (Etappen 2–4) in 1.5 |
 | 3.2 Einfärbbare Ebenen | **erledigt**, erweitert um `fill` und `hatch` |
 | 3.3 Questgebiete | **erledigt**, über das Abtasten statt DB2 (die Tabellen sind leer) |
 | 3.4 Konfigurationsoberfläche und Bedienung | **erledigt** in 1.1, im Spiel getestet |
@@ -327,7 +330,7 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
 
 **Reihenfolge:**
 1. **Fundament:** Block-Build mit Überlappung, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID im Addon. **Erledigt**, siehe unten.
-2. **Östliche Königreiche:** alle Gebiete in Etappen (Tabelle unten), plus Questbereiche angrenzender Zonen.
+2. **Östliche Königreiche:** alle Gebiete in Etappen (Tabelle unten), plus Questbereiche angrenzender Zonen. **Erledigt** (1.5).
 3. **Daten-Addons:** Aufteilung in Pakete, die beim Betreten geladen werden.
 4. **Kalimdor:** dieselbe Pipeline.
 5. **WMO-Grundriss-Pipeline mit Etagen:** zuerst Städte (Ironforge, Stormwind), Undercity unterirdisch, dann Höhlen und Minen.
@@ -427,7 +430,7 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway
 
 **Installation:** Alten Ordner `Interface\AddOns\Runeway` löschen, das ZIP dort entpacken und WoW komplett neu starten. Neue Dateien (Kacheln, Einträge in der `.toc`, `Bindings.xml`) lädt WoW erst nach einem Neustart; reine Lua-Änderungen an bestehenden Dateien reichen mit `/reload`.
 
-**Regressionsliste (vor jedem Release im Spiel prüfen, Stand 1.4 alles bestanden):**
+**Regressionsliste (vor jedem Release im Spiel prüfen, Stand 1.4 alles bestanden; 1.5: Punkte 1–2 für Etappen 2–4 über den Ansichtsmodus geprüft):**
 1. **Karte:** Look wie im Diablo-Screenshot; Zoom nahtlos ohne Flackern oder Kachelkanten; Schraffur deckungsgleich mit den Geländelinien; Ruinen von Lordaeron erkennbar.
 2. **Zonen:** Übergänge zwischen den gebauten Zonen ohne Kante oder Lücke; angrenzende Zonen gedimmt, beim Grenzübertritt weicher Tausch; Außenrand blendet weich aus.
 3. **Questbereiche:** durchgehend in jeder Zoomstufe, weich zum Kartenrand, korrekt bei Fortschritt; auch aus angrenzenden Zonen, grenzüberschreitende nicht abgeschnitten oder doppelt; Option „Combine overlapping quest areas“ an/aus.
@@ -437,7 +440,8 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway
 7. **Aufruf-Modi:** eigene Taste; Kartentaste M (Weltkarte über „World map (map key mode)“, auch nach Kampf und `/reload`); dauerhaft; automatisches Ausblenden (Kampf, Instanz, Reittier/Flug, Stadt).
 8. **Einstellungen:** Hauptseite mit Einleitung und Schnellbefehlen, Unterpunkte; Ebenen-Zeilen (Häkchen, Farbe, Deckkraft); „Standard“ je Seite; Knopf „Karte ein-/ausblenden“ neben „Standard“.
 9. **Profil:** Export, Einstellungen ändern, Import stellt alles wieder her; ungültiger Text wird abgelehnt.
-10. **Sprache:** mit deutschem und einem weiteren Client (z. B. Französisch) alle Texte übersetzt; keine Lua-Fehler, keine blockierten Aktionen („Runeway wurde geblockt“) beim Durchklicken der Blizzard-Menüs.
+10. **Ansichtsmodus:** `/rnw view` ein/aus an der eigenen Position, `/rnw view <Gebiet>`, Ziehen verschiebt (auch gesperrt), Dimmung nach Kartenmitte, zurück zum Spieler.
+11. **Sprache:** mit deutschem und einem weiteren Client (z. B. Französisch) alle Texte übersetzt; keine Lua-Fehler, keine blockierten Aktionen („Runeway wurde geblockt“) beim Durchklicken der Blizzard-Menüs.
 
 ---
 
@@ -446,9 +450,8 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway
 ```text
 Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch claude/dreamy-lovelace-efolxg.
 Lies zuerst CLAUDE.md, Runeway_Status_v1.md und Runeway_Prompt_v1.md.
-Version 1.4.1 ist abgeschlossen und in main gemergt (Etappe 1 mit fünf Zonen, Lokalisierung in elf Sprachen, Profil-Export/-Import, Aufräumen).
-Langfristziel und Architektur: Runeway_Status_v1.md, Abschnitt 8 „Roadmap“.
-Aufgabe dieser Session: Fundament (Block-Build, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID),
-danach weitere Etappen der Östlichen Königreiche, siehe Abschnitt 8.
+Version 1.5 ist abgeschlossen und in main gemergt (Östliche Königreiche komplett, Block-Build, Kachelliste pro Karten-ID, Ansichtsmodus /rnw view).
+Langfristziel, Architektur und Versionsplan: Runeway_Status_v1.md, Abschnitte 1 und 8.
+Aufgabe dieser Session: Datenpakete (Roadmap Schritt 3, Version 1.6): Kacheln je Kontinent als LoadOnDemand-Addon, beim Betreten laden.
 Rohdaten liegen auf dem Branch data (git fetch origin data, siehe Abschnitt 2). Kommunikation Deutsch, Code Englisch.
 ```

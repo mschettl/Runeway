@@ -33,6 +33,7 @@ local defaults = {
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
     arrowSize = 25, pinSize = 25, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
     questMerge = true,       -- overlapping quest areas as one combined outline
+    zoneDim = 0.4,           -- opacity factor of the zones the player is not in
     colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,
         fill    = { r = 0, g = 0, b = 0, a = 0.10 },              -- roads #EBB748, quest areas #73C7FF
         hatch   = { r = 0xCC / 255, g = 0xD6 / 255, b = 0xE0 / 255, a = 0.20 },
@@ -275,10 +276,42 @@ local function PlaceTex(t, x, y, size, angle, layer, weight)
     t:Show()
 end
 
+-- Zone dimming: the zone the player stands in is drawn in full, all other zones with db.zoneDim.
+-- The zone comes from the tile data (zone per tile, per chunk on border tiles), so it matches the map.
+local zoneAlpha, lastZoneTime = {}, nil      -- [zone] = current factor, eased towards the target
+local function ActiveZone(zones)
+    local fc, fr = 32 - pW / T, 32 - pN / T
+    local c, r = math.floor(fc), math.floor(fr)
+    local key = c .. "_" .. r
+    local g = zones.chunks[key]
+    if g then
+        local i = math.floor((fr - r) * 16) * 16 + math.floor((fc - c) * 16) + 1
+        return tonumber(g:sub(i, i))
+    end
+    return zones.tile[key]
+end
+
+local function UpdateZoneAlpha(zones)
+    local now = GetTime()
+    local step = lastZoneTime and math.min(1, (now - lastZoneTime) / 0.4) or 1   -- ~0.4 s cross-fade
+    lastZoneTime = now
+    local active = ActiveZone(zones)
+    for z in ipairs(zones.names) do
+        local target = (not active or z == active) and 1 or db.zoneDim
+        local a = zoneAlpha[z] or target
+        if math.abs(target - a) < 0.01 then a = target else a = a + (target - a) * step end
+        zoneAlpha[z] = a
+    end
+end
+
+ns.ZoneAlpha = function() return zoneAlpha end     -- for tests
+
 local function UpdateTiles(inst, angle)
     local data = RunewayTiles and RunewayTiles[inst]
     frame = frame + 1
     if not data then HideTiles() return false end
+    local zones = RunewayZones and RunewayZones[inst]
+    if zones then UpdateZoneAlpha(zones) end
 
     local W, H = view:GetSize()
     local reach = math.sqrt(W * W + H * H) / 2 / k + T   -- visible radius in yards plus one tile
@@ -292,6 +325,7 @@ local function UpdateTiles(inst, angle)
         local cw = (32 - c) * T - T / 2
         if math.abs(cn - pN) < reach and math.abs(cw - pW) < reach then
             local x, y = ToScreen(cn, cw)
+            local zf = zones and zoneAlpha[zones.tile[key]] or 1
             for _, layer in ipairs(LAYERS) do
                 if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) and (layer ~= "hatch" or fade) then
                     local id = inst .. ":" .. key .. ":" .. layer
@@ -312,13 +346,13 @@ local function UpdateTiles(inst, angle)
                         for _, lod in ipairs(LODS) do
                             local t = e[lod]
                             if t and t ~= a and t ~= b and IsLoaded(t) then
-                                PlaceTex(t, x, y, size, angle, layer, 1)
+                                PlaceTex(t, x, y, size, angle, layer, zf)
                                 break
                             end
                         end
                     end
-                    PlaceTex(a, x, y, size, angle, layer, okA and ta or 0)   -- shown at weight 0 while loading
-                    if b then PlaceTex(b, x, y, size, angle, layer, okB and tb or 0) end
+                    PlaceTex(a, x, y, size, angle, layer, okA and ta * zf or 0)   -- shown at weight 0 while loading
+                    if b then PlaceTex(b, x, y, size, angle, layer, okB and tb * zf or 0) end
                 end
             end
         end

@@ -95,6 +95,8 @@ local function Build()
     Header("Display")
     Slider("alpha", "Map opacity", 0.05, 1, 0.01, Pct, function() ns.ApplyAll() end)
     Slider("zoom", "Zoom", ns.ZOOM_MIN, ns.ZOOM_MAX, 0.01, function(v) return ("%.2f"):format(v) end, function(v) ns.SetZoom(v) end)
+    Slider("zoneDim", "Other zones", 0, 1, 0.01, Pct, nil,
+        "Opacity of the zones you are not in, relative to your current zone.")
     Slider("edge", "Soft edge", 1, 5, 1, function(v) return ("%d"):format(v) end, function() ns.ApplyAll() end)
     Slider("arrowSize", "Player arrow", 12, 48, 1, function(v) return ("%d px"):format(v) end)
     Slider("pinSize", "Quest marks", 14, 48, 1, function(v) return ("%d px"):format(v) end)

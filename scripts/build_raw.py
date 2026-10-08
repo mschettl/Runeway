@@ -44,6 +44,7 @@ ROAD_KEYS = ('road', 'path')   # texture name fragments that mark roads
 ROAD_MIN = 0.3             # texture weight threshold for road pixels
 ROAD_MIN_LEN = 60          # px; shorter road skeleton pieces are dropped
 ZONE_SOFT = 32             # px; rounds the chunk-based (33 yd) zone border
+ZONE_FEATHER = 0.7         # chunks; soft transition between the zone parts of a border tile
 EDGE_FADE = 160            # px (~165 yd); everything fades out towards the edge of the built zones
 
 
@@ -324,42 +325,82 @@ def save_tga(alpha, path):
     Image.fromarray(rgba, 'RGBA').save(path, compression='tga_rle', orientation=1)
 
 
-def write_tiles(layers, cols, rows, tiles):
-    """Writes Runeway/tiles/0/[lod/]<c>_<r>_<layer>.tga and returns {(c, r): 'twrs'}."""
+def zone_weights(zgrid, c0, r0, n):
+    """Soft per-pixel weights (P x P, summing to 1) of the zones 1..n for the tile at chunk offset (c0, r0)."""
+    m = 3                                                      # chunk margin for the blur
+    g = np.pad(zgrid, m, mode='edge')[r0:r0 + 16 + 2 * m, c0:c0 + 16 + 2 * m]
+    w = []
+    for z in range(1, n + 1):
+        b = cv2.GaussianBlur((g == z).astype(np.float32), (0, 0), ZONE_FEATHER)
+        b = cv2.resize(b, ((16 + 2 * m) * 32, (16 + 2 * m) * 32), interpolation=cv2.INTER_LINEAR)
+        w.append(b[m * 32:(m + 16) * 32, m * 32:(m + 16) * 32])
+    w = np.array(w)
+    return w / np.maximum(w.sum(0), 1e-6)
+
+
+def write_tiles(layers, cols, rows, tiles, zgrid, zone_names):
+    """Writes Runeway/tiles/0/[lod/]<key>_<layer>.tga and Tiles.lua; returns {key: 'twrs'}.
+    key = "<c>_<r>" for tiles inside one zone; tiles on a zone border are split into one part per zone,
+    key = "<c>_<r>_z<zone>", each part weighted by its zone (soft transition, parts add up to the tile)."""
     shutil.rmtree(OUT, ignore_errors=True)
     for s in LODS:
         os.makedirs(OUT if s == P else os.path.join(OUT, str(s)), exist_ok=True)
     for s in LODS:
         save_tga(hatch_pattern(s), os.path.join(MEDIA, f'hatch{s}.tga'))
-    written = {}
+    written, tile_zone, chunk_zones = {}, {}, {}
     for c, r in sorted(tiles):
         ys = slice((r - rows[0]) * P, (r - rows[0] + 1) * P)
         xs = slice((c - cols[0]) * P, (c - cols[0] + 1) * P)
-        have = ''
-        for n in LAYERS:
-            area = n in ('fill', 'hatch')
-            src = layers['blocked' if n == 'hatch' else n] if area else layers[P][n]
-            blk = np.ascontiguousarray(src[ys, xs])
-            if blk.max() < 8:
-                continue
-            have += n[0]
-            for s in FILE_LODS.get(n, LODS):
-                d = OUT if s == P else os.path.join(OUT, str(s))
-                if area:
-                    img = downscale(blk, s, False)
-                else:                                      # lines: drawn at this zoom level
-                    img = np.ascontiguousarray(layers[s][n][(r - rows[0]) * s:(r - rows[0] + 1) * s,
-                                                             (c - cols[0]) * s:(c - cols[0] + 1) * s])
-                save_tga(img, os.path.join(d, f'{c}_{r}_{n}.tga'))
-        if have:
-            written[(c, r)] = have
+        g = zgrid[(r - rows[0]) * 16:(r - rows[0] + 1) * 16, (c - cols[0]) * 16:(c - cols[0] + 1) * 16]
+        present = [int(z) for z in np.unique(g)]
+        if len(present) == 1:
+            parts = [(f'{c}_{r}', present[0], None)]
+        else:
+            w = zone_weights(zgrid, (c - cols[0]) * 16, (r - rows[0]) * 16, len(zone_names))
+            parts = [(f'{c}_{r}_z{z}', z, w[z - 1]) for z in present]
+            chunk_zones[f'{c}_{r}'] = ''.join(str(int(z)) for z in g.flatten())   # row by row, north first
+        for key, z, wz in parts:
+            have = ''
+            for n in LAYERS:
+                area = n in ('fill', 'hatch')
+                src = layers['blocked' if n == 'hatch' else n] if area else layers[P][n]
+                blk = np.ascontiguousarray(src[ys, xs])
+                if wz is not None:
+                    blk = (blk * wz).astype(np.uint8)
+                if blk.max() < 8:
+                    continue
+                have += n[0]
+                for s in FILE_LODS.get(n, LODS):
+                    d = OUT if s == P else os.path.join(OUT, str(s))
+                    if area:
+                        img = downscale(blk, s, False)
+                    else:                                  # lines: drawn at this zoom level
+                        img = np.ascontiguousarray(layers[s][n][(r - rows[0]) * s:(r - rows[0] + 1) * s,
+                                                                 (c - cols[0]) * s:(c - cols[0] + 1) * s])
+                        if wz is not None:
+                            img = (img * cv2.resize(wz, (s, s), interpolation=cv2.INTER_AREA)).astype(np.uint8)
+                    save_tga(img, os.path.join(d, f'{key}_{n}.tga'))
+            if have:
+                written[key] = have
+                tile_zone[key] = z
     with open(TILES_LUA, 'w', newline='\n') as fh:
         fh.write('-- generated by scripts/build_raw.py: tiles per instance ("col_row" = layers present:\n')
-        fh.write('-- f = fill, h = hatch, s = shade, t = terrain, w = water, r = roads)\n')
+        fh.write('-- f = fill, h = hatch, s = shade, t = terrain, w = water, r = roads).\n')
+        fh.write('-- Tiles on a zone border are split into one part per zone: "col_row_z<zone>".\n')
         fh.write('RunewayTiles = {\n    [0] = {\n')
-        for (c, r), h in sorted(written.items()):
-            fh.write(f'        ["{c}_{r}"] = "{h}",\n')
+        for key, h in sorted(written.items()):
+            fh.write(f'        ["{key}"] = "{h}",\n')
         fh.write('    },\n}\n')
+        fh.write('-- Zones: names (index = zone number), zone per tile key, and per border tile the zone of each\n')
+        fh.write('-- of its 16 x 16 chunks (row by row from north, columns from west)\n')
+        fh.write('RunewayZones = {\n    [0] = {\n        names = { ')
+        fh.write(', '.join(f'"{n}"' for n in zone_names) + ' },\n        tile = {\n')
+        for key, z in sorted(tile_zone.items()):
+            fh.write(f'            ["{key}"] = {z},\n')
+        fh.write('        },\n        chunks = {\n')
+        for key, g in sorted(chunk_zones.items()):
+            fh.write(f'            ["{key}"] = "{g}",\n')
+        fh.write('        },\n    },\n}\n')
     return written
 
 
@@ -425,8 +466,25 @@ def main(zone_names):
     keep |= sea & (cv2.dilate(keep.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0)
     keep = cv2.resize(keep.astype(np.uint8), (m.W, m.H), interpolation=cv2.INTER_NEAREST) > 0
     layers = line_layers(L, keep)
+    # zone number (1..n, order of zone_names) per chunk; chunks outside the built zones (sea, fade area)
+    # belong to the nearest built zone
+    order = [names[n.lower()] for n in zone_names]
+    zgrid = np.zeros((len(rows) * 16, len(cols) * 16), np.uint8)
+    for (c, r), a in idx.items():
+        if c in cols and r in rows:
+            za = zone_of(a)
+            for i, z in enumerate(order):
+                zgrid[(r - rows[0]) * 16:(r - rows[0] + 1) * 16,
+                      (c - cols[0]) * 16:(c - cols[0] + 1) * 16][(za == z) & ~np.isin(a, list(seas))] = i + 1
+    _, lab = cv2.distanceTransformWithLabels((zgrid == 0).astype(np.uint8), cv2.DIST_L2, 5,
+                                             labelType=cv2.DIST_LABEL_PIXEL)
+    ys, xs = np.nonzero(zgrid)
+    nearest = np.zeros(lab.max() + 1, np.uint8)
+    nearest[lab[ys, xs]] = zgrid[ys, xs]
+    zgrid = nearest[lab]
     # every mosaic tile with content (the fade reaches a bit into neighbouring tiles)
-    written = write_tiles(layers, cols, rows, {(c, r) for c in cols for r in rows})
+    written = write_tiles(layers, cols, rows, {(c, r) for c in cols for r in rows}, zgrid,
+                          [n for n in zone_names])
     os.makedirs(BUILD, exist_ok=True)
     half = lambda a: cv2.resize(a, (a.shape[1] // 2, a.shape[0] // 2), interpolation=cv2.INTER_AREA)
     flat = dict(layers[P], fill=layers['fill'], blocked=layers['blocked'])

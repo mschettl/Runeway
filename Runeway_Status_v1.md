@@ -26,7 +26,7 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 | 1.4 | Profil-Export und -Import |
 | 1.4.1 | Aufräumen (u. a. Fehler beim Hervorheben des Leichnams behoben), Version im Chat beim Login und oben in den Einstellungen |
 | 1.5 | Östliche Königreiche komplett (27 Gebiete, Etappen 2–4), Block-Build, Kachelliste pro Karten-ID, Schraffur-Maske und Saum nur in 128 px, offenes Meer ausgeblendet, Ansichtsmodus `/rnw view` |
-| 1.6 | Datenpakete: Kacheln als LoadOnDemand-Addon `Runeway_EasternKingdoms`, geladen beim Betreten der Karte (in Arbeit, im Spiel noch zu prüfen) |
+| 1.6 | Datenpakete: Kacheln als LoadOnDemand-Addon `Runeway_EasternKingdoms`, geladen beim Betreten der Karte; Undercity unterirdisch als eigener Kachelsatz (in Arbeit, im Spiel noch zu prüfen) |
 
 **Versionierung:** Zweite Stelle = abgeschlossener, im Spiel getesteter Schritt, der nach `main` geht; dritte Stelle = Korrekturen ohne neue Funktion; 2.0 = Route zum Questziel. Geplant: 1.7 Kalimdor, 1.8+ Städte, Höhlen/Minen, Dungeons. Eine öffentliche Veröffentlichung (z. B. CurseForge) wird davon getrennt entschieden, sinnvoll frühestens nach den Datenpaketen (Ordnerumbau).
 
@@ -75,6 +75,11 @@ Seit 1.6 besteht das Release aus zwei Ordnern, die beide nach `Interface\AddOns`
 | `Runeway_<Paket>/tiles/0/[256/ \| 128/]<key>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Speicherbedarf siehe „Dateigröße“ unten |
 
 `tools/Probe.lua` ist ein Entwicklungswerkzeug und nicht im Release (siehe Abschnitt 6).
+
+### Innenraum-Kachelsätze (`Core.lua`, `TileSet`)
+- Neben dem Kachelsatz der Karte (`tiles/0`) kann ein Paket Innenraum-Sätze `tiles/<Karte>-<uiMap>/` enthalten, bisher `tiles/0-1458` = Undercity (uiMap 1458). Gleiche Weltkoordinaten und Kachelraster wie die Oberfläche, eigene `RunewayTiles["0-1458"]`/`RunewayZones["0-1458"]`.
+- Auswahl je Frame: Hat die uiMap des Spielers (`C_Map.GetBestMapForUnit`) einen Satz, wird er gezeigt, außer die Unterzone (`GetSubZoneText`) ist eine seiner Oberflächen-Unterzonen (`RunewayZones[set].surface`, AreaTable-IDs, Name über `C_Map.GetAreaInfo`). Grund: Auch die Ruinen von Lordaeron (Hof, Thronsaal, Aufzug) melden uiMap 1458 und Zone „Undercity“; nur die Unterzone „Ruins of Lordaeron“ (Area 153) unterscheidet sie. `UnitPosition` liefert keine Höhe.
+- `/rnw pos` zeigt den aktiven Satz (`set=`).
 
 ### Datenpakete laden (`Core.lua`, `PackOf`/`LoadPack`)
 - **Zuordnung:** Beim ersten Bedarf liest der Kern alle installierten Addons (`C_AddOns.GetNumAddOns`/`GetAddOnInfo`) und deren Feld `X-Runeway-Maps` (Karten-IDs, durch Leerzeichen oder Komma getrennt). Paketnamen sind damit nicht im Code festgelegt; ein späteres Retail-Paket bräuchte zusätzlich eine Unterscheidung nach Spieltyp.
@@ -214,6 +219,7 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 ```bash
 python scripts/build_raw.py               # Karte 0, Zonen aus scripts/zones_0.txt
 python scripts/build_raw.py --map 1       # andere Karte (1 = Kalimdor, Ordner kalimdor), Zonen aus zones_1.txt
+python scripts/build_wmo.py               # Innenraum-Sätze (Undercity), nach build_raw.py; schreibt auch die Paket-.toc
 python scripts/build_raw.py "Zone Name"   # einzelne Zone(n), Namen wie in AreaTable (AreaName_lang)
 ```
 Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc` (Paket je Karte in `PACKS`, `build_raw.py`: 0 = `Runeway_EasternKingdoms`, 1 = `Runeway_Kalimdor`) und Vorschauen nach `build/` (`preview_lines.png`, `preview_over_minimap.png`). Die Community-Listfile (`listfile.csv`) wird beim ersten Lauf geladen. Der Bereichsindex der ADTs wird in `build/area_index_<id>.npz` zwischengespeichert.
@@ -226,6 +232,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
 | `raw_mosaic.py` | setzt Kacheln zu Rastern zusammen; exaktes Dreiecksnetz → 512 px pro Kachel (~1,04 yd/px); Texturgewichte |
 | `structures.py` | Gebäude: Wände platzierter WMOs (OBJ-Export) und ausgewählte M2 (Türme) werden „nicht begehbar“ |
 | `build_raw.py` | Masken, Zonen-Zuschnitt, Linien je Zoomstufe, Schraffur, Kacheln, `Tiles.lua`, Vorschauen |
+| `build_wmo.py` | Innenraum-Kachelsätze aus WMO-Exporten (`SETS`, bisher Undercity `0-1458`): Grundriss von oben, gleiche Ebenen und Funktionen wie `build_raw.py`; Vorschau `build/preview_<set>.png` |
 | `roads.py` | `prune` (Skelett entgraten), von `build_raw.py` genutzt |
 | `simulate.py` | rendert die Lua-Darstellung aus den Kacheln (`build/sim.png`) |
 | `probe_view.py` | wertet `/rnw probe`-SavedVariables aus (Entwicklung) |
@@ -413,7 +420,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
   - WMO als OBJ exportieren (wow.export, „Split WMO Groups“, ohne Texturen) und auf `data` legen.
   - Turm- oder Mauer-M2 in `M2_BLOCKERS` eintragen.
   - Die Ausrichtung je Stadt gegen die Minimap prüfen, weil die Drehrichtung erst nahe 0° kalibriert ist.
-- **Undercity unterirdisch (optional):** Ein Prototyp des Grundrisses aus den 197 Innen-Gruppen ist gezeigt, aber nicht eingebaut. Dafür bräuchte es eine eigene Ebene, die über die Karten-ID umschaltet; die ID per `/rnw pos` in Undercity ermitteln.
+- **Undercity unterirdisch:** umgesetzt (1.6, `build_wmo.py`), im Spiel noch zu prüfen. Grundriss: Bodenflächen (Normale > 0,75) der Innen-Gruppen (Flag 0x2000) ohne „Ruins of Lordaeron“, je Pixel und Höhe ein Knoten; Nachbarn mit < 1,2 yd Höhenunterschied sind verbunden (Treppen, Rampen). Das größte Netz ist die begehbare Stadt, die übrigen 929 Netze sind Mauerkronen, Bögen und Deckenträger. Je Pixel zählt der höchste Boden des Netzes; Wasser = WMO-Flüssigkeit (MLIQ, Kachel-Flag & 0xF ≠ 0xF), wo sie darüber liegt (Kanäle; Brücken bleiben begehbar). Mehrere Ebenen erscheinen übereinander von oben gesehen; Etagen-Umschaltung später.
 - **Questbereiche (optional):** Innenschein bzw. Schraffur wie auf der Minimap. Mit Linien gab es Artefakte an den Stoßstellen, das bräuchte gefüllte Flächen, z. B. Dreiecks-Texturen.
 - **Version 2, Kalimdor, Instanzen:** siehe Roadmap oben.
 

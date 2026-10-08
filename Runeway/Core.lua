@@ -187,7 +187,7 @@ ns.Player = function() return pN, pW, k end
 local LODS = { 128, 256, 512 }
 local SWITCH = { 160, 360 }            -- on-screen tile size (px) where the next finer level takes over
 local BAND = 1.25                      -- cross-fade from SWITCH / BAND to SWITCH * BAND
-local tiles = {}                       -- ["inst:c_r:layer"] = { layer = name, [lod] = Texture }
+local tiles = {}                       -- ["set:c_r:layer"] = { layer = name, [lod] = Texture }
 local frame = 0                        -- update counter; textures not used in the current update get hidden
 
 -- Note: on textures SetAlpha overwrites the vertex colour alpha, so opacity only goes through SetVertexColor
@@ -271,15 +271,38 @@ local function MissingPack()
     if type(state) == "string" then return pack, state end
 end
 
-local function TilePath(inst, key, layer, lod)
-    return ADDONS .. PackOf(inst) .. "\\tiles\\" .. inst .. "\\" .. (lod < 512 and (lod .. "\\") or "") .. key .. "_" .. layer .. ".tga"
+-- Tile sets: the map's own ("0", tiles/0) and interior sets "<map>-<uiMap>" (tiles/0-1458 = Undercity below
+-- Tirisfal) in the same world coordinates, both in the map's data pack
+local function MapOf(set)
+    return tonumber((tostring(set):match("^%d+")))
+end
+
+local function TilePath(set, key, layer, lod)
+    return ADDONS .. PackOf(MapOf(set)) .. "\\tiles\\" .. set .. "\\" .. (lod < 512 and (lod .. "\\") or "") .. key .. "_" .. layer .. ".tga"
+end
+
+-- Tile set at the player's position: the interior set of the player's uiMap if there is one, except in its
+-- surface subzones (Ruins of Lordaeron is uiMap Undercity too); else the map's own set
+local surfaceNames = {}
+local function TileSet(inst)
+    LoadPack(inst)
+    local ui = C_Map.GetBestMapForUnit("player")
+    local set = ui and inst .. "-" .. ui
+    local zones = set and RunewayZones and RunewayZones[set]
+    if not zones then return inst end
+    local sub = GetSubZoneText()
+    for _, id in ipairs(zones.surface or {}) do
+        if surfaceNames[id] == nil then surfaceNames[id] = C_Map.GetAreaInfo(id) or false end
+        if sub == surfaceNames[id] then return inst end
+    end
+    return set
 end
 
 local function IsLoaded(t)
     return not t.IsObjectLoaded or t:IsObjectLoaded()
 end
 
-local function GetTex(e, inst, key, lod)
+local function GetTex(e, set, key, lod)
     local t = e[lod]
     if not t then
         t = canvas:CreateTexture(nil, "ARTWORK", nil, LAYER_LEVEL[e.layer])
@@ -291,13 +314,13 @@ local function GetTex(e, inst, key, lod)
                 NoSnap(e.mask)
             end
             if not e.maskSet then
-                e.mask:SetTexture(TilePath(inst, key, "hatch", HATCH_MASK_LOD), "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+                e.mask:SetTexture(TilePath(set, key, "hatch", HATCH_MASK_LOD), "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
                 e.maskSet = true
             end
             t:AddMaskTexture(e.mask)
             t:SetTexture(MEDIA .. "hatch" .. lod .. ".tga")
         else
-            t:SetTexture(TilePath(inst, key, e.layer, lod))
+            t:SetTexture(TilePath(set, key, e.layer, lod))
         end
         e[lod] = t
     end
@@ -385,14 +408,14 @@ end
 
 ns.ZoneAlpha = function() return zoneAlpha end     -- for tests
 
--- Tile list of a map (tiles/<map>/Tiles.lua) indexed by "c_r": { { key, layers }, ... } (several parts on
+-- Tile list of a tile set (tiles/<set>/Tiles.lua) indexed by "c_r": { { key, layers }, ... } (several parts on
 -- zone border tiles), built on first use
 local tileIndex = {}
-local function TileIndex(inst)
-    local idx = tileIndex[inst]
+local function TileIndex(set)
+    local idx = tileIndex[set]
     if idx == nil then
-        LoadPack(inst)
-        local data = RunewayTiles and RunewayTiles[inst]
+        LoadPack(MapOf(set))
+        local data = RunewayTiles and RunewayTiles[set]
         idx = false
         if data then
             idx = {}
@@ -402,16 +425,16 @@ local function TileIndex(inst)
                 table.insert(idx[cr], { key, have })
             end
         end
-        tileIndex[inst] = idx
+        tileIndex[set] = idx
     end
     return idx
 end
 
-local function UpdateTiles(inst, angle)
-    local idx = TileIndex(inst)
+local function UpdateTiles(set, angle)
+    local idx = TileIndex(set)
     frame = frame + 1
     if not idx then HideTiles() return false end
-    local zones = RunewayZones and RunewayZones[inst]
+    local zones = RunewayZones and RunewayZones[set]
     if zones then UpdateZoneAlpha(zones) end
 
     local W, H = view:GetSize()
@@ -433,7 +456,7 @@ local function UpdateTiles(inst, angle)
                     local zf = zones and zoneAlpha[zones.tile[key]] or 1
                     for _, layer in ipairs(LAYERS) do
                         if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) and (layer ~= "hatch" or fade) then
-                            local id = inst .. ":" .. key .. ":" .. layer
+                            local id = set .. ":" .. key .. ":" .. layer
                             local e = tiles[id]
                             if not e then e = { layer = layer }; tiles[id] = e end
                             -- levels not stored for this layer: the nearest stored one, cross-fade only between two files
@@ -441,8 +464,8 @@ local function UpdateTiles(inst, angle)
                             local la, lb, ta, tb = loA, loB, wA, wB
                             if fl then la, lb = fl[loA], fl[loB] end
                             if la == lb then ta, tb = 1, 0 end
-                            local a = GetTex(e, inst, key, la)
-                            local b = tb > 0 and GetTex(e, inst, key, lb)
+                            local a = GetTex(e, set, key, la)
+                            local b = tb > 0 and GetTex(e, set, key, lb)
                             if e.mask then PlaceMask(e.mask, x, y, size, angle) end
                             local okA, okB = IsLoaded(a), b and IsLoaded(b)
                             if not okA and okB then ta, tb = 0, 1 elseif okA and b and not okB then ta, tb = 1, 0 end
@@ -799,7 +822,7 @@ view:SetScript("OnUpdate", function(self, e)
     arrow:SetRotation(db.rotate and 0 or facing)
     arrowShadow:SetRotation(db.rotate and 0 or facing)
 
-    if UpdateTiles(inst, angle) then
+    if UpdateTiles(TileSet(inst), angle) then
         status:SetText(viewAt and L.VIEW_MODE or "")
     else
         status:SetText(L.NO_DATA)
@@ -1213,8 +1236,8 @@ SlashCmdList.RUNEWAY = function(msg)
     elseif cmd == "pos" then
         local pn, pw, _, inst = UnitPosition("player")
         local mapID = C_Map.GetBestMapForUnit("player")
-        ShowCopy(("%s %s %s map=%s facing=%.3f"):format(
-            tostring(pn), tostring(pw), tostring(inst), tostring(mapID), GetPlayerFacing() or -1))
+        ShowCopy(("%s %s %s map=%s set=%s facing=%.3f"):format(tostring(pn), tostring(pw), tostring(inst),
+            tostring(mapID), tostring(inst and TileSet(inst)), GetPlayerFacing() or -1))
     elseif cmd == "view" then
         local vn, vw = arg:match("^(%-?[%d%.]+)%s+(%-?[%d%.]+)$")
         if arg == "" and viewAt then

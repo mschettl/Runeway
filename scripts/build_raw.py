@@ -525,7 +525,11 @@ def write_pack_toc(map_id):
             suffix = '' if loc == 'enUS' else '-' + loc
             fh.write(f'## Title{suffix}: Runeway - {name}\n## Notes{suffix}: {PACK_NOTES[loc] % name}\n')
         fh.write(f'## Version: {meta("Version")}\n## Dependencies: Runeway\n## LoadOnDemand: 1\n'
-                 f'## X-Runeway-Maps: {map_id}\n\ntiles\\{map_id}\\Tiles.lua\n')
+                 f'## X-Runeway-Maps: {map_id}\n\n')
+        # the map's tiles, then its interior sets (tiles/<map>-<uiMap>/, build_wmo.py)
+        sets = sorted(os.path.basename(os.path.dirname(f)) for f in glob.glob(os.path.join(ROOT, pack, 'tiles', '*', 'Tiles.lua')))
+        for s in sorted(sets, key=lambda s: s != str(map_id)):
+            fh.write(f'tiles\\{s}\\Tiles.lua\n')
 
 
 # RGBA as the defaults in Core.lua (drawn in LAYERS order)

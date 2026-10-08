@@ -92,7 +92,10 @@ function UnitPosition() return POS[1], POS[2], POS[3], POS[4] end
 function GetPlayerFacing() return 0.5 end
 function IsShiftKeyDown() return false end
 function HideUIPanel() end
-C_Map = { GetBestMapForUnit = function() return 1420 end,
+UI_MAP, SUBZONE = 1420, ""
+function GetSubZoneText() return SUBZONE end
+C_Map = { GetBestMapForUnit = function() return UI_MAP end,
+          GetAreaInfo = function(id) return id == 153 and "Ruins of Lordaeron" or nil end,
           GetPlayerMapPosition = function(m) if m == 1420 then return { GetXY = function() return 0.4, 0.6 end } end end,
           GetMapInfo = function(m) return m == 1415 and { mapType = 2 } or { mapType = 3, parentMapID = 1415 } end,
           GetMapChildrenInfo = function() return { { mapID = 1420 }, { mapID = 1421 }, { mapID = 1422 } } end }

@@ -160,6 +160,25 @@ L.execute('''
     poll()
     print("back on map 0 shown:", tostring(RunewayFrame:IsShown()))
     upd(RunewayFrame, 0.05)
+    -- Undercity: interior tile set on uiMap 1458, surface tiles in the Ruins of Lordaeron (same uiMap)
+    local function newTextures(from)
+        local uc, surface = 0, 0
+        for i = from + 1, #TEXTURES do
+            local t = TEXTURES[i] or ""
+            if t:find("tiles" .. string.char(92) .. "0-1458", 1, true) then uc = uc + 1
+            elseif t:find("tiles" .. string.char(92) .. "0" .. string.char(92), 1, true) then surface = surface + 1 end
+        end
+        return uc, surface
+    end
+    POS[1], POS[2], UI_MAP = 1561.6, 240.7, 1458
+    local before = #TEXTURES
+    upd(RunewayFrame, 0.05)
+    print(("undercity: interior textures %d, surface textures %d"):format(newTextures(before)))
+    SUBZONE = "Ruins of Lordaeron"
+    before = #TEXTURES
+    upd(RunewayFrame, 0.05)
+    print(("ruins of lordaeron: interior textures %d, surface textures %d"):format(newTextures(before)))
+    POS[1], POS[2], UI_MAP, SUBZONE = 1917.6, 84.9, 1420, ""
     SlashCmdList.RUNEWAY("reset")
     POS[1] = nil
     upd(RunewayFrame, 0.05)

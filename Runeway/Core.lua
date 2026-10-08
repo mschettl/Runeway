@@ -15,6 +15,11 @@ local FADE_WIDTH = { 0.12, 0.25, 0.38, 0.55, 0.75 }
 local LAYERS = { "fill", "hatch", "shade", "terrain", "water", "roads" }
 local LAYER_CODE = { fill = "f", hatch = "h", shade = "s", terrain = "t", water = "w", roads = "r" }
 local LAYER_LEVEL = { fill = 0, hatch = 1, shade = 2, terrain = 3, water = 4, roads = 5 }   -- texture sublevel
+-- Zoom levels stored per layer (FILE_LODS in scripts/build_raw.py); a missing level uses the nearest stored one.
+-- hatch: the tile file is only the mask of the not walkable area (256 px); the lines are one shared pattern
+-- per zoom level (media/hatch<lod>.tga), cut out by that mask.
+local FILE_LOD = { fill = { [128] = 128, [256] = 128, [512] = 128 }, shade = { [128] = 128, [256] = 256, [512] = 256 } }
+local HATCH_MASK_LOD = 256
 local STYLE = 6            -- bump when the default look changes (see migration in ADDON_LOADED)
 
 -- One calm colour for all lines (Diablo IV style); quest areas glow blue like the minimap blobs
@@ -200,7 +205,20 @@ local function GetTex(e, inst, key, lod)
         t = canvas:CreateTexture(nil, "ARTWORK", nil, LAYER_LEVEL[e.layer])
         Fade(t)
         NoSnap(t)
-        t:SetTexture(TilePath(inst, key, e.layer, lod))
+        if e.layer == "hatch" then
+            if not e.mask then
+                e.mask = canvas:CreateMaskTexture()
+                NoSnap(e.mask)
+            end
+            if not e.maskSet then
+                e.mask:SetTexture(TilePath(inst, key, "hatch", HATCH_MASK_LOD), "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+                e.maskSet = true
+            end
+            t:AddMaskTexture(e.mask)
+            t:SetTexture(MEDIA .. "hatch" .. lod .. ".tga")
+        else
+            t:SetTexture(TilePath(inst, key, e.layer, lod))
+        end
         e[lod] = t
     end
     return t
@@ -237,6 +255,13 @@ local function HideTiles()
     end
 end
 
+local function PlaceMask(m, x, y, size, angle)
+    m:ClearAllPoints()
+    m:SetPoint("CENTER", view, "CENTER", x, y)
+    m:SetSize(size, size)
+    m:SetRotation(angle)
+end
+
 local function PlaceTex(t, x, y, size, angle, layer, weight)
     t:ClearAllPoints()
     t:SetPoint("CENTER", view, "CENTER", x, y)
@@ -268,14 +293,19 @@ local function UpdateTiles(inst, angle)
         if math.abs(cn - pN) < reach and math.abs(cw - pW) < reach then
             local x, y = ToScreen(cn, cw)
             for _, layer in ipairs(LAYERS) do
-                if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) then
+                if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) and (layer ~= "hatch" or fade) then
                     local id = inst .. ":" .. key .. ":" .. layer
                     local e = tiles[id]
                     if not e then e = { layer = layer }; tiles[id] = e end
-                    local a = GetTex(e, inst, key, loA)
-                    local b = wB > 0 and GetTex(e, inst, key, loB)
+                    -- levels not stored for this layer: the nearest stored one, cross-fade only between two files
+                    local fl = FILE_LOD[layer]
+                    local la, lb, ta, tb = loA, loB, wA, wB
+                    if fl then la, lb = fl[loA], fl[loB] end
+                    if la == lb then ta, tb = 1, 0 end
+                    local a = GetTex(e, inst, key, la)
+                    local b = tb > 0 and GetTex(e, inst, key, lb)
+                    if e.mask then PlaceMask(e.mask, x, y, size, angle) end
                     local okA, okB = IsLoaded(a), b and IsLoaded(b)
-                    local ta, tb = wA, wB
                     if not okA and okB then ta, tb = 0, 1 elseif okA and b and not okB then ta, tb = 1, 0 end
                     if not okA and not okB then
                         -- nothing loaded yet for these levels: keep any loaded level of this tile on screen
@@ -304,6 +334,10 @@ local function UpdateTiles(inst, angle)
                 end
             end
         end
+        if e.maskSet and not (e[128] or e[256] or e[512]) then
+            e.mask:SetTexture(nil)
+            e.maskSet = false
+        end
     end
     return true
 end
@@ -322,7 +356,8 @@ end
 
 -- Map position -> world (north, west). The axis order of GetWorldPosFromMapPos is checked once per map
 -- against the player position.
-local swapByMap = {}
+-- Maps the player is not on (neighbouring zones) use the order found on another map.
+local swapByMap, anySwap = {}, nil
 local function MapToWorld(mapID, x, y)
     local a, b = WorldFromMap(mapID, x, y)
     if not a then return end
@@ -334,28 +369,78 @@ local function MapToWorld(mapID, x, y)
             local pa, pb = WorldFromMap(mapID, mp:GetXY())
             if pa then
                 swap = math.abs(pa - un) + math.abs(pb - uw) > math.abs(pb - un) + math.abs(pa - uw)
-                swapByMap[mapID] = swap
+                swapByMap[mapID], anySwap = swap, swap
             end
         end
+        if swap == nil then swap = anySwap end
     end
     if swap then return b, a end
     return a, b
 end
 ns.MapToWorld = MapToWorld
 
+-- Zone maps near the player: the player's map first, then the zones of the same continent whose map
+-- rectangle comes within view reach (+ margin), nearest first. Quest areas and pins come from all of them.
+local REACH_MARGIN = 200                 -- yards beyond the map corner
+local UIMAP_CONTINENT, UIMAP_ZONE = 2, 3 -- Enum.UIMapType
+local zoneRect = {}                      -- [mapID] = { n0, n1, w0, w1 } in world yards, or false
+local function NearbyMaps()
+    local m = C_Map.GetBestMapForUnit("player")
+    if not m then return end
+    local list = { m }
+    local pn, pw = UnitPosition("player")
+    if not (pn and C_Map.GetMapInfo and C_Map.GetMapChildrenInfo) then return list end
+    local cont, info = m, C_Map.GetMapInfo(m)
+    while info and info.mapType ~= UIMAP_CONTINENT and (info.parentMapID or 0) > 0 do
+        cont = info.parentMapID
+        info = C_Map.GetMapInfo(cont)
+    end
+    if not (info and info.mapType == UIMAP_CONTINENT) then return list end
+    MapToWorld(m, 0, 0)                  -- settles the axis order on the player's map first
+    local W, H = view:GetSize()
+    local reach = math.sqrt(W * W + H * H) / 2 / db.zoom + REACH_MARGIN
+    local found = {}
+    for _, c in ipairs(C_Map.GetMapChildrenInfo(cont, UIMAP_ZONE) or {}) do
+        local id = c.mapID
+        if id ~= m then
+            local r = zoneRect[id]
+            if r == nil then
+                local n0, w0 = MapToWorld(id, 0, 0)
+                local n1, w1 = MapToWorld(id, 1, 1)
+                r = n0 and n1 and { math.min(n0, n1), math.max(n0, n1), math.min(w0, w1), math.max(w0, w1) } or false
+                zoneRect[id] = r
+            end
+            if r then
+                local dn, dw = math.max(r[1] - pn, 0, pn - r[2]), math.max(r[3] - pw, 0, pw - r[4])
+                local d = math.sqrt(dn * dn + dw * dw)
+                if d < reach then found[#found + 1] = { id, d } end
+            end
+        end
+    end
+    table.sort(found, function(a, b) return a[2] < b[2] end)
+    for _, f in ipairs(found) do list[#list + 1] = f[1] end
+    return list
+end
+ns.NearbyMaps = NearbyMaps
+
 local function RefreshQuests()
     wipe(quests)
-    local mapID = C_Map.GetBestMapForUnit("player")
-    if not (mapID and C_QuestLog and C_QuestLog.GetQuestsOnMap) then return end
-    for _, q in ipairs(C_QuestLog.GetQuestsOnMap(mapID) or {}) do
-        local n, w = MapToWorld(mapID, q.x, q.y)
-        if n then
-            local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
-                or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
-            quests[#quests + 1] = { n, w, questID = q.questID, done = done and true or false }
+    local maps = NearbyMaps()
+    if not (maps and C_QuestLog and C_QuestLog.GetQuestsOnMap) then return end
+    local seen = {}          -- a quest can show on two zone maps: the first (nearest) map wins
+    for _, mapID in ipairs(maps) do
+        for _, q in ipairs(C_QuestLog.GetQuestsOnMap(mapID) or {}) do
+            local n, w = MapToWorld(mapID, q.x, q.y)
+            if n and not seen[q.questID] then
+                seen[q.questID] = true
+                local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
+                    or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
+                quests[#quests + 1] = { n, w, questID = q.questID, done = done and true or false }
+            end
         end
     end
 end
+ns.RefreshQuests = RefreshQuests
 
 -- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
 -- Same look as the world map pins: dark round badge with gold rim, "?" for turn-in, yellow "..." in progress.

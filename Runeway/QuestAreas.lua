@@ -21,16 +21,23 @@ local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
 -- Widths follow the zoom like the terrain lines in the tiles: edge = tile size on screen / EDGE_DIV px
 local EDGE_DIV, EDGE_MIN, EDGE_MAX = 140, 2, 7     -- edge line (media/edge.tga: core = half the width)
 
-local blobFrame, mapID, corners
-local areas = {}          -- [questID] = { sig = string, loops = { {n1, w1, n2, w2, ...}, ... }, box = {n0, n1, w0, w1},
-                          --               rect = {x0, y0, x1, y1} map units of the hits }
-local groups = {}         -- overlapping quests sampled together: [key] = { loops, box, members = {questID, ...} }
-local inGroup = {}        -- [questID] = group key (drawn by the group instead of on its own)
-local queue = {}          -- quests to sample: { questID = , x = , y = , sig = }
+local blobFrame, blobMap   -- blobMap: map currently set on the blob frame
+-- Quest areas are kept per zone map: the player's zone and the neighbouring zones in view (ns.NearbyMaps).
+local maps = {}           -- nearby zone maps, the player's map first
+local state = {}          -- [mapID] = { areas = , groups = , inGroup = , corners = {n0, n1, w0, w1}, src = cache entry }
+--   areas:   [questID] = { sig = string, loops = { {n1, w1, n2, w2, ...}, ... }, box = {n0, n1, w0, w1},
+--                          rect = {x0, y0, x1, y1} map units of the hits, cut = touches the map border }
+--   groups:  overlapping quests sampled together: [key] = { loops, box, members = {questID, ...} }
+--   inGroup: [questID] = group key (drawn by the group instead of on its own)
+local owner = {}          -- [questID] = map whose outline is drawn (a quest can show on two zone maps)
+local queue = {}          -- quests to sample: { questID = , map = , x = , y = , sig = }
 local job                 -- quest being sampled
 local dirty = 0           -- > 0: refresh the quest list after this many seconds
 local lines, shownLines = {}, 0
-ns.QuestAreaState = function() return areas, groups end   -- for tests
+ns.QuestAreaState = function()          -- for tests: areas and groups of the player's map
+    local st = state[maps[1] or 0]
+    if st then return st.areas, st.groups, state, owner end
+end
 
 ---------------------------------------------------------------------------
 -- Sampling
@@ -232,7 +239,8 @@ local function ToWorldLoop(xs, ys, box)
     local px, py = SmoothLoop(xs, ys)
     if not px then return end
     local out = {}
-    local n0, n1, w0, w1 = corners[1], corners[2], corners[3], corners[4]
+    local c = job.st.corners
+    local n0, n1, w0, w1 = c[1], c[2], c[3], c[4]
     for m = 1, #px do
         local mx = job.x0 + (px[m] + 0.5) * job.dx
         local my = job.y0 + (py[m] + 0.5) * job.dy
@@ -244,9 +252,22 @@ local function ToWorldLoop(xs, ys, box)
     return out
 end
 
+-- Owner map per quest: prefer an outline that does not touch its map border (not cut off), then the nearer map
+local function Resolve()
+    wipe(owner)
+    for _, m in ipairs(maps) do
+        local st = state[m]
+        for qid, a in pairs(st and st.areas or {}) do
+            local o = owner[qid]
+            if #a.loops > 0 and (not o or (state[o].areas[qid].cut and not a.cut)) then owner[qid] = m end
+        end
+    end
+end
+
 local function Finish()
+    local st = job.st
     local area = { sig = job.sig, loops = {}, box = { math.huge, -math.huge, math.huge, -math.huge } }
-    if job.hits > 0 and corners then
+    if job.hits > 0 then
         for _, l in ipairs(Trace(job.grid, job.nx, job.ny)) do
             local wl = ToWorldLoop(l[1], l[2], area.box)
             if wl then
@@ -258,15 +279,18 @@ local function Finish()
         end
         area.rect = { job.x0 + job.minC * job.dx, job.y0 + job.minR * job.dy,
                       job.x0 + (job.maxC + 1) * job.dx, job.y0 + (job.maxR + 1) * job.dy }
+        local r, e = area.rect, 1e-6
+        area.cut = r[1] <= e or r[2] <= e or r[3] >= 1 - e or r[4] >= 1 - e
     end
     if job.group then
         area.members = job.members
-        groups[job.group] = area
-        for _, qid in ipairs(job.members) do inGroup[qid] = job.group end
+        st.groups[job.group] = area
+        for _, qid in ipairs(job.members) do st.inGroup[qid] = job.group end
     else
-        areas[job.questID] = area
+        st.areas[job.questID] = area
     end
     job = nil
+    Resolve()
 end
 
 -- Runs a slice of the current job
@@ -320,7 +344,7 @@ local function Step(e)
 end
 
 -- Overlapping quest areas are sampled once more with all their blobs drawn, so they get one outline
-local function NextGroupJob()
+local function NextMapGroupJob(areas, groups)
     if not ns.db().questMerge then return end
     local ids = {}
     for qid, a in pairs(areas) do
@@ -361,19 +385,43 @@ local function NextGroupJob()
     end
 end
 
-local function StartGroupJob(key, members, x0, y0, x1, y1)
-    job = { group = key, members = members }
+local function NextGroupJob()
+    for _, m in ipairs(maps) do
+        local st = state[m]
+        if st then
+            local key, members, x0, y0, x1, y1 = NextMapGroupJob(st.areas, st.groups)
+            if key then return m, key, members, x0, y0, x1, y1 end
+        end
+    end
+end
+
+-- Sets the job's map on the blob frame; the first draw after SetMapID needs the long warm-up
+local blobWarm = false
+local function Warmup(m)
+    if blobMap ~= m then
+        blobFrame:SetMapID(m)
+        blobMap, blobWarm = m, false
+    end
+    local w = blobWarm and WARMUP_QUEST or WARMUP_MAP
+    blobWarm = true
+    return w
+end
+
+local function StartGroupJob(m, key, members, x0, y0, x1, y1)
+    job = { group = key, members = members, map = m, st = state[m] }
+    local warmup = Warmup(m)
     blobFrame:DrawNone()
     for _, qid in ipairs(members) do blobFrame:DrawBlob(qid, true) end
     local m = 2 * FINE_STEP
     x0, y0, x1, y1 = math.max(0, x0 - m), math.max(0, y0 - m), math.min(1, x1 + m), math.min(1, y1 + m)
     local step = math.max(FINE_STEP, (x1 - x0) / FINE_MAX, (y1 - y0) / FINE_MAX)
     local fx, fy = math.max(1, math.ceil((x1 - x0) / step)), math.max(1, math.ceil((y1 - y0) / step))
-    StartPass("fine", x0, y0, x0 + fx * step, y0 + fy * step, fx, fy, WARMUP_QUEST)
+    StartPass("fine", x0, y0, x0 + fx * step, y0 + fy * step, fx, fy, warmup)
 end
 
-local function StartJob(q, warmup)
-    job = { questID = q.questID, x = q.x, y = q.y, sig = q.sig }
+local function StartJob(q)
+    job = { questID = q.questID, x = q.x, y = q.y, sig = q.sig, map = q.map, st = state[q.map] }
+    local warmup = Warmup(q.map)
     blobFrame:DrawNone()
     blobFrame:DrawBlob(q.questID, true)
     StartPass("coarse", 0, 0, 1, 1, COARSE, COARSE, warmup)
@@ -391,64 +439,54 @@ local function Signature(q)
     return s
 end
 
-local mapWarm = false     -- false: next job needs the long warm-up (new map set on the blob frame)
-
-local function Refresh()
-    local m = C_Map.GetBestMapForUnit("player")
-    if not (m and C_QuestLog.GetQuestsOnMap and GetBlobFrame()) then return end
-    if m ~= mapID then
-        mapID = m
-        -- areas are kept per map in the saved variables, so they show up at once after /reload or relog
-        local db = ns.db()
-        if db.questAreaCacheVersion ~= 2 then        -- 2: loops know the side of the area (inward glow)
-            db.questAreaCache, db.questAreaCacheVersion = {}, 2
-        end
-        local cache = db.questAreaCache
-        cache[m] = cache[m] or { areas = {}, groups = {} }
-        areas, groups = cache[m].areas, cache[m].groups
-        wipe(inGroup)
-        for key, g in pairs(groups) do
-            for _, qid in ipairs(g.members) do inGroup[qid] = key end
-        end
-        wipe(queue)
-        job = nil
-        local n0, w0 = ns.MapToWorld(m, 0, 0)
-        local n1, w1 = ns.MapToWorld(m, 1, 1)
-        corners = n0 and n1 and { n0, n1, w0, w1 } or nil
-        blobFrame:SetMapID(m)
-        mapWarm = false
+-- Per map state; areas are kept per map in the saved variables, so they show up at once after /reload or relog
+local function GetState(m)
+    local db = ns.db()
+    if db.questAreaCacheVersion ~= 3 then          -- 3: areas know whether they touch the map border
+        db.questAreaCache, db.questAreaCacheVersion = {}, 3
     end
-    local onMap = {}
-    wipe(queue)
+    local cache = db.questAreaCache
+    local st = state[m]
+    if st and st.src == cache[m] then return st end
+    local n0, w0 = ns.MapToWorld(m, 0, 0)
+    local n1, w1 = ns.MapToWorld(m, 1, 1)
+    if not (n0 and n1) then return end
+    cache[m] = cache[m] or { areas = {}, groups = {} }
+    st = { areas = cache[m].areas, groups = cache[m].groups, inGroup = {}, corners = { n0, n1, w0, w1 }, src = cache[m] }
+    for key, g in pairs(st.groups) do
+        for _, qid in ipairs(g.members) do st.inGroup[qid] = key end
+    end
+    state[m] = st
+    return st
+end
+
+local function RefreshMap(m, st, rank)
+    local areas, groups, inGroup = st.areas, st.groups, st.inGroup
+    local onMap, queued = {}, {}
+    local pN, pW = UnitPosition("player")
     for _, q in ipairs(C_QuestLog.GetQuestsOnMap(m) or {}) do
         onMap[q.questID] = true
         local blobs = GetQuestPOIBlobCount and GetQuestPOIBlobCount(q.questID)
         local sig = Signature(q)
         if blobs == 0 then
             areas[q.questID] = nil
-        elseif not (areas[q.questID] and areas[q.questID].sig == sig) and not (job and job.questID == q.questID) then
-            queue[#queue + 1] = { questID = q.questID, x = q.x, y = q.y, sig = sig }
+        elseif not (areas[q.questID] and areas[q.questID].sig == sig)
+            and not (job and job.map == m and job.questID == q.questID) then
+            -- nearest quests first (world distance), maps in order
+            local n, w = ns.MapToWorld(m, q.x or 0.5, q.y or 0.5)
+            local d = (n and pN) and (n - pN) ^ 2 + (w - pW) ^ 2 or 0
+            queue[#queue + 1] = { questID = q.questID, map = m, x = q.x, y = q.y, sig = sig, rank = rank, d = d }
+            queued[q.questID] = true
         end
     end
     for qid in pairs(areas) do
         if not onMap[qid] then areas[qid] = nil end
     end
-    -- nearest quests first
-    local mp = C_Map.GetPlayerMapPosition(m, "player")
-    local px, py
-    if mp then px, py = mp:GetXY() end
-    if px then
-        table.sort(queue, function(a, b)
-            return ((a.x or 0) - px) ^ 2 + ((a.y or 0) - py) ^ 2 < ((b.x or 0) - px) ^ 2 + ((b.y or 0) - py) ^ 2
-        end)
-    end
     -- a group stays valid only while all members are unchanged and not queued
-    local queued = {}
-    for _, q in ipairs(queue) do queued[q.questID] = true end
     for key, g in pairs(groups) do
         for _, qid in ipairs(g.members) do
             if not areas[qid] or queued[qid] then
-                for _, m in ipairs(g.members) do if inGroup[m] == key then inGroup[m] = nil end end
+                for _, mm in ipairs(g.members) do if inGroup[mm] == key then inGroup[mm] = nil end end
                 groups[key] = nil
                 break
             end
@@ -456,22 +494,56 @@ local function Refresh()
     end
 end
 
+local function Refresh()
+    if not (C_QuestLog.GetQuestsOnMap and GetBlobFrame()) then return end
+    local list = ns.NearbyMaps()
+    if not list then return end
+    maps = {}
+    wipe(queue)
+    local near = {}
+    for _, m in ipairs(list) do
+        local st = GetState(m)
+        if st then
+            maps[#maps + 1] = m
+            near[m] = true
+            RefreshMap(m, st, #maps)
+        end
+    end
+    table.sort(queue, function(a, b)
+        if a.rank ~= b.rank then return a.rank < b.rank end
+        return a.d < b.d
+    end)
+    if job and not near[job.map] then job = nil end
+    Resolve()
+end
+
 local driver = CreateFrame("Frame")
+local MAP_CHECK = 1        -- seconds between checks whether other zone maps came into view
+local mapCheck = 0
 driver:SetScript("OnUpdate", function(_, e)
     if dirty > 0 then
         dirty = dirty - e
         if dirty <= 0 then Refresh() end
     end
-    if not ns.view:IsShown() or InCombatLockdown() then return end
+    if not ns.view:IsShown() then return end
+    mapCheck = mapCheck - e
+    if mapCheck <= 0 then
+        mapCheck = MAP_CHECK
+        local list = ns.NearbyMaps()
+        if list and table.concat(list, ",") ~= table.concat(maps, ",") then
+            Refresh()
+            ns.RefreshQuests()
+        end
+    end
+    if InCombatLockdown() then return end
     if not job and #queue > 0 then
         blobFrame:Show()
-        StartJob(table.remove(queue, 1), mapWarm and WARMUP_QUEST or WARMUP_MAP)
-        mapWarm = true
+        StartJob(table.remove(queue, 1))
     elseif not job and blobFrame then
-        local key, members, x0, y0, x1, y1 = NextGroupJob()
+        local m, key, members, x0, y0, x1, y1 = NextGroupJob()
         if key then
             blobFrame:Show()
-            StartGroupJob(key, members, x0, y0, x1, y1)
+            StartGroupJob(m, key, members, x0, y0, x1, y1)
         end
     end
     if job then
@@ -517,7 +589,9 @@ end
 
 -- true if the quest has an outline (its pin is then hidden)
 function ns.HasQuestArea(questID)
-    local a, g = areas[questID], ns.db().questMerge and groups[inGroup[questID] or ""]
+    local st = state[owner[questID] or 0]
+    if not st then return false end
+    local a, g = st.areas[questID], ns.db().questMerge and st.groups[st.inGroup[questID] or ""]
     return (a and #a.loops > 0) or (g and #g.loops > 0) or false
 end
 
@@ -594,21 +668,27 @@ end
 
 function ns.DrawQuestAreas()
     local n = 0
-    if ns.db().layers.questAreas and (next(areas) or next(groups)) then
+    if ns.db().layers.questAreas and next(owner) then
         local pN, pW, k = ns.Player()
         local W, H = ns.view:GetSize()
         local reach = math.sqrt(W * W + H * H) / 2 / k
         local ew = math.min(EDGE_MAX, math.max(EDGE_MIN, (1600 / 3) * k / EDGE_DIV))   -- edge width follows the zoom
             * ns.db().questEdge
         local merge = ns.db().questMerge     -- overlapping quests as one combined outline (option)
-        if merge then
-            for _, g in pairs(groups) do
-                if #g.loops > 0 then n = DrawArea(g, n, pN, pW, reach, W / 2, H / 2, ew) end
+        for _, m in ipairs(maps) do
+            local st = state[m]
+            -- a group is drawn on its map if that map owns one of its members
+            if merge then
+                for _, g in pairs(st.groups) do
+                    local own = false
+                    for _, qid in ipairs(g.members) do own = own or owner[qid] == m end
+                    if own and #g.loops > 0 then n = DrawArea(g, n, pN, pW, reach, W / 2, H / 2, ew) end
+                end
             end
-        end
-        for qid, a in pairs(areas) do
-            local g = merge and groups[inGroup[qid] or ""]
-            if not (g and #g.loops > 0) then n = DrawArea(a, n, pN, pW, reach, W / 2, H / 2, ew) end
+            for qid, a in pairs(st.areas) do
+                local g = merge and st.groups[st.inGroup[qid] or ""]
+                if owner[qid] == m and not (g and #g.loops > 0) then n = DrawArea(a, n, pN, pW, reach, W / 2, H / 2, ew) end
+            end
         end
     end
     for i = n + 1, shownLines do lines[i]:Hide() end

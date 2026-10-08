@@ -64,9 +64,10 @@ class Mosaic:
             self.water[ys, xs] = wm
 
     def build_textures(self, lf, names):
-        """Weight raster (0..1) per texture name in `names` (P/16 px per chunk)."""
+        """Summed weight raster (0..1) of the textures in `names` (P/16 px per chunk)."""
         P, q = self.P, self.P // 16
-        out = {n: np.zeros((self.H, self.W), np.float32) for n in names}
+        names = set(names)
+        out = np.zeros((self.H, self.W), np.float32)
         for i, j, c, r, p in self.tiles():
             fd, layers = read_tex0(p.replace('.adt', '_tex0.adt'))
             y0, x0 = j * P, i * P
@@ -74,14 +75,14 @@ class Mosaic:
                 cy, cx = divmod(k, 16)
                 for t, a in w.items():
                     n = lf.get(fd[t], str(fd[t]))
-                    if n in out:
+                    if n in names:
                         a = cv2.resize(np.asarray(a, np.float32), (q, q), interpolation=cv2.INTER_AREA if q < 64 else cv2.INTER_LINEAR)
-                        out[n][y0 + cy * q:y0 + (cy + 1) * q, x0 + cx * q:x0 + (cx + 1) * q] += a
+                        out[y0 + cy * q:y0 + (cy + 1) * q, x0 + cx * q:x0 + (cx + 1) * q] += a
         return out
 
     def slope_deg(self):
         yd = (16 * 33.3333333) / self.P                            # yards per pixel
-        gy, gx = np.gradient(self.height.astype(np.float64), yd)
+        gy, gx = np.gradient(self.height, yd)
         return np.degrees(np.arctan(np.hypot(gx, gy)))
 
 

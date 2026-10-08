@@ -190,6 +190,24 @@ L.execute('''
     check("corpse marker while dead", corpseShown and not TEXTURE_OBJECTS[("Interface/Minimap/POIIcons"):gsub("/", string.char(92))]:IsShown())
     local za = NS.ZoneAlpha()
     check("zones: Tirisfal full, Silverpine dimmed", za[1] == 1 and math.abs(za[2] - db.zoneDim) < 0.02)
+    -- zone numbers above 9 are letters in the chunk codes: stand in the first such chunk
+    local DIGITS = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    local zkey, zi, zch
+    for key, g in pairs(RunewayZones[0].chunks) do
+        local i = g:find("%a")
+        if i and (not zkey or key < zkey) then zkey, zi, zch = key, i, g:sub(i, i) end
+    end
+    local zc, zr = zkey:match("(%d+)_(%d+)")
+    local fr = zr + (math.floor((zi - 1) / 16) + 0.5) / 16
+    local fc = zc + ((zi - 1) % 16 + 0.5) / 16
+    local oldN, oldW = POS[1], POS[2]
+    POS[1], POS[2] = (32 - fr) * 1600 / 3, (32 - fc) * 1600 / 3
+    for _ = 1, 400 do debugprofilestop(); view:GetScript("OnUpdate")(view, 0.05) end
+    local zn = DIGITS:find(zch, 1, true)
+    za = NS.ZoneAlpha()
+    check("zones: zone " .. zn .. " (chunk code " .. zch .. ") active", zn > 9 and za[zn] == 1 and math.abs(za[1] - db.zoneDim) < 0.02)
+    POS[1], POS[2] = oldN, oldW
+    for _ = 1, 400 do debugprofilestop(); view:GetScript("OnUpdate")(view, 0.05) end
     local tg = NS.ToggleButton
     EVENT_CALLBACKS["Settings.CategoryChanged"]({ GetID = function() return 1 end })
     local hiddenElsewhere = not tg:IsShown()

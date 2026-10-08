@@ -19,7 +19,7 @@ Im Spiel getestet und für Version 1 abgenommen.
 
 **Stand 1.1 (im Spiel getestet und abgenommen):** Punkt 3.4 ist umgesetzt. Dazu gehören die Einstellungsseite im Blizzard-Stil (`Options.lua`), die Aufruf-Modi samt eigener Weltkarten-Tastenbelegung, das automatische Ausblenden und die Fensterbedienung laut Vorgabe.
 
-**Stand 1.2 (gebaut, Test im Spiel offen):** Etappe 1 des Pakets „weitere Zonen“ (Abschnitt 8).
+**Stand 1.2 (im Spiel getestet und abgenommen):** Etappe 1 des Pakets „weitere Zonen“ (Abschnitt 8), dazu Dimmung angrenzender Zonen, glatte Wege, Leichnam-Marker, Tooltips und Hervorhebung beim Überfahren, frei einstellbare Breite und Höhe, neue Einstellungsstruktur (Hauptseite mit Einleitung und Schnellbefehlen, Unterpunkte) und Lokalisierung Englisch/Deutsch.
 - **Zonen:** Tirisfal, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains in einem Mosaik (Kacheln 26–38 / 24–36). Alterac ist dabei, weil es zwischen den anderen liegt; ohne es entstünde ein ausgeblendetes Loch.
 - **Questbereiche und Questmarker angrenzender Zonen:** siehe Abschnitt 5, „Nachbarzonen“.
 
@@ -276,7 +276,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 
 | Punkt | Status |
 |---|---|
-| 3.1 RAW-Daten (Begehbarkeit aus Steigung, Wasser aus MH2O, Wege aus Texturen, Zonen-Zuschnitt, Tirisfal) | **erledigt** für Tirisfal; Etappe 1 (Silverpine, Western Plaguelands, Hillsbrad, Alterac) gebaut, Spieltest offen; weitere Zonen offen |
+| 3.1 RAW-Daten (Begehbarkeit aus Steigung, Wasser aus MH2O, Wege aus Texturen, Zonen-Zuschnitt, Tirisfal) | **erledigt** für Tirisfal; Etappe 1 (Silverpine, Western Plaguelands, Hillsbrad, Alterac) in 1.2 erledigt und im Spiel getestet; weitere Zonen offen |
 | 3.2 Einfärbbare Ebenen | **erledigt**, erweitert um `fill` und `hatch` |
 | 3.3 Questgebiete | **erledigt**, über das Abtasten statt DB2 (die Tabellen sind leer) |
 | 3.4 Konfigurationsoberfläche und Bedienung | **erledigt** in 1.1, im Spiel getestet |
@@ -359,10 +359,10 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 - Minimap-PNGs gibt es nur für Tirisfal (Kacheln 26–34 / 26–29). Sie dienen nur der Vorschau `preview_over_minimap.png`. Für neue Zonen braucht es dafür einen Minimap-Export aus wow.export (Mario).
 - `build_raw.py` baut alle Zonen eines Laufs als **ein Mosaik**. Gemeinsame Grenzen sind damit nahtlos; die weiche Ausblendung (`EDGE_FADE`) liegt nur am Außenrand der gebauten Zonen. Deshalb immer alle gewünschten Zonen zusammen bauen (über `zones.txt`), nie einzeln nacheinander, sonst überschreiben sich Grenzkacheln.
 
-**Stand Etappe 1 (1.2):** gebaut und im Stub getestet, Spieltest offen (Testliste 1.2 in Abschnitt 9).
+**Stand Etappe 1 (1.2):** gebaut und im Spiel getestet und abgenommen (Testliste 1.2 in Abschnitt 9).
 - `build_raw.py` braucht für die 5 Zonen (13 × 13 Kacheln) wenige GB RAM; die Texturgewichte der ~570 Weg-Texturen werden direkt in ein Raster summiert (vorher ein Raster je Textur).
 - Die Parameter sind unverändert (an Tirisfal kalibriert). Die Vorschau zeigt plausible Ergebnisse; ohne Minimap-Export der neuen Zonen ist der Abgleich aber nur grob möglich.
-- Questbereiche angrenzender Zonen: umgesetzt (Abschnitt 5, Punkt 7). Ob `C_QuestLog.GetQuestsOnMap(Nachbarzone)` und `QuestPOIFrame:SetMapID(Nachbarzone)` in Forever liefern, ist im Spiel zu prüfen.
+- Questbereiche angrenzender Zonen: umgesetzt (Abschnitt 5, Punkt 7). Im Spiel bestätigt: `C_QuestLog.GetQuestsOnMap(Nachbarzone)` und `QuestPOIFrame:SetMapID(Nachbarzone)` liefern in Forever.
 
 **Vorgehen in Etappen:**
 1. **Etappe 1 (erledigt, siehe oben):** Nachbarn von Tirisfal: `Silverpine Forest`, `Western Plaguelands`, ggf. `Hillsbrad Foothills` (Namen exakt wie `AreaName_lang` in `AreaTable.csv` prüfen). In `zones.txt` eintragen, `build_raw.py` laufen lassen.
@@ -386,6 +386,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 - **Prüfen:** ob `C_QuestLog.GetQuestsOnMap(Nachbarzone)` in Forever die Quests der Nachbarzone liefert, solange der Spieler nicht dort ist (Abschnitt 6: Bereiche kommen vom Server, nach dem Login auch ohne geöffnete Karte). Betroffen sind `QuestAreas.lua` (~Zeile 396) und die Questmarker in `Core.lua` (~Zeile 371).
 
 ### Später
+- **Weitere Sprachen:** frFR, esES, esMX, itIT, ptBR, ruRU, koKR, zhCN, zhTW als eigene Dateien in `Runeway/Locales/` (Aufbau wie `deDE.lua`), geprüft mit `tests/check_locales.py`; Englisch und Deutsch sind fertig.
 - **Weitere Städte:**
   - WMO als OBJ exportieren (wow.export, „Split WMO Groups“, ohne Texturen) und auf `data` legen.
   - Turm- oder Mauer-M2 in `M2_BLOCKERS` eintragen.
@@ -415,7 +416,7 @@ cd <repo> && zip -r build/Runeway-1.2.zip Runeway
 
 **Installation:** Alten Ordner `Interface\AddOns\Runeway` löschen, `Runeway-1.2.zip` dort entpacken und WoW komplett neu starten. Neue Texturdateien (hier die Kacheln der neuen Zonen) lädt WoW erst nach einem Neustart, `/reload` reicht nicht.
 
-**Testliste 1.2 (Etappe 1, offen):**
+**Testliste 1.2 (alle Punkte im Spiel bestanden):**
 1. **Neue Zonen:** Silverpine, Western Plaguelands, Hillsbrad, Alterac ablaufen: Begehbarkeit, Wasser, Wege, Küste plausibel? Auffällige Stellen mit `/rnw pos` und Screenshot melden.
 2. **Zonengrenzen:** Übergang Tirisfal ↔ Silverpine und Tirisfal ↔ Western Plaguelands ohne Kante, Lücke oder Flackern, in allen Zoomstufen. Außenrand (z. B. Richtung Eastern Plaguelands) blendet weich aus.
 3. **Ladezeit:** spürbare Ruckler beim Zoomen oder an Zonengrenzen?

@@ -95,3 +95,4 @@ L.PROFILE_IMPORT_HINT = "按 Ctrl+V 粘贴配置文本，然后点击“导入�
 L.PROFILE_IMPORTED = "配置文件已导入（%d 项设置）。"
 L.PROFILE_INVALID = "这不是有效的 Runeway 配置文件。"
 L.LOADED = "v%s 已加载。设置：/rnw config"
+L.VERSION = "版本 %s"

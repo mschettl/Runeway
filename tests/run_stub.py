@@ -195,10 +195,12 @@ L.execute('''
     local hiddenElsewhere = not tg:IsShown()
     EVENT_CALLBACKS["Settings.CategoryChanged"](SETTINGS_MAIN)
     check("show/hide button only on Runeway pages", hiddenElsewhere and tg:IsShown())
-    check("main page: intro + 14 quick commands (+ profile text)", kinds.element == 16 and INITS[1].data.text == NS.L.INTRO and INITS[3].data.desc ~= nil)
+    check("main page: version, intro, 14 quick commands (+ profile text)", kinds.element == 17 and INITS[1].data.text:find("1.4.1", 1, true) and INITS[2].data.text == NS.L.INTRO and INITS[4].data.desc ~= nil)
     check("settings rows: 1 header, 2 bindings, 7 layers",
         kinds.header == 1 and kinds.binding == 2 and kinds.layerrow == 7)
-    check("mode dropdown has 3 entries", #INITS[17].options == 3)
+    local dropdown
+    for _, i in ipairs(INITS) do if i.kind == "dropdown" then dropdown = i end end
+    check("mode dropdown has 3 entries", dropdown and #dropdown.options == 3)
     -- values changed outside the panel are pushed to the settings rows
     local notified = {}
     Settings.NotifyUpdate = function(v) notified[v] = true end

@@ -95,3 +95,4 @@ L.PROFILE_IMPORT_HINT = "Вставьте текст профиля с помо�
 L.PROFILE_IMPORTED = "Профиль импортирован (настроек: %d)."
 L.PROFILE_INVALID = "Это недействительный профиль Runeway."
 L.LOADED = "v%s загружен. Настройки: /rnw config"
+L.VERSION = "Версия %s"

@@ -95,3 +95,4 @@ L.PROFILE_IMPORT_HINT = "Pega un texto de perfil con Ctrl+V y haz clic en Import
 L.PROFILE_IMPORTED = "Perfil importado (%d ajustes)."
 L.PROFILE_INVALID = "No es un perfil de Runeway válido."
 L.LOADED = "v%s cargado. Ajustes: /rnw config"
+L.VERSION = "Versión %s"

@@ -28,6 +28,7 @@ Stand: Englisch und Deutsch abgestimmt (Tabellen unten). Die übrigen neun Sprac
 
 | Schlüssel | Englisch | Deutsch |
 |---|---|---|
+| `VERSION` | Version %s | Version %s |
 | `INTRO` | Runeway shows a player-centred, rotating overlay map: walkable areas, terrain and water lines, roads, and the quest areas of your current and adjacent zones. Open it with its own key, the map key or permanently. All settings are in the sub-entries on the left. | Runeway zeigt eine spielerzentrierte, mitdrehende Overlay-Karte: begehbare Bereiche, Gelände- und Wasserlinien, Wege sowie die Questbereiche deiner aktuellen und der angrenzenden Zonen. Öffnen lässt sie sich über eine eigene Taste, die Kartentaste oder dauerhaft. Alle Einstellungen findest du in den Unterpunkten links. |
 | `MAP_SHOW` | Show map | Karte einblenden |
 | `MAP_HIDE` | Hide map | Karte ausblenden |

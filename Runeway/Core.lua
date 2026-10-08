@@ -66,6 +66,12 @@ BINDING_HEADER_RUNEWAY = "Runeway"
 BINDING_NAME_RUNEWAY_TOGGLE = L.BINDING_TOGGLE
 BINDING_NAME_RUNEWAY_WORLDMAP = L.BINDING_WORLDMAP
 
+-- Addon version from the .toc
+function ns.Version()
+    local meta = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
+    return meta and meta(ADDON, "Version") or "?"
+end
+
 local function Print(msg)
     print("|cff66ccffRuneway:|r " .. msg)
 end
@@ -958,8 +964,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     elseif event == "PLAYER_ENTERING_WORLD" then
         if not announced then                 -- once per login / reload: name and version in the chat
             announced = true
-            local meta = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
-            Print(L.LOADED:format(meta and meta(ADDON, "Version") or "?"))
+            Print(L.LOADED:format(ns.Version()))
         end
         ApplySize()            -- again after WoW's layout restore
         ApplyPos()

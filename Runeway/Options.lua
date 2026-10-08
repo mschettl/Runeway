@@ -140,6 +140,9 @@ local function Build()
     -- Main page: intro and quick commands; the settings are sub-entries in the tree on the left
     local main
     category, main = Settings.RegisterVerticalLayoutCategory("Runeway")
+    local version = Settings.CreateElementInitializer("RunewayTextRowTemplate", { name = "", text = L.VERSION:format(ns.Version()) })
+    version.GetExtent = function() return 24 end
+    main:AddInitializer(version)
     local intro = Settings.CreateElementInitializer("RunewayTextRowTemplate", { name = "", text = L.INTRO })
     intro.GetExtent = function() return 62 end
     main:AddInitializer(intro)

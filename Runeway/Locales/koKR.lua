@@ -95,3 +95,4 @@ L.PROFILE_IMPORT_HINT = "Ctrl+V로 프로필 텍스트를 붙여넣고 가져오
 L.PROFILE_IMPORTED = "프로필을 가져왔습니다 (설정 %d개)."
 L.PROFILE_INVALID = "올바른 Runeway 프로필이 아닙니다."
 L.LOADED = "v%s 로드됨. 설정: /rnw config"
+L.VERSION = "버전 %s"

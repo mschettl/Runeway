@@ -3,6 +3,7 @@
 local ADDON, ns = ...
 local L = {}
 ns.L = L
+L.VERSION = "Version %s"
 L.INTRO = "Runeway shows a player-centred, rotating overlay map: walkable areas, terrain and water lines, roads, and the quest areas of your current and adjacent zones. Open it with its own key, the map key or permanently. All settings are in the sub-entries on the left."
 L.MAP_SHOW = "Show map"
 L.MAP_HIDE = "Hide map"

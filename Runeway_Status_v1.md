@@ -24,7 +24,7 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 | 1.2 | Etappe 1 (fünf Zonen), Questbereiche und Dimmung angrenzender Zonen, kleinere Kacheln, glatte Wege, Leichnam-Marker, Tooltips, Breite/Höhe, neue Einstellungsstruktur, Englisch/Deutsch |
 | 1.3 | Lokalisierung in elf Sprachen (außer Deutsch KI-Übersetzungen, Französisch im Spiel geprüft) |
 | 1.4 | Profil-Export und -Import |
-| 1.4.1 | Aufräumen (u. a. Fehler beim Hervorheben des Leichnams behoben), Anmeldemeldung mit Version im Chat |
+| 1.4.1 | Aufräumen (u. a. Fehler beim Hervorheben des Leichnams behoben), Version im Chat beim Login und oben in den Einstellungen |
 
 ---
 
@@ -152,7 +152,7 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 - Liegt der Leichnam außerhalb des Sichtfelds, sitzt der Marker am Kartenrand in seiner Richtung.
 
 ### Aufbau der Einstellungen
-- **Hauptseite „Runeway“:** Einleitungstext (`L.INTRO`, Zeilenvorlage `RunewayTextRowTemplate` mit fester Höhe über `GetExtent`) und darunter „Quick commands“.
+- **Hauptseite „Runeway“:** ganz oben die Version (`L.VERSION`, aus der `.toc` über `ns.Version()`), darunter Einleitungstext (`L.INTRO`, Zeilenvorlage `RunewayTextRowTemplate` mit fester Höhe über `GetExtent`) und darunter „Quick commands“.
 - **Live-Werte:** Änderungen außerhalb des Fensters (Mausrad-Zoom, Griff, Shift+Mausrad, `/rnw zoom`, `/rnw size`) erscheinen sofort in den Reglern (`Settings.NotifyUpdate`).
 - **Knopf „Karte ein-/ausblenden“:** im Kopf des Einstellungsfensters links neben „Standard“, nur auf den Runeway-Seiten (`Settings.CategoryChanged` über `EventRegistry`); Text wechselt zwischen „Show map“ und „Hide map“.
 - **Ebenen:** eine Zeile je Ebene mit Häkchen, Farbfeld und Deckkraft-Regler (`RunewayLayerRowTemplate`, baut auf Blizzards Häkchen-plus-Regler-Zeile auf; die Farbe ist ein eigenes Proxy-Setting, „Standard“ setzt sie mit zurück).

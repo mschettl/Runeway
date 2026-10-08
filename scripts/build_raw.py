@@ -10,6 +10,7 @@ import shutil
 import urllib.request
 import numpy as np
 import cv2
+from collections import defaultdict
 from PIL import Image
 from skimage.morphology import skeletonize
 from adt import read_area
@@ -138,14 +139,107 @@ def contours(mask):
     return cnts
 
 
-def draw_outlines(cnts, shape, s):
-    """Outlines at zoom level s (pixels per tile) on a canvas of the scaled mosaic."""
+def chaikin(p, n=2):
+    """Chaikin corner cutting for an open polyline; the end points stay."""
+    for _ in range(n):
+        if len(p) < 3:
+            return p
+        q = np.empty((2 * len(p) - 2, 2))
+        q[0::2] = 0.75 * p[:-1] + 0.25 * p[1:]
+        q[1::2] = 0.25 * p[:-1] + 0.75 * p[1:]
+        p = np.vstack([p[:1], q, p[-1:]])
+    return p
+
+
+OFFS = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
+
+
+def trace_paths(sk):
+    """Skeleton -> open polylines (x, y). Paths run between end points and junctions; paths that meet
+    at a junction of exactly two ends (pseudo junctions on pixel stairs) are joined again."""
+    sk = (sk > 0).astype(np.uint8)
+    H, W = sk.shape
+    nb = cv2.filter2D(sk, cv2.CV_16S, np.ones((3, 3), np.float32), borderType=cv2.BORDER_CONSTANT) - sk
+    node = (sk > 0) & (nb != 2)
+    _, cluster = cv2.connectedComponents(node.astype(np.uint8), connectivity=8)
+    seen = np.zeros((H, W), bool)
+
+    def nbrs(y, x):
+        for dy, dx in OFFS:
+            ny, nx = y + dy, x + dx
+            if 0 <= ny < H and 0 <= nx < W and sk[ny, nx]:
+                yield ny, nx
+
+    def follow(y, x, ny, nx):
+        pts, prev = [(x, y)], (y, x)
+        while True:
+            pts.append((nx, ny))
+            if node[ny, nx]:
+                return pts, cluster[ny, nx]
+            seen[ny, nx] = True
+            nxt = [q for q in nbrs(ny, nx) if q != prev and not seen[q]]
+            if not nxt:
+                return pts, 0
+            prev, (ny, nx) = (ny, nx), nxt[0]
+
+    paths = []                                         # [pts, start cluster, end cluster]
+    for y, x in zip(*np.nonzero(node)):
+        for ny, nx in nbrs(y, x):
+            if not node[ny, nx] and not seen[ny, nx]:
+                pts, end = follow(y, x, ny, nx)
+                paths.append([pts, cluster[y, x], end])
+    for y, x in zip(*np.nonzero(sk.astype(bool) & ~node & ~seen)):   # closed rings without junctions
+        if not seen[y, x]:
+            seen[y, x] = True
+            nxt = [q for q in nbrs(y, x) if not seen[q]]
+            if nxt:
+                pts, _ = follow(y, x, *nxt[0])
+                paths.append([pts + [(x, y)], 0, 0])
+
+    ends = defaultdict(list)
+    for i, (_, a, b) in enumerate(paths):
+        for c in (a, b):
+            if c:
+                ends[c].append(i)
+    alias = list(range(len(paths)))
+
+    def find(i):
+        while alias[i] != i:
+            i = alias[i]
+        return i
+    for c, ids in ends.items():
+        if len(ids) != 2:
+            continue
+        i, j = find(ids[0]), find(ids[1])
+        if i == j:
+            continue
+        pi, pj = paths[i], paths[j]
+        if pi[2] != c:                                 # orient: i ends at c, j starts at c
+            pi[:] = [pi[0][::-1], pi[2], pi[1]]
+        if pj[1] != c:
+            pj[:] = [pj[0][::-1], pj[2], pj[1]]
+        paths[i] = [pi[0] + pj[0][1:], pi[1], pj[2]]
+        paths[j] = None
+        alias[j] = i
+    return [np.array(p[0], np.float64) for p in paths if p]
+
+
+def draw_lines(lines, shape, s, closed):
+    """Outlines (closed) or road paths (open, smoothed) at zoom level s (pixels per tile) on a canvas of
+    the scaled mosaic; same stroke width for both."""
     min_len, eps, width = LINE_LOD[s]
     f = s / P
     out = np.zeros(shape, np.uint8)
-    pts = [np.round(cv2.approxPolyDP(c, eps, True) * f * 16).astype(np.int32)
-           for c in cnts if cv2.arcLength(c, True) >= min_len]
-    cv2.polylines(out, pts, True, 255, width, cv2.LINE_AA, shift=4)
+    pts = []
+    for c in lines:
+        c = c.reshape(-1, 1, 2).astype(np.float32)
+        if closed and cv2.arcLength(c, True) < min_len:   # road pieces end at junctions: keep all of them
+            continue
+        a = cv2.approxPolyDP(c, eps, closed).reshape(-1, 2).astype(np.float64)
+        if not closed:
+            a = chaikin(a)
+        pts.append(np.round(a * f * 16).astype(np.int32))
+    cv2.polylines(out, pts, closed, 255, width, cv2.LINE_AA, shift=4)
     if width == 1:                                             # thin anti-aliased strokes: lift the faint pixels
         out = np.clip(out.astype(np.float32) * 1.4, 0, 255).astype(np.uint8)
     return out
@@ -176,17 +270,15 @@ def line_layers(L, keep):
     walk_c, water_c = contours(L['walk']), contours(L['water'])
     # shore: terrain line only where the walk edge borders steep ground, not water
     near_water = cv2.dilate(L['water'].astype(np.uint8), np.ones((9, 9), np.uint8))
-    roads_full = (cv2.dilate(L['road'].astype(np.uint8), np.ones((2, 2), np.uint8)) * 230).astype(np.uint8)
-    roads_full[L['water']] = 0
+    road_p = trace_paths(L['road'])
     for s in LODS:
         f = s / P
         shape = (int(H * f), int(W * f))
         size = (shape[1], shape[0])
-        terrain = draw_outlines(walk_c, shape, s)
-        water = draw_outlines(water_c, shape, s)
+        terrain = draw_lines(walk_c, shape, s, True)
+        water = draw_lines(water_c, shape, s, True)
         terrain[cv2.resize(near_water, size, interpolation=cv2.INTER_NEAREST) > 0] = 0
-        roads = roads_full if s == P else np.clip(
-            cv2.resize(roads_full, size, interpolation=cv2.INTER_AREA).astype(np.float32) / f, 0, 230).astype(np.uint8)
+        roads = draw_lines(road_p, shape, s, False)
         z = zf if s == P else cv2.resize(zf, size, interpolation=cv2.INTER_AREA)
         layer = {}
         for n, a in (('terrain', terrain), ('water', water), ('roads', roads)):
@@ -269,8 +361,8 @@ def write_tiles(layers, cols, rows, tiles):
 
 
 # RGBA as the defaults in Core.lua (drawn in LAYERS order)
-COLORS = dict(fill=(0.80, 0.64, 0.44, 0.07), hatch=(0.80, 0.84, 0.88, 0.22), shade=(0.05, 0.05, 0.06, 0.45),
-              terrain=(0.82, 0.86, 0.89, 0.85), water=(0.82, 0.86, 0.89, 0.85), roads=(0.82, 0.86, 0.89, 0.4))
+COLORS = dict(fill=(0, 0, 0, 0.10), hatch=(0.80, 0.84, 0.88, 0.20), shade=(0, 0, 0, 0.45),
+              terrain=(0.82, 0.86, 0.89, 0.85), water=(0.82, 0.86, 0.89, 0.80), roads=(0.92, 0.72, 0.28, 0.65))
 
 
 def compose(layers, base=None):

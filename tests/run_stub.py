@@ -167,8 +167,8 @@ L.execute('''
     SETTINGS.RUNEWAY_AUTOHIDE_COMBAT:SetValue(true)
     check("opacity and auto-hide write the db", db.colors.roads.a == 0.5 and db.autoHide.combat == true)
     for _, st in pairs(SETTINGS) do st:SetValue(st.default) end
-    check("defaults restored", db.edge == 3 and db.w == 600 and db.mode == "key" and db.colors.roads.a == 0.4
-        and math.abs(db.colors.fill.r - 0.8) < 0.01)
+    check("defaults restored", db.edge == 3 and db.w == 600 and db.mode == "key" and db.colors.roads.a == 0.65
+        and math.abs(db.colors.fill.r) < 0.01 and db.zoom == 0.3 and db.questMerge == true)
     view:GetScript("OnUpdate")(view, 0.05)
 ''')
 

@@ -18,23 +18,24 @@ local LAYER_LEVEL = { fill = 0, hatch = 1, shade = 2, terrain = 3, water = 4, ro
 local STYLE = 6            -- bump when the default look changes (see migration in ADDON_LOADED)
 
 -- One calm colour for all lines (Diablo IV style); quest areas glow blue like the minimap blobs
-local LINE = { 0.82, 0.86, 0.89 }
+local LINE = { 0xD1 / 255, 0xDB / 255, 0xE3 / 255 }
 local defaults = {
     x = nil, y = nil, w = 600,          -- square map (w = edge length)
-    zoom = 1.5, alpha = 0.7, rotate = true, locked = false, shown = false,
+    zoom = 0.3, alpha = 0.7, rotate = true, locked = false, shown = false,
     mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
     autoHide = { combat = false, instance = false, mounted = false, city = false },
     hover = true,            -- unlocked: subtle frame while the mouse is over the map
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
-    arrowSize = 23, pinSize = 26, questEdge = 1,   -- quest edge = width factor of the quest area outline
-    colors = {
-        fill    = { r = 0.80, g = 0.64, b = 0.44, a = 0.07 },   -- warm brown like Diablo IV
-        hatch   = { r = 0.80, g = 0.84, b = 0.88, a = 0.22 },
-        shade   = { r = 0.05, g = 0.05, b = 0.06, a = 0.45 },
+    arrowSize = 25, pinSize = 25, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
+    questMerge = true,       -- overlapping quest areas as one combined outline
+    colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,
+        fill    = { r = 0, g = 0, b = 0, a = 0.10 },              -- roads #EBB748, quest areas #73C7FF
+        hatch   = { r = 0xCC / 255, g = 0xD6 / 255, b = 0xE0 / 255, a = 0.20 },
+        shade   = { r = 0, g = 0, b = 0, a = 0.45 },
         terrain = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
-        water   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
-        roads   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.4 },
-        questAreas = { r = 0.45, g = 0.78, b = 1.00, a = 1 },
+        water   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.80 },
+        roads   = { r = 0xEB / 255, g = 0xB7 / 255, b = 0x48 / 255, a = 0.65 },
+        questAreas = { r = 0x73 / 255, g = 0xC7 / 255, b = 0xFF / 255, a = 0.90 },
     },
     layers = { fill = true, hatch = true, shade = true, terrain = true, water = true, roads = true, questAreas = true },
     questAreaCache = {},     -- [mapID] = { areas = {}, groups = {} }, see QuestAreas.lua
@@ -120,12 +121,6 @@ editHint:SetText("Drag = move  |  Wheel = zoom  |  Corner or Shift+wheel = size 
 local status = top:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 status:SetPoint("BOTTOM", 0, 6)
 
--- Size and zoom readout while moving, sizing or zooming; fades out shortly after the last action
-local info = top:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-info:SetPoint("CENTER", 0, -40)
-info:Hide()
-local infoUntil, infoHold = 0, false
-
 -- Hover frame (unlocked only): 1 px lines along the edges
 local border = {}
 for i, pts in ipairs({ { "TOPLEFT", "TOPRIGHT" }, { "BOTTOMLEFT", "BOTTOMRIGHT" }, { "TOPLEFT", "BOTTOMLEFT" }, { "TOPRIGHT", "BOTTOMRIGHT" } }) do
@@ -149,24 +144,6 @@ grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
 grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
 grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
 grip:Hide()
-
-local function ShowInfo(hold)
-    local w, h = view:GetSize()
-    info:SetFormattedText("%d \195\151 %d   Zoom %.2f", w + 0.5, h + 0.5, db.zoom)
-    info:SetAlpha(1)
-    info:Show()
-    infoHold = hold or false
-    infoUntil = GetTime() + 1.5
-end
-
-local function UpdateInfo()
-    if infoHold then
-        ShowInfo(true)
-    elseif info:IsShown() then
-        local left = infoUntil - GetTime()
-        if left <= 0 then info:Hide() else info:SetAlpha(math.min(1, left / 0.5)) end
-    end
-end
 
 -- Player arrow, fixed in the centre
 local arrowShadow = top:CreateTexture(nil, "OVERLAY", nil, 0)   -- dark silhouette for contrast
@@ -434,7 +411,6 @@ view:SetScript("OnUpdate", function(self, e)
     elapsed = elapsed + e
     if elapsed < 0.025 then return end
     elapsed = 0
-    UpdateInfo()
 
     local n, w, _, inst = UnitPosition("player")
     if not n then
@@ -500,14 +476,12 @@ end
 
 view:SetScript("OnDragStart", function(self)
     self:StartMoving()
-    ShowInfo(true)
 end)
 view:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
     if self.SetUserPlaced then self:SetUserPlaced(false) end
     SavePos()
     ApplyPos()
-    ShowInfo()
 end)
 view:SetScript("OnMouseWheel", function(_, delta)
     if IsShiftKeyDown() and not db.locked then
@@ -516,7 +490,6 @@ view:SetScript("OnMouseWheel", function(_, delta)
     else
         SetZoom(db.zoom * (delta > 0 and 1.15 or 1 / 1.15))
     end
-    ShowInfo()
 end)
 view:SetScript("OnShow", RefreshQuests)
 
@@ -539,14 +512,12 @@ grip:SetScript("OnMouseDown", function()
         local s = view:GetEffectiveScale()
         db.w = math.floor(math.max(x / s - sizeLeft, sizeTop - y / s) + 0.5)
         ApplySize()
-        ShowInfo(true)
     end)
 end)
 grip:SetScript("OnMouseUp", function()
     grip:SetScript("OnUpdate", nil)
     SavePos()
     ApplyPos()
-    ShowInfo()
     UpdateBorder()
 end)
 

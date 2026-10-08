@@ -321,6 +321,7 @@ end
 
 -- Overlapping quest areas are sampled once more with all their blobs drawn, so they get one outline
 local function NextGroupJob()
+    if not ns.db().questMerge then return end
     local ids = {}
     for qid, a in pairs(areas) do
         if a.rect then ids[#ids + 1] = qid end
@@ -516,7 +517,7 @@ end
 
 -- true if the quest has an outline (its pin is then hidden)
 function ns.HasQuestArea(questID)
-    local a, g = areas[questID], groups[inGroup[questID] or ""]
+    local a, g = areas[questID], ns.db().questMerge and groups[inGroup[questID] or ""]
     return (a and #a.loops > 0) or (g and #g.loops > 0) or false
 end
 
@@ -599,11 +600,14 @@ function ns.DrawQuestAreas()
         local reach = math.sqrt(W * W + H * H) / 2 / k
         local ew = math.min(EDGE_MAX, math.max(EDGE_MIN, (1600 / 3) * k / EDGE_DIV))   -- edge width follows the zoom
             * ns.db().questEdge
-        for _, g in pairs(groups) do
-            if #g.loops > 0 then n = DrawArea(g, n, pN, pW, reach, W / 2, H / 2, ew) end
+        local merge = ns.db().questMerge     -- overlapping quests as one combined outline (option)
+        if merge then
+            for _, g in pairs(groups) do
+                if #g.loops > 0 then n = DrawArea(g, n, pN, pW, reach, W / 2, H / 2, ew) end
+            end
         end
         for qid, a in pairs(areas) do
-            local g = groups[inGroup[qid] or ""]
+            local g = merge and groups[inGroup[qid] or ""]
             if not (g and #g.loops > 0) then n = DrawArea(a, n, pN, pW, reach, W / 2, H / 2, ew) end
         end
     end

@@ -99,6 +99,8 @@ local function Build()
     Slider("arrowSize", "Player arrow", 12, 48, 1, function(v) return ("%d px"):format(v) end)
     Slider("pinSize", "Quest marks", 14, 48, 1, function(v) return ("%d px"):format(v) end)
     Slider("questEdge", "Quest area edge", 0.5, 2.5, 0.05, function(v) return ("%.2f x"):format(v) end)
+    Check("questMerge", "Combine overlapping quest areas",
+        "Quests whose areas overlap get one shared outline. Off: every quest keeps its own outline.")
 
     -- Layers: show + opacity in one row, colour in the row below
     Header("Layers")

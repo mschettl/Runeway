@@ -10,7 +10,7 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 
 **Stand 1.0:**
 - **Zone:** Tirisfal ist vollständig aus den RAW-Spieldaten gebaut. Die Ruinen von Lordaeron sind als Stadt eingezeichnet.
-- **Kartenebenen:** Begehbare Fläche (Braunton), schraffierte nicht begehbare Bereiche (Gebirge, Wasser, Mauern), Geländelinien, Wasserlinien und Wege.
+- **Kartenebenen:** Begehbare Fläche (leicht abgedunkelt), schraffierte nicht begehbare Bereiche (Gebirge, Wasser, Mauern), Geländelinien, Wasserlinien und Wege.
 - **Questbereiche:** Exakt dieselben Bereiche wie auf der Weltkarte, als blauer, mitdrehender Rand.
 - **Questmarker:** Nur für punktuelle Ziele (Abgabe, Gespräche), im Weltkarten-Stil.
 - **Zoom:** Nahtlos durch Überblendung der Kachel-Zoomstufen. Die Karte ist quadratisch und blendet rund aus.
@@ -69,21 +69,22 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | Schlüssel | Standard |
 |---|---|
 | `w` | 600 (quadratisch, Seitenlänge) |
-| `zoom` | 1.5 (0.08–5) |
+| `zoom` | 0.3 (0.08–5) |
 | `alpha` | 0.7 (nur Kartenebenen; Pfeil, Marker und Questränder immer voll) |
 | `rotate`, `locked`, `shown` | true, false, false |
-| `colors.fill` | 0.80 / 0.64 / 0.44, a 0.07 |
-| `colors.hatch` | 0.80 / 0.84 / 0.88, a 0.22 |
-| `colors.shade` | 0.05 / 0.05 / 0.06, a 0.45 |
-| `colors.terrain`, `colors.water` | 0.82 / 0.86 / 0.89, a 0.85 |
-| `colors.roads` | 0.82 / 0.86 / 0.89, a 0.4 |
-| `colors.questAreas` | 0.45 / 0.78 / 1.00, a 1 |
+| `colors.fill` | #000000, a 0.10 |
+| `colors.hatch` | #CCD6E0, a 0.20 |
+| `colors.shade` | #000000, a 0.45 |
+| `colors.terrain` / `colors.water` | #D1DBE3, a 0.85 / 0.80 |
+| `colors.roads` | #EBB748, a 0.65 |
+| `colors.questAreas` | #73C7FF, a 0.90 |
 | `layers.*` | alle true |
 | `mode` | `"key"` (eigene Taste), `"mapkey"` (Kartentaste M öffnet das Overlay), `"permanent"` |
 | `autoHide.combat/instance/mounted/city` | alle false (`city` = ausgeruht, also Städte und Gasthäuser) |
 | `hover` | true (Rahmen bei Mausüberfahrt, nur entsperrt) |
 | `edge` | 3 (Randstärke 1–5, Breite 0,12 / 0,25 / 0,38 / 0,55 / 0,75 des Radius) |
-| `arrowSize`, `pinSize`, `questEdge` | 23, 26, 1 (Faktor für die Breite der Questränder) |
+| `arrowSize`, `pinSize`, `questEdge` | 25, 25, 0.8 (Faktor für die Breite der Questränder) |
+| `questMerge` | true: überlappende Questbereiche bekommen einen gemeinsamen Umriss |
 | `questAreaCache` | `[mapID] = { areas, groups }`, Version über `questAreaCacheVersion` (2) |
 | `style` | 6. Migrationszähler: setzt bei Stiländerungen einzelne Farben einmalig zurück (siehe `ADDON_LOADED` in `Core.lua`) |
 
@@ -114,7 +115,6 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
   - Der Griff unten rechts ändert die Größe. Sie bleibt quadratisch, die obere linke Ecke bleibt stehen.
   - Shift+Mausrad ändert die Größe.
   - Beim Überfahren erscheint ein Rahmen, abschaltbar.
-- **Größenanzeige:** „B × H Zoom“ erscheint beim Verschieben, Größe ändern und Zoomen. Sie blendet nach 1,5 s aus.
 
 **Sichtbarkeit (`UpdateVisibility`):**
 - **Grundregel:** Angezeigt wird, wenn `mode == "permanent"` oder `shown` gesetzt ist und keine Bedingung zum automatischen Ausblenden greift.
@@ -161,7 +161,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 **Algorithmus in Kürze:**
 - **Begehbar:** Steigung unter 50° und kein Wasser. Zerklüftete Hänge werden zu Blöcken geschlossen (`BLOCK_CLOSE`). Kleine begehbare Inseln mitten im Gebirge werden entfernt (`MIN_WALK`), außer sie grenzen an Wasser (`MIN_ISLAND`, z. B. die Insel im Brightwater Lake).
 - **Wasser:** MH2O-Oberfläche liegt über dem Gelände.
-- **Wege:** Texturen mit „road“ oder „path“ im Namen, ab Gewicht 0.3, als Mittellinie (Skelett).
+- **Wege:** Texturen mit „road“ oder „path“ im Namen, ab Gewicht 0.3, als Mittellinie (Skelett). Das Skelett wird in Linienzüge zerlegt (`trace_paths`: zwischen Endpunkten und Kreuzungen, Schein-Kreuzungen an Pixeltreppen wieder verbunden), vereinfacht, per Chaikin geglättet und pro Zoomstufe mit derselben Strichbreite wie die Umrisse gezeichnet (`draw_lines`). Kein Mindestlängen-Filter je Zoomstufe, weil Wegstücke an Kreuzungen enden.
 - **Zonen-Zuschnitt:** über AreaTable (Unterzonen → Hauptzone). Meeres-Chunks zählen nur in Küstennähe der Zone, denn „The Great Sea“ ist in der AreaTable eine Unterzone von Tirisfal.
 - **Weicher Kartenrand:** `EDGE_FADE` = 160 px (~165 yd), mittig auf der Zonengrenze, also überwiegend nach außen. Kacheln, in die die Ausblendung reicht, werden mitgeschrieben.
 - **Linien je Zoomstufe:** aus den Umrissen neu gezeichnet, nicht verkleinert (`LINE_LOD`). Bei 512 px 2 px breit, bei 256/128 px 1 px kantengeglättet, stärker vereinfacht, ohne Kleinstteile.
@@ -186,7 +186,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
    - Treffer-Raster weichzeichnen, Marching Squares mit interpolierter 0,5-Isolinie, Douglas-Peucker (0,35 Zellen), 2× Chaikin.
    - Umrechnung in Weltkoordinaten über die Kartenecken.
    - Je Umriss wird gespeichert, auf welcher Seite die Fläche liegt (`inward`).
-4. **Überlappende Quests:** Sie werden zusätzlich gemeinsam abgetastet und bekommen einen einzigen Umriss (`groups`).
+4. **Überlappende Quests:** Sie werden zusätzlich gemeinsam abgetastet und bekommen einen einzigen Umriss (`groups`). Abschaltbar über die Option „Combine overlapping quest areas“ (`questMerge`); dann wird nicht gemeinsam abgetastet und jede Quest behält ihren Umriss.
 5. **Neu abtasten:** nur, wenn sich die Signatur ändert (Anzahl Teilbereiche, Questpunkt, Zielfortschritt). Auslöser: `QUEST_LOG_UPDATE` (0,3 s gebündelt), `QUEST_POI_UPDATE`, Zonenwechsel. Ergebnisse werden je Karte in `RunewayDB.questAreaCache` gespeichert und sind nach `/reload` sofort da.
 6. **Zeichnen:**
    - Linien-Objekte mit `media/edge.tga` (WoW glättet Linienkanten nicht, die Textur schon).
@@ -361,7 +361,7 @@ cd <repo> && zip -r build/Runeway-1.1.zip Runeway
 2. **Farbe:** Ein Farbfeld öffnet den Farbwähler. „Abbrechen“ stellt die alte Farbe wieder her.
 3. **Rand:** Die Stufen 1–5 sind sichtbar unterschiedlich. Die Questränder blenden passend dazu aus.
 4. **Mausrad gesperrt:** Über der Karte wird gezoomt, Klicks gehen durch die Karte hindurch.
-5. **Entsperrt:** Ziehen verschiebt. Der Griff unten rechts ändert die Größe, die Karte bleibt quadratisch. Die Größenanzeige blendet aus. Der Rahmen erscheint beim Überfahren.
+5. **Entsperrt:** Ziehen verschiebt. Der Griff unten rechts ändert die Größe, die Karte bleibt quadratisch. Der Rahmen erscheint beim Überfahren.
 6. **Taste M:** M öffnet und schließt das Overlay, die Belegung „World map (map key mode)“ öffnet die Weltkarte. Auch nach einem Kampf und nach `/reload` prüfen.
 7. **Permanent:** Das Overlay ist nach dem Login sichtbar.
 8. **Ausblenden:** Kampf, Instanz, Reittier oder Flug und Stadt einzeln prüfen. Nach dem Ende der Bedingung erscheint das Overlay wieder.

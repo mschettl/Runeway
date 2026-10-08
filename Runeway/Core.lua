@@ -514,15 +514,47 @@ local function UpdateCorpse()
     end
     if not corpseN then corpse:Hide() return end
     local x, y = ToScreen(corpseN, corpseW)
+    local size = db.corpseSize * (hovered == "corpse" and HOVER_SCALE or 1)
     local W, H = view:GetSize()
     -- keep the whole icon inside the oval map
     local rx, ry = math.max(1, W / 2 - db.corpseSize), math.max(1, H / 2 - db.corpseSize)
     local d = math.sqrt((x / rx) ^ 2 + (y / ry) ^ 2)
     if d > 1 then x, y = x / d, y / d end
-    corpse:SetSize(db.corpseSize, db.corpseSize)
+    corpse.x, corpse.y = x, y
+    corpse:SetSize(size, size)
     corpse:ClearAllPoints()
     corpse:SetPoint("CENTER", view, "CENTER", x, y)
     corpse:Show()
+end
+
+-- Mouse-over (also on the locked, click-through map: the cursor position is polled, no mouse events):
+-- the marker under the cursor is enlarged; quest marks and areas get a tooltip like on the minimap.
+local HOVER_SCALE = 1.3
+local hovered                         -- "arrow", "corpse", a quest pin table or nil
+
+local tipKey                          -- what the tooltip shows now (avoids rebuilding it every update)
+
+local function AddQuestLines(questID)
+    local title = C_QuestLog.GetTitleForQuestID and C_QuestLog.GetTitleForQuestID(questID) or ("#" .. questID)
+    GameTooltip:AddLine(title, 1, 0.82, 0)
+    for _, o in ipairs(C_QuestLog.GetQuestObjectives and C_QuestLog.GetQuestObjectives(questID) or {}) do
+        if o.text and o.text ~= "" then
+            local c = o.finished and 0.6 or 1
+            GameTooltip:AddLine("-" .. o.text, c, c, c)
+        end
+    end
+end
+
+local function ShowTip(key, fill)
+    if tipKey == key then return end
+    tipKey = key
+    if not key then
+        if GameTooltip:IsOwned(view) then GameTooltip:Hide() end
+        return
+    end
+    GameTooltip:SetOwner(view, "ANCHOR_CURSOR")
+    fill()
+    GameTooltip:Show()
 end
 
 local function UpdateQuestPins()
@@ -540,10 +572,11 @@ local function UpdateQuestPins()
                 end
                 qpins[n] = p
             end
-            if p.size ~= db.pinSize then
-                p.size = db.pinSize
-                p.back:SetSize(p.size, p.size)
-                p.icon:SetSize(p.size, p.size)
+            local size = db.pinSize * (hovered == p and HOVER_SCALE or 1)
+            if p.size ~= size then
+                p.size = size
+                p.back:SetSize(size, size)
+                p.icon:SetSize(size, size)
             end
             if p.done ~= q.done then
                 p.done = q.done
@@ -551,6 +584,7 @@ local function UpdateQuestPins()
                     "Interface\\GossipFrame\\ActiveQuestIcon")
             end
             local x, y = ToScreen(q[1], q[2])
+            p.x, p.y, p.questID, p.shown = x, y, q.questID, true
             for _, t in ipairs({ p.back, p.icon }) do
                 t:ClearAllPoints()
                 t:SetPoint("CENTER", view, "CENTER", x, y)
@@ -559,6 +593,7 @@ local function UpdateQuestPins()
         end
     end
     for i = n + 1, #qpins do
+        qpins[i].shown = false
         qpins[i].back:Hide()
         qpins[i].icon:Hide()
     end
@@ -568,6 +603,61 @@ end
 -- Main loop
 ---------------------------------------------------------------------------
 local elapsed = 0
+-- Cursor -> marker or quest areas under it. Only when the cursor is over the visible (oval) map and no
+-- other frame lies on top of it (action bars, minimap ...).
+local function CursorFree()
+    local foci = GetMouseFoci and GetMouseFoci()
+    local f = foci and foci[1] or (GetMouseFocus and GetMouseFocus())
+    return not f or f == WorldFrame or f == view or f == UIParent
+end
+
+local function UpdateHover()
+    local target, quests
+    if view:IsShown() and view:IsMouseOver() and CursorFree() then
+        local cx, cy = GetCursorPosition()
+        local s = view:GetEffectiveScale()
+        local vx, vy = view:GetCenter()
+        local x, y = cx / s - vx, cy / s - vy
+        local W, H = view:GetSize()
+        if (x / (W / 2)) ^ 2 + (y / (H / 2)) ^ 2 < 1 then
+            local function Near(px, py, size) return (x - px) ^ 2 + (y - py) ^ 2 <= (size / 2) ^ 2 end
+            if Near(0, 0, db.arrowSize) then
+                target = "arrow"
+            elseif corpse:IsShown() and Near(corpse.x, corpse.y, db.corpseSize) then
+                target = "corpse"
+            else
+                for _, p in ipairs(qpins) do
+                    if p.shown and Near(p.x, p.y, db.pinSize) then target = p break end
+                end
+            end
+            if not target and ns.QuestAreasAt then
+                -- screen -> world: inverse of ToScreen
+                local sx, sy = x * cosA + y * sinA, -x * sinA + y * cosA
+                quests = ns.QuestAreasAt(pN + sy / k, pW - sx / k)
+            end
+        end
+    end
+    if not quests and ns.QuestAreasAt then ns.QuestAreasAt(nil) end
+    hovered = target
+    if target == "corpse" then
+        ShowTip("corpse", function() GameTooltip:SetText(CORPSE_RED or L.CORPSE_MARKER) end)
+    elseif type(target) == "table" then
+        ShowTip("q" .. target.questID, function() AddQuestLines(target.questID) end)
+    elseif quests and #quests > 0 then
+        ShowTip("a" .. table.concat(quests, ","), function()
+            for _, qid in ipairs(quests) do AddQuestLines(qid) end
+        end)
+    else
+        ShowTip(nil)
+    end
+end
+
+view:SetScript("OnHide", function()
+    hovered = nil
+    if ns.QuestAreasAt then ns.QuestAreasAt(nil) end
+    ShowTip(nil)
+end)
+
 view:SetScript("OnUpdate", function(self, e)
     elapsed = elapsed + e
     if elapsed < 0.025 then return end
@@ -585,8 +675,9 @@ view:SetScript("OnUpdate", function(self, e)
     local facing = GetPlayerFacing() or 0
     local angle = db.rotate and -facing or 0
     cosA, sinA = math.cos(angle), math.sin(angle)
-    arrow:SetSize(db.arrowSize, db.arrowSize)
-    arrowShadow:SetSize(db.arrowSize + 4, db.arrowSize + 4)
+    local as = db.arrowSize * (hovered == "arrow" and HOVER_SCALE or 1)
+    arrow:SetSize(as, as)
+    arrowShadow:SetSize(as + 4, as + 4)
     arrow:SetRotation(db.rotate and 0 or facing)
     arrowShadow:SetRotation(db.rotate and 0 or facing)
 
@@ -597,6 +688,7 @@ view:SetScript("OnUpdate", function(self, e)
     end
     UpdateQuestPins()
     UpdateCorpse()
+    UpdateHover()
     if ns.DrawQuestAreas then ns.DrawQuestAreas() end
 end)
 

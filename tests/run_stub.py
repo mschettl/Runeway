@@ -168,8 +168,7 @@ L.execute('''
     check("corpse marker while dead", corpseShown and not TEXTURE_OBJECTS[("Interface/Minimap/POIIcons"):gsub("/", string.char(92))]:IsShown())
     local za = NS.ZoneAlpha()
     check("zones: Tirisfal full, Silverpine dimmed", za[1] == 1 and math.abs(za[2] - db.zoneDim) < 0.02)
-    local tg
-    for _, f in ipairs(FRAMES) do if f:GetScript("OnClick") and rawget(f, "_w") == nil and f:GetScript("OnShow") then tg = f end end
+    local tg = NS.ToggleButton
     EVENT_CALLBACKS["Settings.CategoryChanged"]({ GetID = function() return 1 end })
     local hiddenElsewhere = not tg:IsShown()
     EVENT_CALLBACKS["Settings.CategoryChanged"](SETTINGS_MAIN)
@@ -185,6 +184,27 @@ L.execute('''
     SlashCmdList.RUNEWAY("size 900 500")
     check("live update: zoom and size notified", notified.RUNEWAY_ZOOM and notified.RUNEWAY_W and notified.RUNEWAY_H
         and db.w == 900 and db.h == 500)
+    -- mouse-over: arrow in the centre is enlarged; inside a quest area the tooltip lists its quest(s)
+    local tipLines = {}
+    GameTooltip.AddLine = function(_, text) tipLines[#tipLines + 1] = text end
+    GameTooltip.IsOwned = function() return true end
+    rawset(view, "IsMouseOver", function() return true end)
+    local wasShown = view:IsShown()
+    view:Show()
+    CURSOR[1], CURSOR[2] = 500, 400                    -- view centre (stub GetCenter)
+    view:GetScript("OnUpdate")(view, 0.05)
+    view:GetScript("OnUpdate")(view, 0.05)
+    local arrowTex = TEXTURE_OBJECTS[("Interface/AddOns/Runeway/media/arrow.tga"):gsub("/", string.char(92))]
+    check("hover: player arrow enlarged", arrowTex and math.abs(arrowTex._w - db.arrowSize * 1.3) < 0.01)
+    local A = NS.QuestAreaState()
+    local qa
+    for qid, a in pairs(A) do if #a.loops > 0 then qa = a break end end
+    local hits = qa and NS.QuestAreasAt((qa.box[1] + qa.box[2]) / 2, (qa.box[3] + qa.box[4]) / 2) or {}
+    check("hover: quest area hit test finds its quest", #hits > 0)
+    check("hover: point far outside finds nothing", #NS.QuestAreasAt(qa.box[2] + 500, qa.box[4] + 500) == 0)
+    NS.QuestAreasAt(nil)
+    rawset(view, "IsMouseOver", nil)
+    if not wasShown then view:Hide() end
     -- layer row: the colour swatch opens the picker and writes the layer colour
     local row
     for _, i in ipairs(INITS) do if i.kind == "layerrow" and i.data.name == NS.L.LAYER_ROADS then row = i end end

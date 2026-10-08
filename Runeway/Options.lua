@@ -238,6 +238,7 @@ local function CreateToggle()
     end)
     toggle:SetScript("OnShow", UpdateToggle)
     toggle:Hide()
+    ns.ToggleButton = toggle                         -- for tests
     EventRegistry:RegisterCallback("Settings.CategoryChanged", function(_, c) toggle:SetShown(ours[c] or false) end, toggle)
 end
 

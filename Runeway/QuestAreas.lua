@@ -597,11 +597,73 @@ end
 
 local px, py, qx, qy, qa = {}, {}, {}, {}, {}   -- reused buffers: screen points, subdivided points, fade
 
+-- The outlines that are drawn: fn(area, questIDs) for every shown group or single quest area
+local function ForEachShown(fn)
+    local merge = ns.db().questMerge     -- overlapping quests as one combined outline (option)
+    for _, m in ipairs(maps) do
+        local st = state[m]
+        -- a group is drawn on its map if that map owns one of its members
+        if merge then
+            for _, g in pairs(st.groups) do
+                local own = false
+                for _, qid in ipairs(g.members) do own = own or owner[qid] == m end
+                if own and #g.loops > 0 then fn(g, g.members) end
+            end
+        end
+        for qid, a in pairs(st.areas) do
+            local g = merge and st.groups[st.inGroup[qid] or ""]
+            if owner[qid] == m and #a.loops > 0 and not (g and #g.loops > 0) then
+                a.qids = a.qids or { qid }
+                fn(a, a.qids)
+            end
+        end
+    end
+end
+
+-- Point in area (world yards): even-odd rule over all loops, so holes count as outside
+local function Inside(a, n, w)
+    local b = a.box
+    if n < b[1] or n > b[2] or w < b[3] or w > b[4] then return false end
+    local inside = false
+    for _, loop in ipairs(a.loops) do
+        local cnt = #loop
+        local jn, jw = loop[cnt - 1], loop[cnt]
+        for m = 1, cnt, 2 do
+            local inn, iw = loop[m], loop[m + 1]
+            if (iw > w) ~= (jw > w) and n < (jn - inn) * (w - iw) / (jw - iw) + inn then inside = not inside end
+            jn, jw = inn, iw
+        end
+    end
+    return inside
+end
+
+-- Mouse-over: quests whose drawn area contains the world point (n, w); those areas are highlighted.
+-- n = nil clears the hover.
+local hover, hoverQuests = {}, {}
+function ns.QuestAreasAt(n, w)
+    wipe(hover)
+    wipe(hoverQuests)
+    if n and ns.db().layers.questAreas then
+        ForEachShown(function(a, qids)
+            if Inside(a, n, w) then
+                hover[a] = true
+                for _, qid in ipairs(qids) do hoverQuests[#hoverQuests + 1] = qid end
+            end
+        end)
+    end
+    return hoverQuests
+end
+
 local function DrawArea(a, n, pN, pW, reach, W2, H2, ew)
     local b = a.box
     if not (b[1] < pN + reach and b[2] > pN - reach and b[3] < pW + reach and b[4] > pW - reach) then return n end
     local view, ToScreen = ns.view, ns.ToScreen
     local c = ns.db().colors.questAreas
+    local cr, cg, cb, ca = c.r, c.g, c.b, c.a
+    if hover[a] then                     -- mouse-over: wider, brighter and fully opaque
+        ew = ew * 1.6
+        cr, cg, cb, ca = cr + (1 - cr) * 0.35, cg + (1 - cg) * 0.35, cb + (1 - cb) * 0.35, 1
+    end
     local ov = math.min(1, ew / 2)       -- 1 px overlap closes the joints; more would show in the fade
     local fw = ns.FadeWidth()
     local function fade(x, y)            -- soft edge of the map: same oval fade as the tile mask
@@ -657,7 +719,7 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2, ew)
                     l:SetStartPoint("CENTER", view, x0 - ex, y0 - ey)
                     l:SetEndPoint("CENTER", view, x1 + ex, y1 + ey)
                     -- fade per segment (lines do not take mask textures); segments are ~6 px, so the steps are small
-                    l:SetVertexColor(c.r, c.g, c.b, c.a * t)   -- not SetAlpha: it overwrites the vertex alpha
+                    l:SetVertexColor(cr, cg, cb, ca * t)   -- not SetAlpha: it overwrites the vertex alpha
                     l:Show()
                 end
             end
@@ -674,22 +736,7 @@ function ns.DrawQuestAreas()
         local reach = math.sqrt(W * W + H * H) / 2 / k
         local ew = math.min(EDGE_MAX, math.max(EDGE_MIN, (1600 / 3) * k / EDGE_DIV))   -- edge width follows the zoom
             * ns.db().questEdge
-        local merge = ns.db().questMerge     -- overlapping quests as one combined outline (option)
-        for _, m in ipairs(maps) do
-            local st = state[m]
-            -- a group is drawn on its map if that map owns one of its members
-            if merge then
-                for _, g in pairs(st.groups) do
-                    local own = false
-                    for _, qid in ipairs(g.members) do own = own or owner[qid] == m end
-                    if own and #g.loops > 0 then n = DrawArea(g, n, pN, pW, reach, W / 2, H / 2, ew) end
-                end
-            end
-            for qid, a in pairs(st.areas) do
-                local g = merge and st.groups[st.inGroup[qid] or ""]
-                if owner[qid] == m and not (g and #g.loops > 0) then n = DrawArea(a, n, pN, pW, reach, W / 2, H / 2, ew) end
-            end
-        end
+        ForEachShown(function(a) n = DrawArea(a, n, pN, pW, reach, W / 2, H / 2, ew) end)
     end
     for i = n + 1, shownLines do lines[i]:Hide() end
     shownLines = n

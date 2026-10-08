@@ -155,6 +155,12 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 ### Schnellbefehle
 - Auf der Hauptseite („Quick commands“): alle Slash-Befehle mit Beschreibung. Eigene Zeilenvorlage `RunewayCommandRowTemplate` (`Options.xml`, erbt `SettingsListElementTemplate`): Befehl links, Beschreibung rechts. Der frühere Bedienhinweis oben auf der entsperrten Karte ist entfernt.
 
+### Mouse-over: Tooltips und Hervorhebung
+- Funktioniert auch auf der gesperrten, klickdurchlässigen Karte: Die Cursorposition wird pro Update abgefragt (`view:IsMouseOver`, `GetCursorPosition`), keine Mausereignisse. Nur innerhalb des sichtbaren Ovals und nur, wenn kein anderer Frame darüber liegt (`GetMouseFoci`: WorldFrame, die Karte selbst oder UIParent).
+- Reihenfolge: Spielerpfeil, Leichnam, Questmarker, dann Questbereiche. Marker unter dem Cursor werden um 30 % vergrößert; Questbereiche werden breiter, heller und voll deckend gezeichnet.
+- Tooltips wie auf der Minimap: Questtitel (gelb) und Ziele (`C_QuestLog.GetQuestObjectives`, erledigte grau), bei überlappenden Bereichen alle betroffenen Quests untereinander. Leichnam: Blizzards Text `CORPSE_RED`. Der Spielerpfeil hat keinen Tooltip.
+- Trefferprüfung Questbereich: Punkt-in-Polygon (gerade/ungerade über alle Umrisse) in Weltkoordinaten (`ns.QuestAreasAt`), gleiche Auswahl wie beim Zeichnen (`ForEachShown`, inkl. Option „Combine overlapping quest areas“).
+
 ### Lokalisierung
 - **Quelle:** `Runeway_Strings.md` enthält alle sichtbaren Texte mit Schlüssel, Englisch und Deutsch (von Mario abgestimmt). `python scripts/make_locales.py` erzeugt daraus `Runeway/Locales/enUS.lua` und `deDE.lua` – nicht von Hand ändern, sondern die Liste pflegen und neu erzeugen.
 - **Laufzeit:** `enUS.lua` legt `ns.L` mit allen englischen Texten an; jede weitere Sprachdatei prüft `GetLocale()` und überschreibt nur ihre Schlüssel. Fehlt ein Schlüssel, bleibt der englische Text. Code verwendet nur `L.KEY`.

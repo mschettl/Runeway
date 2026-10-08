@@ -598,10 +598,11 @@ local function ApplyBindings()
             SetOverrideBinding(bindOwner, true, key, "RUNEWAY_TOGGLE")
             mapKeys[#mapKeys + 1] = key
         end
-        -- the world map moves to the keys of RUNEWAY_WORLDMAP, run through Blizzard's own command
-        for _, key in ipairs({ GetBindingKey("RUNEWAY_WORLDMAP") }) do
-            SetOverrideBinding(bindOwner, true, key, "TOGGLEWORLDMAP")
-        end
+    end
+    -- keys of RUNEWAY_WORLDMAP always run Blizzard's own command (calling ToggleWorldMap from addon code
+    -- would taint the panel system)
+    for _, key in ipairs({ GetBindingKey("RUNEWAY_WORLDMAP") }) do
+        SetOverrideBinding(bindOwner, true, key, "TOGGLEWORLDMAP")
     end
     binding = false
 end
@@ -667,7 +668,7 @@ end
 ---------------------------------------------------------------------------
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
-ev:SetScript("OnEvent", function(self, event, arg1)
+ev:SetScript("OnEvent", function(self, event, arg1, ...)
     if event == "ADDON_LOADED" then
         if arg1 ~= ADDON then return end
         RunewayDB = RunewayDB or {}
@@ -694,6 +695,8 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         self:RegisterEvent("PLAYER_REGEN_DISABLED")
         self:RegisterEvent("PLAYER_REGEN_ENABLED")
         self:RegisterEvent("UPDATE_BINDINGS")
+        self:RegisterEvent("ADDON_ACTION_BLOCKED")
+        self:RegisterEvent("ADDON_ACTION_FORBIDDEN")
     elseif event == "UPDATE_BINDINGS" then
         -- key bindings (re)loaded or changed by the player: take the map key over again
         if not binding then ApplyBindings() end
@@ -703,6 +706,10 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         ApplyBindings()
         UpdateVisibility()
         RefreshQuests()
+    elseif event == "ADDON_ACTION_BLOCKED" or event == "ADDON_ACTION_FORBIDDEN" then
+        -- taint diagnostics: name the protected function the game blocked under our name
+        local func = ...                       -- payload: addon name, function name
+        if arg1 == ADDON then Print(("%s: %s"):format(event, tostring(func))) end
     elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
         if bindPending and event == "PLAYER_REGEN_ENABLED" then ApplyBindings() end
         UpdateVisibility()

@@ -123,7 +123,8 @@ L.execute('''
     check("mapkey: re-applied on UPDATE_BINDINGS", BINDINGS.M == "RUNEWAY_TOGGLE")
     SlashCmdList.RUNEWAY("keys")
     SlashCmdList.RUNEWAY("mode key")
-    check("key mode: no override bindings", next(BINDINGS) == nil)
+    check("key mode: M stays the world map", BINDINGS.M == nil)
+    check("key mode: world map binding via TOGGLEWORLDMAP", BINDINGS["SHIFT-M"] == "TOGGLEWORLDMAP")
     -- mouse wheel works locked, shift+wheel size only unlocked
     SlashCmdList.RUNEWAY("lock")
     local z = db.zoom

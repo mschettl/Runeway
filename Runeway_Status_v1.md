@@ -378,9 +378,11 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
 | Etappe | Gebiete | Stand |
 |---|---|---|
 | 1 | Tirisfal Glades, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains | im Spiel getestet (1.2) |
-| 2 (Norden) | Eastern Plaguelands, The Hinterlands, Arathi Highlands, Gilneas, Ruins of Gilneas | gebaut (285 Kacheln, 28,2 MB, 3,3 min, 2,3 GB RAM), im Spiel offen |
-| 3 (Mitte) | Wetlands, Dun Morogh, Loch Modan, Searing Gorge, Badlands, Burning Steppes, Riverglades | gebaut (Etappen 1–3: 499 Kacheln, 50,2 MB, 5,9 min, 3,2 GB RAM), im Spiel offen |
-| 4 (Süden) | Elwynn Forest, Stormwind City, Westfall, Redridge Mountains, Duskwood, Deadwind Pass, Swamp of Sorrows, Blasted Lands, Stranglethorn Vale, Gillijim's Isle | gebaut (alle 27 Gebiete: 692 Kacheln, 69,7 MB, 8,7 min, 4,7 GB RAM), im Spiel offen |
+| 2 (Norden) | Eastern Plaguelands, The Hinterlands, Arathi Highlands, Gilneas, Ruins of Gilneas | gebaut (285 Kacheln, 28,2 MB, 3,3 min, 2,3 GB RAM), im Spiel per Ansichtsmodus geprüft |
+| 3 (Mitte) | Wetlands, Dun Morogh, Loch Modan, Searing Gorge, Badlands, Burning Steppes, Riverglades | gebaut (Etappen 1–3: 499 Kacheln, 50,2 MB, 5,9 min, 3,2 GB RAM), im Spiel per Ansichtsmodus geprüft |
+| 4 (Süden) | Elwynn Forest, Stormwind City, Westfall, Redridge Mountains, Duskwood, Deadwind Pass, Swamp of Sorrows, Blasted Lands, Stranglethorn Vale, Gillijim's Isle | gebaut (alle 27 Gebiete: 692 Kacheln, 69,7 MB, 8,7 min, 4,7 GB RAM), im Spiel per Ansichtsmodus geprüft |
+
+**Test Etappen 2–4:** Mit Stufe-10-Charakter über den Ansichtsmodus (`/rnw view`) geprüft, Ergebnis insgesamt positiv; Verschieben per Ziehen funktioniert. Nicht vor Ort geprüft: Questbereiche und Ladezeiten beim Laufen in diesen Gebieten.
 
 **Im Spiel prüfen (Etappe 2):** Übergänge Western Plaguelands ↔ Eastern Plaguelands, Hillsbrad ↔ Arathi, Arathi ↔ Hinterlands, Silverpine ↔ Gilneas; Dimmung beim Grenzübertritt; Küste im Norden der Eastern Plaguelands (weicher Rand statt Schraffur auf offenem Meer); Ladezeiten.
 

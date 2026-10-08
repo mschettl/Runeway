@@ -158,6 +158,14 @@ L.execute('''
     check("/rnw config opens category", OPENED == 77)
     local kinds = {}
     for _, i in ipairs(INITS) do kinds[i.kind] = (kinds[i.kind] or 0) + 1 end
+    POS[1] = 1917.6                -- position back (cleared by the "no position" test above)
+    STATE.dead = true
+    view:GetScript("OnUpdate")(view, 0.05)
+    local co = TEXTURE_OBJECTS[("Interface/Minimap/POIIcons"):gsub("/", string.char(92))]
+    local corpseShown = co:IsShown()
+    STATE.dead = false
+    view:GetScript("OnUpdate")(view, 0.05)
+    check("corpse marker while dead", corpseShown and not TEXTURE_OBJECTS[("Interface/Minimap/POIIcons"):gsub("/", string.char(92))]:IsShown())
     local za = NS.ZoneAlpha()
     check("zones: Tirisfal full, Silverpine dimmed", za[1] == 1 and math.abs(za[2] - db.zoneDim) < 0.02)
     check("settings rows: 5 headers, 2 bindings, 7 layers",

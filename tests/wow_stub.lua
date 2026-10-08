@@ -1,5 +1,6 @@
 -- Minimal WoW API stub to load and exercise the addon outside the game (lupa / Lua 5.x)
 unpack = unpack or table.unpack
+TEXTURE_OBJECTS = {}            -- [file] = last texture object it was set on
 local function obj(name)
     local o = { _name = name, _shown = false, _scripts = {} }
     return setmetatable(o, { __index = function(t, k)
@@ -9,7 +10,8 @@ local function obj(name)
         if k == "SetShown" then return function(self, v) self._shown = not not v end end
         if k == "SetScript" then return function(self, s, f) self._scripts[s] = f end end
         if k == "GetScript" then return function(self, s) return self._scripts[s] end end
-        if k == "SetTexture" then return function(self, p) self._tex = p; self._loadIn = LOAD_FRAMES; TEXTURES[#TEXTURES + 1] = p end end
+        if k == "SetTexture" then return function(self, p) self._tex = p; self._loadIn = LOAD_FRAMES; TEXTURES[#TEXTURES + 1] = p
+            if p then TEXTURE_OBJECTS[p] = self end end end
         if k == "IsObjectLoaded" then return function(self)
             self._loadIn = (self._loadIn or 0) - 1
             return self._loadIn < 0
@@ -101,7 +103,10 @@ C_Map.GetWorldPosFromMapPos = function(m, v) return 0, { x = 3000 - v.y * 4000, 
 function date() return "2026-10-07" end
 -- 3.4: visibility, bindings, settings
 function GetTime() return clock end
-STATE = { combat = false, instance = false, mounted = false, resting = false }
+STATE = { combat = false, instance = false, mounted = false, resting = false, dead = false }
+function UnitIsDeadOrGhost() return STATE.dead end
+C_DeathInfo = { GetCorpseMapPosition = function(m)
+    if m == 1420 then return { GetXY = function() return 0.42, 0.61 end } end end }
 function UnitAffectingCombat() return STATE.combat end
 function IsInInstance() return STATE.instance, STATE.instance and "party" or "none" end
 function IsMounted() return STATE.mounted end

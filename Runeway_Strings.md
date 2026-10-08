@@ -1,0 +1,125 @@
+# Runeway – sichtbare Texte (Basis für die Lokalisierung)
+
+Alle Texte, die der Spieler sieht. Spalte „Englisch“ ist der aktuelle Text im Code (Quellsprache), „Deutsch“ ist ein Vorschlag zum Überarbeiten. Der Schlüssel wird später im Code verwendet (`L.KEY`); er bleibt in allen Sprachen gleich.
+
+Nicht übersetzt werden: der Addon-Name „Runeway“, Slash-Befehle und ihre Argumente (`/rnw config`, `mode mapkey` …), Ebenen-Namen in Befehlen (`fill`, `hatch` …) sowie reine Entwickler-Ausgaben (Abschnitt 6).
+
+## WoW-Client-Sprachen (`GetLocale()`)
+
+| Code | Sprache | Hinweis |
+|---|---|---|
+| `enUS` | Englisch | auch für englische EU-Clients (es gibt kein eigenes `enGB`) |
+| `deDE` | Deutsch | |
+| `frFR` | Französisch | |
+| `esES` | Spanisch (Europa) | |
+| `esMX` | Spanisch (Lateinamerika) | |
+| `itIT` | Italienisch | |
+| `ptBR` | Portugiesisch (Brasilien) | auch für portugiesische EU-Clients (`ptPT` meldet `ptBR`) |
+| `ruRU` | Russisch | |
+| `koKR` | Koreanisch | eigene Schrift; Texte werden länger/kürzer, Layout prüfen |
+| `zhCN` | Chinesisch (vereinfacht) | eigene Schrift |
+| `zhTW` | Chinesisch (traditionell) | eigene Schrift |
+
+Ob WoW Forever alle Sprachen ausliefert, ist im Client zu prüfen; der Code fällt für unbekannte Sprachen auf Englisch zurück.
+
+## 1. Optionen – Abschnitte
+
+| Schlüssel | Englisch | Deutsch (Vorschlag) |
+|---|---|---|
+| `HEADER_OPEN` | Open with | Öffnen mit |
+| `HEADER_AUTOHIDE` | Hide automatically | Automatisch ausblenden |
+| `HEADER_WINDOW` | Window | Fenster |
+| `HEADER_DISPLAY` | Display | Darstellung |
+| `HEADER_LAYERS` | Layers | Ebenen |
+
+## 2. Optionen – Öffnen mit
+
+| Schlüssel | Englisch | Deutsch (Vorschlag) |
+|---|---|---|
+| `OPEN_WITH` | Open with | Öffnen mit |
+| `MODE_KEY` | Own key | Eigene Taste |
+| `MODE_KEY_TIP` | Overlay on its own key binding (Toggle overlay map). The map key stays the world map. | Overlay auf eigener Tastenbelegung („Overlay-Karte ein/aus“). Die Kartentaste bleibt die Weltkarte. |
+| `MODE_MAPKEY` | Map key (M) | Kartentaste (M) |
+| `MODE_MAPKEY_TIP` | The world map key opens the overlay. The world map moves to the key bound to "World map". | Die Weltkarten-Taste öffnet das Overlay. Die Weltkarte liegt dann auf der Taste der Belegung „Weltkarte“. |
+| `MODE_PERMANENT` | Permanent | Dauerhaft |
+| `MODE_PERMANENT_TIP` | The overlay is always shown (except when auto-hidden). | Das Overlay ist immer sichtbar (außer beim automatischen Ausblenden). |
+
+## 3. Optionen – Automatisch ausblenden, Fenster, Darstellung
+
+| Schlüssel | Englisch | Deutsch (Vorschlag) |
+|---|---|---|
+| `HIDE_COMBAT` | In combat | Im Kampf |
+| `HIDE_INSTANCE` | In instances | In Instanzen |
+| `HIDE_MOUNTED` | Mounted, flying or on a taxi | Beritten, fliegend oder auf Flugroute |
+| `HIDE_CITY` | In cities and inns (resting) | In Städten und Gasthäusern (erholt) |
+| `ROTATE` | Rotate with the player | Mit dem Spieler drehen |
+| `LOCKED` | Locked (clicks pass through) | Gesperrt (Klicks gehen durch) |
+| `LOCKED_TIP` | Unlocked: drag to move, corner grip to resize. The mouse wheel zooms in both states. | Entsperrt: ziehen zum Verschieben, Ecke zum Vergrößern. Das Mausrad zoomt in beiden Zuständen. |
+| `HOVER` | Frame on mouse-over (unlocked) | Rahmen bei Mauskontakt (entsperrt) |
+| `SIZE` | Size | Größe |
+| `OVERLAY` | Overlay | Overlay |
+| `SHOW_HIDE` | Show / hide | Ein / aus |
+| `MAP_OPACITY` | Map opacity | Kartendeckkraft |
+| `ZOOM` | Zoom | Zoom |
+| `NEIGHBOUR_ZONES` | Neighbouring zones | Angrenzende Zonen |
+| `NEIGHBOUR_ZONES_TIP` | Opacity of the neighbouring zones, relative to the zone you are in. | Deckkraft der angrenzenden Zonen, bezogen auf die Zone, in der du bist. |
+| `SOFT_EDGE` | Soft edge | Weicher Rand |
+| `PLAYER_ARROW` | Player arrow | Spielerpfeil |
+| `QUEST_MARKS` | Quest marks | Questmarker |
+| `QUEST_EDGE` | Quest area edge | Questbereich-Rand |
+| `QUEST_MERGE` | Combine overlapping quest areas | Überlappende Questbereiche zusammenfassen |
+| `QUEST_MERGE_TIP` | Quests whose areas overlap get one shared outline. Off: every quest keeps its own outline. | Quests mit überlappenden Bereichen erhalten einen gemeinsamen Umriss. Aus: jede Quest behält ihren eigenen Umriss. |
+
+Werte-Formate (bleiben meist gleich): `%d px`, `%d %%`, `%.2f`, `%.2f x`.
+
+## 4. Optionen – Ebenen
+
+Je Ebene drei Texte: Name (Häkchen), „… opacity“ (Regler, nur Suche/Tooltip) und „… colour“ (Farbzeile).
+
+| Schlüssel | Englisch | Deutsch (Vorschlag) |
+|---|---|---|
+| `LAYER_FILL` | Walkable area | Begehbare Fläche |
+| `LAYER_HATCH` | Not walkable (hatching) | Nicht begehbar (Schraffur) |
+| `LAYER_SHADE` | Dark edge | Dunkle Kante |
+| `LAYER_TERRAIN` | Terrain lines | Geländelinien |
+| `LAYER_WATER` | Water lines | Wasserlinien |
+| `LAYER_ROADS` | Roads | Wege |
+| `LAYER_QUESTAREAS` | Quest areas | Questbereiche |
+| `LAYER_OPACITY` | %s opacity | %s – Deckkraft |
+| `LAYER_COLOUR` | %s colour | %s – Farbe |
+
+## 5. Tastenbelegung, Karte, Chat
+
+| Schlüssel | Wo | Englisch | Deutsch (Vorschlag) |
+|---|---|---|---|
+| `BINDING_TOGGLE` | Tastenbelegung | Toggle overlay map | Overlay-Karte ein/aus |
+| `BINDING_WORLDMAP` | Tastenbelegung | World map (map key mode) | Weltkarte (Modus Kartentaste) |
+| `WORLDMAP_BUTTON` | Knopf auf der Weltkarte | Overlay | Overlay |
+| `EDIT_HINT` | Karte entsperrt, Mausüberfahrt | Drag = move \| Wheel = zoom \| Corner or Shift+wheel = size \| /rnw config | Ziehen = verschieben \| Mausrad = zoomen \| Ecke oder Shift+Mausrad = Größe \| /rnw config |
+| `NO_POSITION` | Statuszeile der Karte | No position (instance?) | Keine Position (Instanz?) |
+| `NO_DATA` | Statuszeile der Karte | No contours for this area yet | Für dieses Gebiet gibt es noch keine Karte |
+| `NO_MASKS` | Chat beim Laden | Note: this client does not support mask textures, the edge is clipped hard. | Hinweis: Dieser Client unterstützt keine Maskentexturen, der Rand wird hart abgeschnitten. |
+| `MSG_LOCKED` | Chat `/rnw lock` | locked (clicks pass through) | gesperrt (Klicks gehen durch) |
+| `MSG_UNLOCKED` | Chat `/rnw unlock` | unlocked | entsperrt |
+| `MSG_OPACITY` | Chat `/rnw alpha` | Opacity %d %% | Deckkraft %d %% |
+| `MSG_ZOOM` | Chat `/rnw zoom` | Zoom %.2f | Zoom %.2f |
+| `MSG_SIZE` | Chat `/rnw size` | Size %d x %d | Größe %d x %d |
+| `MSG_ROTATE_ON` | Chat `/rnw rotate` | map rotates with the player | Karte dreht mit dem Spieler |
+| `MSG_ROTATE_OFF` | Chat `/rnw rotate` | north up | Norden oben |
+| `MSG_EDGE` | Chat `/rnw edge` | Soft edge %d | Weicher Rand %d |
+| `MSG_MODE` | Chat `/rnw mode` | mode %s | Modus %s |
+| `MSG_LAYER_SHOWN` | Chat `/rnw layer` | %s shown | %s eingeblendet |
+| `MSG_LAYER_HIDDEN` | Chat `/rnw layer` | %s hidden | %s ausgeblendet |
+| `MSG_COLOUR` | Chat `/rnw color` | %s colour %.2f %.2f %.2f, opacity %.2f | %s Farbe %.2f %.2f %.2f, Deckkraft %.2f |
+| `MSG_RESET` | Chat `/rnw reset` | settings reset | Einstellungen zurückgesetzt |
+| `USAGE_COLOR` | Chat, Hilfe | /rnw color fill\|hatch\|shade\|terrain\|water\|roads\|questareas R G B [A]   (0-1) | (Befehl bleibt, nur ggf. „(0-1)“) |
+| `USAGE` | Chat, Hilfe | /rnw [toggle] \| config \| lock \| unlock \| alpha 5-100 \| zoom 0.08-5 \| size N \| rotate \| edge 1-5 \| mode key\|mapkey\|permanent \| layer NAME \| color NAME R G B [A] \| keys \| pos \| reset | (Befehle bleiben englisch) |
+
+Der Leichnam-Marker hat keinen eigenen Text; das Symbol stammt aus dem Spiel.
+
+## 6. Entwickler-Ausgaben (bleiben Englisch)
+
+- `/rnw keys`: „mode %s, world map key %s“, „TOGGLEWORLDMAP keys: …“, „%s -> %s (without overrides: %s)“
+- Taint-Diagnose: „ADDON_ACTION_BLOCKED: %s“ / „ADDON_ACTION_FORBIDDEN: %s“
+- `/rnw probe`: „probe is a dev tool (tools/Probe.lua), not loaded“ und alle Ausgaben von `tools/Probe.lua`
+- `/rnw pos`: Positionszeile zum Kopieren

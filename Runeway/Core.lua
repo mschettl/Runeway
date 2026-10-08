@@ -33,7 +33,7 @@ local defaults = {
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
     arrowSize = 25, pinSize = 25, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
     questMerge = true,       -- overlapping quest areas as one combined outline
-    zoneDim = 0.4,           -- opacity factor of the zones the player is not in
+    zoneDim = 0.3,           -- opacity factor of the neighbouring zones (the player is not in)
     colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,
         fill    = { r = 0, g = 0, b = 0, a = 0.10 },              -- roads #EBB748, quest areas #73C7FF
         hatch   = { r = 0xCC / 255, g = 0xD6 / 255, b = 0xE0 / 255, a = 0.20 },
@@ -483,6 +483,50 @@ local function SetAtlasOr(t, atlas, file)
     if not ok or res == false then t:SetTexture(file) end
 end
 
+-- Corpse marker while dead (ghost): Blizzard's world map corpse icon. The corpse is looked up on the
+-- player's map, then on its parent maps (the graveyard can be in another zone); when it is outside the
+-- view, the marker sits on the edge in its direction.
+local corpse = top:CreateTexture(nil, "OVERLAY", nil, 2)
+corpse:SetTexture("Interface\\Minimap\\POIIcons")
+corpse:SetTexCoord(0.56640625, 0.6328125, 0.001953125, 0.03515625)
+NoSnap(corpse)
+corpse:Hide()
+local corpseN, corpseW, corpseCheck = nil, nil, 0
+
+local function FindCorpse()
+    if not (C_DeathInfo and C_DeathInfo.GetCorpseMapPosition) then return end
+    local m = C_Map.GetBestMapForUnit("player")
+    while m and m > 0 do
+        local pos = C_DeathInfo.GetCorpseMapPosition(m)
+        if pos then return MapToWorld(m, pos:GetXY()) end
+        local info = C_Map.GetMapInfo(m)
+        m = info and info.parentMapID
+    end
+end
+
+local function UpdateCorpse()
+    if not UnitIsDeadOrGhost("player") then
+        corpseN = nil
+        corpse:Hide()
+        return
+    end
+    local now = GetTime()
+    if not corpseN and now >= corpseCheck then   -- the position is known shortly after releasing
+        corpseCheck = now + 1
+        corpseN, corpseW = FindCorpse()
+    end
+    if not corpseN then corpse:Hide() return end
+    local x, y = ToScreen(corpseN, corpseW)
+    local W, H = view:GetSize()
+    local edge = math.min(W, H) / 2 - db.pinSize                -- keep the whole icon inside the round map
+    local d = math.sqrt(x * x + y * y)
+    if d > edge then x, y = x * edge / d, y * edge / d end
+    corpse:SetSize(db.pinSize, db.pinSize)
+    corpse:ClearAllPoints()
+    corpse:SetPoint("CENTER", view, "CENTER", x, y)
+    corpse:Show()
+end
+
 local function UpdateQuestPins()
     local n = 0
     for _, q in ipairs(quests) do
@@ -554,6 +598,7 @@ view:SetScript("OnUpdate", function(self, e)
         status:SetText("No contours for this area yet")
     end
     UpdateQuestPins()
+    UpdateCorpse()
     if ns.DrawQuestAreas then ns.DrawQuestAreas() end
 end)
 

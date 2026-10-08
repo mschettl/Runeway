@@ -99,7 +99,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `edge` | 3 (Randstärke 1–5, Breite 0,12 / 0,25 / 0,38 / 0,55 / 0,75 des Radius) |
 | `arrowSize`, `pinSize`, `corpseSize`, `questEdge` | 25, 25, 25, 0.8 (Faktor für die Breite der Questränder) |
 | `questMerge` | true: überlappende Questbereiche bekommen einen gemeinsamen Umriss |
-| `zoneDim` | 0.3: Deckkraft-Faktor der angrenzenden Zonen (Option „Neighbouring zones“) |
+| `zoneDim` | 0.3: Deckkraft-Faktor der angrenzenden Zonen (Option „Adjacent zones opacity“) |
 | `questAreaCache` | `[mapID] = { areas, groups }`, Version über `questAreaCacheVersion` (2) |
 | `style` | 6. Migrationszähler: setzt bei Stiländerungen einzelne Farben einmalig zurück (siehe `ADDON_LOADED` in `Core.lua`) |
 
@@ -292,7 +292,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 | 3.3 Questgebiete | **erledigt**, über das Abtasten statt DB2 (die Tabellen sind leer) |
 | 3.4 Konfigurationsoberfläche und Bedienung | **erledigt** in 1.1, im Spiel getestet |
 | 3.5 Abschluss (Lua-Prüfung, Simulation, Version 1.0, ZIP) | **erledigt** (Tests mit Lua 5.1, `simulate.py`, Release-ZIP) |
-| Zusätzlich | Diablo-IV-Stil, quadratische runde Karte, nahtloser Zoom, Ruinen von Lordaeron, Questmarker im Weltkarten-Stil |
+| Zusätzlich | Diablo-IV-Stil, frei skalierbare ovale Karte, nahtloser Zoom, Ruinen von Lordaeron, Questmarker im Weltkarten-Stil |
 
 ---
 
@@ -435,7 +435,7 @@ cd <repo> && zip -r build/Runeway-1.2.zip Runeway
 5. **Questbereiche Nachbarzone:** In Tirisfal nahe der Grenze eine Quest aus Silverpine im Log haben: Ihr Bereich erscheint (nach etwa 1 s), auch wenn man noch in Tirisfal steht. Beim Herauszoomen kommen weitere Zonen hinzu.
 6. **Questmarker Nachbarzone:** Abgabe-Marker einer Quest der Nachbarzone erscheint, ohne doppelt zu sein.
 7. **Grenzüberschreitender Bereich:** Ein Bereich über die Zonengrenze wird nicht an der Grenze abgeschnitten und nicht doppelt gezeichnet.
-8. **Zonen-Dimmung:** In Tirisfal ist Tirisfal voll, die Nachbarzonen gedimmt („Other zones“, Standard 30 %). Beim Überschreiten der Grenze tauschen die Zonen weich (~0,4 s). Kein Flackern direkt auf der Grenze, keine sichtbaren Kachelkanten im Übergang.
+8. **Zonen-Dimmung:** In Tirisfal ist Tirisfal voll, die Nachbarzonen gedimmt („Adjacent zones opacity“, Standard 30 %). Beim Überschreiten der Grenze tauschen die Zonen weich (~0,4 s). Kein Flackern direkt auf der Grenze, keine sichtbaren Kachelkanten im Übergang.
 9. **Wege, Standardwerte, Kombinieren-Option:** Wege glatt und gleich breit wie Geländelinien; „Standard“ setzt die neuen Werte; „Combine overlapping quest areas“ aus → jede Quest eigener Umriss.
 10. **Leichnam:** Sterben, Geist freigeben: der Leichnam ist auf der Karte markiert, außerhalb des Sichtfelds am Rand in seiner Richtung; nach der Wiederbelebung verschwindet der Marker.
 

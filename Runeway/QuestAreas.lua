@@ -580,8 +580,6 @@ local function GetLine(i)
     return l
 end
 
-function ns.ApplyQuestAreaColor() end      -- colours are set per segment in DrawArea
-
 function ns.HideQuestAreas()
     for i = 1, shownLines do lines[i]:Hide() end
     shownLines = 0

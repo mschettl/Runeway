@@ -3,6 +3,7 @@
 local ADDON, ns = ...
 local L = {}
 ns.L = L
+L.VERSION = "Version %s"
 L.INTRO = "Runeway shows a player-centred, rotating overlay map: walkable areas, terrain and water lines, roads, and the quest areas of your current and adjacent zones. Open it with its own key, the map key or permanently. All settings are in the sub-entries on the left."
 L.MAP_SHOW = "Show map"
 L.MAP_HIDE = "Hide map"
@@ -78,6 +79,7 @@ L.LAYER_COLOUR = "%s colour"
 L.BINDING_TOGGLE = "Toggle overlay map"
 L.BINDING_WORLDMAP = "World map (map key mode)"
 L.WORLDMAP_BUTTON = "Overlay"
+L.LOADED = "v%s loaded."
 L.NO_POSITION = "No position (instance?)"
 L.NO_DATA = "No contours for this area yet"
 L.NO_MASKS = "Note: this client does not support mask textures, the edge is clipped hard."

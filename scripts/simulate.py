@@ -21,7 +21,9 @@ OUT = sys.argv[4] if len(sys.argv) > 4 else os.path.join(ROOT, 'build', 'sim.png
 
 FILE_LOD = dict(fill={128: 128, 256: 128, 512: 128}, shade={128: 128, 256: 256, 512: 256})   # as in Core.lua
 HATCH_MASK_LOD = 256
-tiles = dict(re.findall(r'\["(\d+_\d+)"\] = "(\w+)"', open(os.path.join(ROOT, 'Runeway', 'Tiles.lua')).read()))
+# tile keys: "c_r", or "c_r_z<zone>" for the zone parts of a border tile (RunewayZones is not needed here)
+lua = open(os.path.join(ROOT, 'Runeway', 'Tiles.lua')).read().split('RunewayZones')[0]
+tiles = dict(re.findall(r'\["(\d+_\d+(?:_z\d+)?)"\] = "(\w+)"', lua))
 
 
 def render(facing):
@@ -35,7 +37,7 @@ def render(facing):
         for key, have in tiles.items():
             if layer[0] not in have:
                 continue
-            c, r = map(int, key.split('_'))
+            c, r = map(int, key.split('_')[:2])
             cn = (32 - r) * T - T / 2
             cw = (32 - c) * T - T / 2
             sx, sy = -(cw - pW) * k, (cn - pN) * k

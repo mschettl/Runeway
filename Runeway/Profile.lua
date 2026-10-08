@@ -23,8 +23,8 @@ local function Paths()
     return out
 end
 
-local function Get(path)
-    local t = ns.db()
+-- Value at a dotted path such as "colors.fill.a" (also used by Options.lua)
+function ns.GetPath(t, path)
     for part in path:gmatch("[^.]+") do
         if type(t) ~= "table" then return nil end
         t = t[part]
@@ -32,8 +32,8 @@ local function Get(path)
     return t
 end
 
-local function Set(path, v)
-    local t, last = ns.db(), path:match("([^.]+)$")
+function ns.SetPath(t, path, v)
+    local last = path:match("([^.]+)$")
     for part in path:gmatch("([^.]+)%.") do
         if type(t[part]) ~= "table" then t[part] = {} end
         t = t[part]
@@ -47,7 +47,7 @@ function ns.ExportProfile()
     table.sort(keys)
     local parts = { HEADER }
     for _, path in ipairs(keys) do
-        local v = Get(path)
+        local v = ns.GetPath(ns.db(), path)
         if type(v) == "number" then
             parts[#parts + 1] = ("%s=%.17g"):format(path, v)   -- exact round trip
         elseif type(v) == "boolean" or type(v) == "string" then
@@ -78,7 +78,7 @@ function ns.ImportProfile(text)
     end
     local n = 0
     for path, v in pairs(values) do
-        Set(path, v)
+        ns.SetPath(ns.db(), path, v)
         n = n + 1
     end
     if n == 0 then return nil end

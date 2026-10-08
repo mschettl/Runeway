@@ -2,6 +2,7 @@
 if GetLocale() ~= "deDE" then return end
 local ADDON, ns = ...
 local L = ns.L
+L.VERSION = "Version %s"
 L.INTRO = "Runeway zeigt eine spielerzentrierte, mitdrehende Overlay-Karte: begehbare Bereiche, Gelände- und Wasserlinien, Wege sowie die Questbereiche deiner aktuellen und der angrenzenden Zonen. Öffnen lässt sie sich über eine eigene Taste, die Kartentaste oder dauerhaft. Alle Einstellungen findest du in den Unterpunkten links."
 L.MAP_SHOW = "Karte einblenden"
 L.MAP_HIDE = "Karte ausblenden"
@@ -77,6 +78,7 @@ L.LAYER_COLOUR = "%s – Farbe"
 L.BINDING_TOGGLE = "Overlay-Karte ein/aus"
 L.BINDING_WORLDMAP = "Weltkarte (Modus Kartentaste)"
 L.WORLDMAP_BUTTON = "Overlay"
+L.LOADED = "v%s geladen."
 L.NO_POSITION = "Keine Position (Instanz?)"
 L.NO_DATA = "Für dieses Gebiet gibt es noch keine Karte"
 L.NO_MASKS = "Hinweis: Dieser Client unterstützt keine Maskentexturen, der Rand wird hart abgeschnitten."

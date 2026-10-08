@@ -28,6 +28,7 @@ Stand: Englisch und Deutsch abgestimmt (Tabellen unten). Die übrigen neun Sprac
 
 | Schlüssel | Englisch | Deutsch |
 |---|---|---|
+| `VERSION` | Version %s | Version %s |
 | `INTRO` | Runeway shows a player-centred, rotating overlay map: walkable areas, terrain and water lines, roads, and the quest areas of your current and adjacent zones. Open it with its own key, the map key or permanently. All settings are in the sub-entries on the left. | Runeway zeigt eine spielerzentrierte, mitdrehende Overlay-Karte: begehbare Bereiche, Gelände- und Wasserlinien, Wege sowie die Questbereiche deiner aktuellen und der angrenzenden Zonen. Öffnen lässt sie sich über eine eigene Taste, die Kartentaste oder dauerhaft. Alle Einstellungen findest du in den Unterpunkten links. |
 | `MAP_SHOW` | Show map | Karte einblenden |
 | `MAP_HIDE` | Hide map | Karte ausblenden |
@@ -139,6 +140,7 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `BINDING_TOGGLE` | Tastenbelegung | Toggle overlay map | Overlay-Karte ein/aus |
 | `BINDING_WORLDMAP` | Tastenbelegung | World map (map key mode) | Weltkarte (Modus Kartentaste) |
 | `WORLDMAP_BUTTON` | Knopf auf der Weltkarte | Overlay | Overlay |
+| `LOADED` | Chat beim Login | v%s loaded. | v%s geladen. |
 | `NO_POSITION` | Statuszeile der Karte | No position (instance?) | Keine Position (Instanz?) |
 | `NO_DATA` | Statuszeile der Karte | No contours for this area yet | Für dieses Gebiet gibt es noch keine Karte |
 | `NO_MASKS` | Chat beim Laden | Note: this client does not support mask textures, the edge is clipped hard. | Hinweis: Dieser Client unterstützt keine Maskentexturen, der Rand wird hart abgeschnitten. |

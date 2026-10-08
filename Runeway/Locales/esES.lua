@@ -94,3 +94,5 @@ L.PROFILE_EXPORT_HINT = "Copia el texto con Ctrl+C y guárdalo en un lugar segur
 L.PROFILE_IMPORT_HINT = "Pega un texto de perfil con Ctrl+V y haz clic en Importar. Todos los ajustes actuales se sustituyen."
 L.PROFILE_IMPORTED = "Perfil importado (%d ajustes)."
 L.PROFILE_INVALID = "No es un perfil de Runeway válido."
+L.LOADED = "v%s cargado."
+L.VERSION = "Versión %s"

@@ -19,7 +19,7 @@ end })''')
 LOCALES = ['Runeway/Locales/enUS.lua'] + sorted(f'Runeway/Locales/{os.path.basename(p)}' for p in glob.glob(os.path.join(ROOT, 'Runeway', 'Locales', '*.lua')) if not p.endswith('enUS.lua'))
 L.execute('LOCALE = ...', os.environ.get('RUNEWAY_LOCALE', 'enUS'))   # client language for this run
 L.execute('TOC_VERSION = ...', re.search(r'## Version: (\S+)', open(os.path.join(ROOT, 'Runeway', 'Runeway.toc')).read())[1])
-for f in (*LOCALES, 'Runeway/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Profile.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
+for f in (*LOCALES, 'Runeway/tiles/0/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Profile.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
     src = open(os.path.join(ROOT, f), encoding='utf8').read()
     L.execute('NS = NS or {}; local f = assert(loadstring(..., "@' + f + '")); f("Runeway", NS)', src)
 
@@ -190,12 +190,59 @@ L.execute('''
     check("corpse marker while dead", corpseShown and not TEXTURE_OBJECTS[("Interface/Minimap/POIIcons"):gsub("/", string.char(92))]:IsShown())
     local za = NS.ZoneAlpha()
     check("zones: Tirisfal full, Silverpine dimmed", za[1] == 1 and math.abs(za[2] - db.zoneDim) < 0.02)
+    -- zone numbers above 9 are letters in the chunk codes: stand in the first such chunk
+    local DIGITS = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    local zkey, zi, zch
+    for key, g in pairs(RunewayZones[0].chunks) do
+        local i = g:find("%a")
+        if i and (not zkey or key < zkey) then zkey, zi, zch = key, i, g:sub(i, i) end
+    end
+    local zc, zr = zkey:match("(%d+)_(%d+)")
+    local fr = zr + (math.floor((zi - 1) / 16) + 0.5) / 16
+    local fc = zc + ((zi - 1) % 16 + 0.5) / 16
+    local oldN, oldW = POS[1], POS[2]
+    POS[1], POS[2] = (32 - fr) * 1600 / 3, (32 - fc) * 1600 / 3
+    for _ = 1, 400 do debugprofilestop(); view:GetScript("OnUpdate")(view, 0.05) end
+    local zn = DIGITS:find(zch, 1, true)
+    za = NS.ZoneAlpha()
+    check("zones: zone " .. zn .. " (chunk code " .. zch .. ") active", zn > 9 and za[zn] == 1 and math.abs(za[1] - db.zoneDim) < 0.02)
+    POS[1], POS[2] = oldN, oldW
+    for _ = 1, 400 do debugprofilestop(); view:GetScript("OnUpdate")(view, 0.05) end
+    -- view mode: centre on a mapped zone far from the player, drag pans, empty argument returns
+    SlashCmdList.RUNEWAY("view westfall")
+    for _ = 1, 400 do debugprofilestop(); view:GetScript("OnUpdate")(view, 0.05) end
+    local vn, vw, vk = NS.Player()
+    local wz
+    for z, name in ipairs(RunewayZones[0].names) do if name == "Westfall" then wz = z end end
+    za = NS.ZoneAlpha()
+    check("view: centred on Westfall, Westfall active", vn < -8000 and za[wz] == 1 and math.abs(za[1] - db.zoneDim) < 0.02)
+    CURSOR[1], CURSOR[2] = 500, 400
+    view:GetScript("OnDragStart")(view)
+    CURSOR[1], CURSOR[2] = 600, 400
+    view:GetScript("OnUpdate")(view, 0.05)
+    view:GetScript("OnDragStop")(view)
+    local pn2, pw2 = NS.Player()
+    check("view: dragging right pans west", math.abs(pw2 - (vw + 100 / vk)) < 0.01 and math.abs(pn2 - vn) < 0.01)
+    SlashCmdList.RUNEWAY("view")
+    view:GetScript("OnUpdate")(view, 0.05)
+    check("view: back to the player", select(1, NS.Player()) == POS[1])
+    SlashCmdList.RUNEWAY("view")
+    CURSOR[1], CURSOR[2] = 500, 400
+    view:GetScript("OnDragStart")(view)
+    CURSOR[1], CURSOR[2] = 500, 500
+    view:GetScript("OnUpdate")(view, 0.05)
+    view:GetScript("OnDragStop")(view)
+    check("view: without a value starts at the player, drag up pans south", select(1, NS.Player()) < POS[1] - 1)
+    SlashCmdList.RUNEWAY("view")
+    view:GetScript("OnUpdate")(view, 0.05)
+    check("view: second /rnw view returns", select(1, NS.Player()) == POS[1])
+    for _ = 1, 400 do debugprofilestop(); view:GetScript("OnUpdate")(view, 0.05) end
     local tg = NS.ToggleButton
     EVENT_CALLBACKS["Settings.CategoryChanged"]({ GetID = function() return 1 end })
     local hiddenElsewhere = not tg:IsShown()
     EVENT_CALLBACKS["Settings.CategoryChanged"](SETTINGS_MAIN)
     check("show/hide button only on Runeway pages", hiddenElsewhere and tg:IsShown())
-    check("main page: version, intro, 14 quick commands (+ profile text)", kinds.element == 17 and INITS[1].data.text:find("1.4.1", 1, true) and INITS[2].data.text == NS.L.INTRO and INITS[4].data.desc ~= nil)
+    check("main page: version, intro, 15 quick commands (+ profile text)", kinds.element == 18 and INITS[1].data.text:find("1.5", 1, true) and INITS[2].data.text == NS.L.INTRO and INITS[4].data.desc ~= nil)
     check("settings rows: 1 header, 2 bindings, 7 layers",
         kinds.header == 1 and kinds.binding == 2 and kinds.layerrow == 7)
     local dropdown
@@ -288,8 +335,9 @@ L.execute('''
     view:GetScript("OnUpdate")(view, 0.05)
 ''')
 
-# optional WoW APIs the stub leaves out on purpose, and the SavedVariables table before the first login
-known = {'GetMouseFoci', 'GetMouseFocus', 'RunewayDB', 'CORPSE_RED'}
+# optional WoW APIs the stub leaves out on purpose, the SavedVariables table before the first login and the
+# tile tables the first map data file creates
+known = {'GetMouseFoci', 'GetMouseFocus', 'RunewayDB', 'CORPSE_RED', 'RunewayTiles', 'RunewayZones'}
 undefined = {k: v for k, v in L.eval('UNDEFINED_GLOBALS').items() if k not in known}
 print('undefined globals read:', (str(undefined) + '  FAIL') if undefined else 'none')
 # every referenced texture file must exist

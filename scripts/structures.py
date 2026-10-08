@@ -6,23 +6,23 @@ import csv
 import glob
 import math
 import struct
+from functools import lru_cache
 import numpy as np
 import cv2
-from raw_mosaic import SRC
 
-WORLD = os.path.join(SRC, '..', '..')              # 'Wow export files' (paths in the CSV start with ..\..\world)
 T = 1600 / 3
 ORIGIN = 32 * T                                     # placement position -> world: north = ORIGIN - z, west = ORIGIN - x
 WALL_BAND = (0.5, 2.5)                              # yd above the terrain: a steep face crossing this band blocks
 STEEP = 0.35                                        # |normal z| below this: wall
 M2_BLOCKERS = ('undercitytower',)                   # M2 doodads that block (name fragments); trees etc. stay walkable
+USED = {}                                           # placements used so far: ModelId -> description (build log)
 
 
-def placements(cols, rows):
+def placements(src, cols, rows):
     seen, out = set(), []
     for c in cols:
         for r in rows:
-            p = os.path.join(SRC, f'adt_{c}_{r}_ModelPlacementInformation.csv')
+            p = os.path.join(src, f'adt_{c}_{r}_ModelPlacementInformation.csv')
             if not os.path.exists(p):
                 continue
             for row in csv.DictReader(open(p, encoding='utf8'), delimiter=';'):
@@ -34,8 +34,8 @@ def placements(cols, rows):
     return out
 
 
-def model_path(row):
-    return os.path.normpath(os.path.join(SRC, row['ModelFile'].replace('\\', '/')))
+def model_path(src, row):
+    return os.path.normpath(os.path.join(src, row['ModelFile'].replace('\\', '/')))   # paths start with ..\..\world
 
 
 def world_xform(row):
@@ -53,6 +53,7 @@ def world_xform(row):
     return f
 
 
+@lru_cache(maxsize=8)
 def load_obj_groups(wmo_file):
     """Triangles (n, 3, 3) of all exported OBJ groups of a WMO, in model space (x, y, z up)."""
     stem = os.path.splitext(wmo_file)[0]
@@ -91,9 +92,8 @@ def blocked(m):
         yi = np.clip(y.astype(int), 0, m.H - 1)
         return m.height[yi, xi]
 
-    used = []
-    for row in placements(m.cols, m.rows):
-        path = model_path(row)
+    for row in placements(m.src, m.cols, m.rows):
+        path = model_path(m.src, row)
         if row['Type'] == 'wmo':
             tris = load_obj_groups(path)
             if tris is None:
@@ -107,12 +107,10 @@ def blocked(m):
             wall = steep & (zlo < WALL_BAND[1]) & (zhi > WALL_BAND[0])
             pts = np.stack([x[wall], y[wall]], -1)
             cv2.polylines(out, list(np.round(pts * 4).astype(np.int32)), True, 255, 2, cv2.LINE_8, shift=2)
-            used.append(f'{os.path.basename(path)}: {wall.sum()} wall faces')
+            USED[row['ModelId']] = f'{os.path.basename(path)}: {wall.sum()} wall faces'
         elif row['Type'] == 'm2' and any(k in path.lower() for k in M2_BLOCKERS) and os.path.exists(path):
             r = m2_radius(path) * float(row['ScaleFactor'] or 1) * P / T
             x, y = to_px(ORIGIN - float(row['PositionZ']), ORIGIN - float(row['PositionX']))
             cv2.circle(out, (int(round(x)), int(round(y))), max(1, int(round(r))), 255, -1)
-            used.append(os.path.basename(path))
-    if used:
-        print('structures:', len(used), 'placements, e.g.', used[:3])
+            USED[row['ModelId']] = os.path.basename(path)
     return out > 0

@@ -17,10 +17,10 @@ local LAYERS = { "fill", "hatch", "shade", "terrain", "water", "roads" }
 local LAYER_CODE = { fill = "f", hatch = "h", shade = "s", terrain = "t", water = "w", roads = "r" }
 local LAYER_LEVEL = { fill = 0, hatch = 1, shade = 2, terrain = 3, water = 4, roads = 5 }   -- texture sublevel
 -- Zoom levels stored per layer (FILE_LODS in scripts/build_raw.py); a missing level uses the nearest stored one.
--- hatch: the tile file is only the mask of the not walkable area (256 px); the lines are one shared pattern
+-- hatch: the tile file is only the mask of the not walkable area (128 px); the lines are one shared pattern
 -- per zoom level (media/hatch<lod>.tga), cut out by that mask.
-local FILE_LOD = { fill = { [128] = 128, [256] = 128, [512] = 128 }, shade = { [128] = 128, [256] = 256, [512] = 256 } }
-local HATCH_MASK_LOD = 256
+local FILE_LOD = { fill = { [128] = 128, [256] = 128, [512] = 128 }, shade = { [128] = 128, [256] = 128, [512] = 128 } }
+local HATCH_MASK_LOD = 128
 local STYLE = 6            -- bump when the default colours change: resets the saved colours once (ADDON_LOADED)
 
 -- One calm colour for terrain and water lines (Diablo IV style)
@@ -167,6 +167,8 @@ arrow:SetPoint("CENTER")
 ---------------------------------------------------------------------------
 -- UnitPosition returns (north, west). Screen: x right = east, y up = north.
 local pN, pW, cosA, sinA, k = 0, 0, 1, 0, 1
+-- View mode (/rnw view): the map centres on viewAt = { n, w } instead of the player, north up; dragging pans
+local viewAt, pan
 
 local function ToScreen(n, w)
     local sx = -(w - pW) * k
@@ -280,6 +282,7 @@ end
 -- Zone dimming: the zone the player stands in is drawn in full, all other zones with db.zoneDim.
 -- The zone comes from the tile data (zone per tile, per chunk on border tiles), so it matches the map.
 local zoneAlpha, lastZoneTime = {}, nil      -- [zone] = current factor, eased towards the target
+local ZONE_DIGITS = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"   -- one character per chunk
 local function ActiveZone(zones)
     local fc, fr = 32 - pW / T, 32 - pN / T
     local c, r = math.floor(fc), math.floor(fr)
@@ -287,7 +290,7 @@ local function ActiveZone(zones)
     local g = zones.chunks[key]
     if g then
         local i = math.floor((fr - r) * 16) * 16 + math.floor((fc - c) * 16) + 1
-        return tonumber(g:sub(i, i))
+        return ZONE_DIGITS:find(g:sub(i, i), 1, true)
     end
     return zones.tile[key]
 end
@@ -307,10 +310,31 @@ end
 
 ns.ZoneAlpha = function() return zoneAlpha end     -- for tests
 
+-- Tile list of a map (tiles/<map>/Tiles.lua) indexed by "c_r": { { key, layers }, ... } (several parts on
+-- zone border tiles), built on first use
+local tileIndex = {}
+local function TileIndex(inst)
+    local idx = tileIndex[inst]
+    if idx == nil then
+        local data = RunewayTiles and RunewayTiles[inst]
+        idx = false
+        if data then
+            idx = {}
+            for key, have in pairs(data) do
+                local cr = key:match("^%d+_%d+")
+                idx[cr] = idx[cr] or {}
+                table.insert(idx[cr], { key, have })
+            end
+        end
+        tileIndex[inst] = idx
+    end
+    return idx
+end
+
 local function UpdateTiles(inst, angle)
-    local data = RunewayTiles and RunewayTiles[inst]
+    local idx = TileIndex(inst)
     frame = frame + 1
-    if not data then HideTiles() return false end
+    if not idx then HideTiles() return false end
     local zones = RunewayZones and RunewayZones[inst]
     if zones then UpdateZoneAlpha(zones) end
 
@@ -319,41 +343,47 @@ local function UpdateTiles(inst, angle)
     local size = T * k
     local loA, wA, loB, wB = LodWeights(size)
 
-    for key, have in pairs(data) do
-        local c, r = key:match("(%d+)_(%d+)")
-        c, r = tonumber(c), tonumber(r)
-        local cn = (32 - r) * T - T / 2
-        local cw = (32 - c) * T - T / 2
-        if math.abs(cn - pN) < reach and math.abs(cw - pW) < reach then
-            local x, y = ToScreen(cn, cw)
-            local zf = zones and zoneAlpha[zones.tile[key]] or 1
-            for _, layer in ipairs(LAYERS) do
-                if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) and (layer ~= "hatch" or fade) then
-                    local id = inst .. ":" .. key .. ":" .. layer
-                    local e = tiles[id]
-                    if not e then e = { layer = layer }; tiles[id] = e end
-                    -- levels not stored for this layer: the nearest stored one, cross-fade only between two files
-                    local fl = FILE_LOD[layer]
-                    local la, lb, ta, tb = loA, loB, wA, wB
-                    if fl then la, lb = fl[loA], fl[loB] end
-                    if la == lb then ta, tb = 1, 0 end
-                    local a = GetTex(e, inst, key, la)
-                    local b = tb > 0 and GetTex(e, inst, key, lb)
-                    if e.mask then PlaceMask(e.mask, x, y, size, angle) end
-                    local okA, okB = IsLoaded(a), b and IsLoaded(b)
-                    if not okA and okB then ta, tb = 0, 1 elseif okA and b and not okB then ta, tb = 1, 0 end
-                    if not okA and not okB then
-                        -- nothing loaded yet for these levels: keep any loaded level of this tile on screen
-                        for _, lod in ipairs(LODS) do
-                            local t = e[lod]
-                            if t and t ~= a and t ~= b and IsLoaded(t) then
-                                PlaceTex(t, x, y, size, angle, layer, zf)
-                                break
+    local n = math.ceil(reach / T)
+    local pc, pr = math.floor(32 - pW / T), math.floor(32 - pN / T)
+    for r = pr - n, pr + n do
+        for c = pc - n, pc + n do
+            local cn = (32 - r) * T - T / 2
+            local cw = (32 - c) * T - T / 2
+            local list = idx[c .. "_" .. r]
+            if list and math.abs(cn - pN) < reach and math.abs(cw - pW) < reach then
+                local x, y = ToScreen(cn, cw)
+                for _, part in ipairs(list) do
+                    local key, have = part[1], part[2]
+                    local zf = zones and zoneAlpha[zones.tile[key]] or 1
+                    for _, layer in ipairs(LAYERS) do
+                        if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) and (layer ~= "hatch" or fade) then
+                            local id = inst .. ":" .. key .. ":" .. layer
+                            local e = tiles[id]
+                            if not e then e = { layer = layer }; tiles[id] = e end
+                            -- levels not stored for this layer: the nearest stored one, cross-fade only between two files
+                            local fl = FILE_LOD[layer]
+                            local la, lb, ta, tb = loA, loB, wA, wB
+                            if fl then la, lb = fl[loA], fl[loB] end
+                            if la == lb then ta, tb = 1, 0 end
+                            local a = GetTex(e, inst, key, la)
+                            local b = tb > 0 and GetTex(e, inst, key, lb)
+                            if e.mask then PlaceMask(e.mask, x, y, size, angle) end
+                            local okA, okB = IsLoaded(a), b and IsLoaded(b)
+                            if not okA and okB then ta, tb = 0, 1 elseif okA and b and not okB then ta, tb = 1, 0 end
+                            if not okA and not okB then
+                                -- nothing loaded yet for these levels: keep any loaded level of this tile on screen
+                                for _, lod in ipairs(LODS) do
+                                    local t = e[lod]
+                                    if t and t ~= a and t ~= b and IsLoaded(t) then
+                                        PlaceTex(t, x, y, size, angle, layer, zf)
+                                        break
+                                    end
+                                end
                             end
+                            PlaceTex(a, x, y, size, angle, layer, okA and ta * zf or 0)   -- shown at weight 0 while loading
+                            if b then PlaceTex(b, x, y, size, angle, layer, okB and tb * zf or 0) end
                         end
                     end
-                    PlaceTex(a, x, y, size, angle, layer, okA and ta * zf or 0)   -- shown at weight 0 while loading
-                    if b then PlaceTex(b, x, y, size, angle, layer, okB and tb * zf or 0) end
                 end
             end
         end
@@ -625,7 +655,7 @@ local function UpdateHover()
         local W, H = view:GetSize()
         if (x / (W / 2)) ^ 2 + (y / (H / 2)) ^ 2 < 1 then
             local function Near(px, py, size) return (x - px) ^ 2 + (y - py) ^ 2 <= (size / 2) ^ 2 end
-            if Near(0, 0, db.arrowSize) then
+            if arrow:IsShown() and Near(0, 0, db.arrowSize) then
                 target = "arrow"
             elseif corpse:IsShown() and Near(corpse.x, corpse.y, db.corpseSize) then
                 target = "corpse"
@@ -674,10 +704,18 @@ view:SetScript("OnUpdate", function(self, e)
         status:SetText(L.NO_POSITION)
         return
     end
+    if pan then
+        local cx, cy = GetCursorPosition()
+        local s = view:GetEffectiveScale() * db.zoom
+        viewAt.n, viewAt.w = pan.n - (cy - pan.y) / s, pan.w + (cx - pan.x) / s
+    end
+    if viewAt then n, w = viewAt.n, viewAt.w end
     pN, pW, k = n, w, db.zoom
 
     local facing = GetPlayerFacing() or 0
-    local angle = db.rotate and -facing or 0
+    local angle = db.rotate and not viewAt and -facing or 0
+    arrow:SetShown(not viewAt)
+    arrowShadow:SetShown(not viewAt)
     cosA, sinA = math.cos(angle), math.sin(angle)
     local as = db.arrowSize * (hovered == "arrow" and HOVER_SCALE or 1)
     arrow:SetSize(as, as)
@@ -686,7 +724,7 @@ view:SetScript("OnUpdate", function(self, e)
     arrowShadow:SetRotation(db.rotate and 0 or facing)
 
     if UpdateTiles(inst, angle) then
-        status:SetText("")
+        status:SetText(viewAt and L.VIEW_MODE or "")
     else
         status:SetText(L.NO_DATA)
     end
@@ -727,7 +765,7 @@ end
 -- Mouse wheel zooms locked and unlocked (option); clicks only reach the map when unlocked (locked: they pass through)
 local function ApplyLock()
     local unlocked = not db.locked
-    view:EnableMouse(unlocked)
+    view:EnableMouse(unlocked or viewAt ~= nil)      -- view mode: dragging pans, also when locked
     view:EnableMouseWheel(db.wheelZoom)
     grip:SetShown(unlocked)
     ShowBorder(unlocked and db.hover and view:IsMouseOver())
@@ -738,9 +776,15 @@ local function SetZoom(z)
 end
 
 view:SetScript("OnDragStart", function(self)
-    self:StartMoving()
+    if viewAt then
+        local x, y = GetCursorPosition()
+        pan = { x = x, y = y, n = viewAt.n, w = viewAt.w }
+    elseif not db.locked then
+        self:StartMoving()
+    end
 end)
 view:SetScript("OnDragStop", function(self)
+    if pan then pan = nil return end
     self:StopMovingOrSizing()
     if self.SetUserPlaced then self:SetUserPlaced(false) end
     SavePos()
@@ -994,6 +1038,26 @@ end)
 ---------------------------------------------------------------------------
 -- Slash commands
 ---------------------------------------------------------------------------
+-- Centre (north, west) of a mapped zone whose name contains `name` (lower case), or nil and the list of
+-- mapped zones
+local function ZoneCentre(inst, name)
+    local zones = RunewayZones and RunewayZones[inst]
+    if not zones then return end
+    for z, zn in ipairs(zones.names) do
+        if zn:lower():find(name, 1, true) then
+            local sn, sw, cnt = 0, 0, 0
+            for key, kz in pairs(zones.tile) do
+                if kz == z then
+                    local c, r = key:match("^(%d+)_(%d+)")
+                    sn, sw, cnt = sn + (32 - tonumber(r)) * T - T / 2, sw + (32 - tonumber(c)) * T - T / 2, cnt + 1
+                end
+            end
+            if cnt > 0 then return sn / cnt, sw / cnt, zn end
+        end
+    end
+    return nil, nil, table.concat(zones.names, ", ")
+end
+
 -- Layer key from a lower-cased slash argument ("questareas" -> "questAreas")
 local function LayerKey(name)
     for key in pairs(defaults.layers) do
@@ -1070,6 +1134,29 @@ SlashCmdList.RUNEWAY = function(msg)
         local mapID = C_Map.GetBestMapForUnit("player")
         ShowCopy(("%s %s %s map=%s facing=%.3f"):format(
             tostring(pn), tostring(pw), tostring(inst), tostring(mapID), GetPlayerFacing() or -1))
+    elseif cmd == "view" then
+        local vn, vw = arg:match("^(%-?[%d%.]+)%s+(%-?[%d%.]+)$")
+        if arg == "" and viewAt then
+            viewAt, pan = nil, nil
+            Print(L.MSG_VIEW_OFF)
+        elseif arg == "" then                       -- start at the player position
+            viewAt = { n = pN, w = pW }
+            Print(L.MSG_VIEW:format(("%.0f %.0f"):format(pN, pW)))
+        elseif vn then
+            viewAt = { n = tonumber(vn), w = tonumber(vw) }
+            Print(L.MSG_VIEW:format(("%.0f %.0f"):format(viewAt.n, viewAt.w)))
+        else
+            local name
+            vn, vw, name = ZoneCentre(select(4, UnitPosition("player")), arg)
+            if vn then
+                viewAt = { n = vn, w = vw }
+                Print(L.MSG_VIEW:format(name))
+            else
+                Print(L.MSG_VIEW_UNKNOWN:format(name or "-"))
+            end
+        end
+        ApplyLock()
+        if viewAt and not view:IsShown() then Runeway_Toggle() end
     elseif cmd == "reset" then
         ResetSettings()
         Print(L.MSG_RESET)

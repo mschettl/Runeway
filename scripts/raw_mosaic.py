@@ -4,7 +4,8 @@ import numpy as np
 import cv2
 from adt import read_root, read_tex0, layer_weights, U
 
-SRC = os.path.join(os.path.dirname(__file__), '..', 'Wow export files', 'maps', 'azeroth')
+MAPS = os.path.join(os.path.dirname(__file__), '..', 'Wow export files', 'maps')
+SRC = os.path.join(MAPS, 'azeroth')
 LISTFILE = os.environ.get('RUNEWAY_LISTFILE', os.path.join(os.path.dirname(__file__), '..', 'listfile.csv'))
 
 
@@ -18,17 +19,19 @@ def load_listfile(path=LISTFILE):
 
 
 class Mosaic:
-    """Tile range c0..c1 / r0..r1 at P pixels per tile (P = 512 -> ~1.04 yd/px)."""
+    """Tile range c0..c1 / r0..r1 of a map (wow.export folder name, e.g. azeroth) at P pixels per tile
+    (P = 512 -> ~1.04 yd/px)."""
 
-    def __init__(self, cols, rows, P=512, src=SRC):
-        self.cols, self.rows, self.P, self.src = list(cols), list(rows), P, src
+    def __init__(self, cols, rows, P=512, name='azeroth'):
+        self.cols, self.rows, self.P, self.name = list(cols), list(rows), P, name
+        self.src = os.path.join(MAPS, name)
         self.H, self.W = len(self.rows) * P, len(self.cols) * P
         self.present = np.zeros((self.H, self.W), bool)
 
     def tiles(self):
         for j, r in enumerate(self.rows):
             for i, c in enumerate(self.cols):
-                p = os.path.join(self.src, f'azeroth_{c}_{r}.adt')
+                p = os.path.join(self.src, f'{self.name}_{c}_{r}.adt')
                 if os.path.exists(p):
                     yield i, j, c, r, p
 

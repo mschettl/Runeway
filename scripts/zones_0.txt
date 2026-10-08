@@ -1,0 +1,33 @@
+# Zones of map 0 (Eastern Kingdoms) built by scripts/build_raw.py (AreaTable names), extended stage by stage.
+# Zone number = line order; append new zones at the end.
+# Stage 1
+Tirisfal Glades
+Silverpine Forest
+Western Plaguelands
+Hillsbrad Foothills
+Alterac Mountains
+# Stage 2 (north)
+Eastern Plaguelands
+The Hinterlands
+Arathi Highlands
+Gilneas
+Ruins of Gilneas
+# Stage 3 (centre)
+Wetlands
+Dun Morogh
+Loch Modan
+Searing Gorge
+Badlands
+Burning Steppes
+Riverglades
+# Stage 4 (south)
+Elwynn Forest
+Stormwind City
+Westfall
+Redridge Mountains
+Duskwood
+Deadwind Pass
+Swamp of Sorrows
+Blasted Lands
+Stranglethorn Vale
+Gillijim's Isle

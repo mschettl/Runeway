@@ -225,13 +225,17 @@ local function PackFailed(pack)
     Print(L.PACK_FAILED:format(PACK_LINK:format(pack, packTitle[pack])))
 end
 
-local packTipLink
-if EventRegistry and ItemRefTooltip then
-    local tip = ItemRefTooltip
-    tip:HookScript("OnTooltipCleared", function() packTipLink = nil end)   -- other content or closed
+-- ItemRefTooltip comes with Blizzard_UIPanels_Game, which may load after this addon: look it up on the click
+local packTipLink, tipHooked
+if EventRegistry then
     EventRegistry:RegisterCallback("SetItemRef", function(_, link)
         local pack = link:match("^addon:Runeway:pack:(.+)$")
-        if not pack then return end
+        local tip = ItemRefTooltip
+        if not pack or not tip then return end
+        if not tipHooked then
+            tipHooked = true
+            tip:HookScript("OnTooltipCleared", function() packTipLink = nil end)   -- other content or closed
+        end
         if tip:IsShown() and packTipLink == link then return tip:Hide() end
         tip:SetOwner(UIParent, "ANCHOR_PRESERVE")
         tip:ClearLines()

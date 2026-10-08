@@ -143,13 +143,13 @@ L.execute('''
     view:GetScript("OnMouseWheel")(view, 1)
     check("unlocked: shift+wheel sizes", db.w == w + 30)
     IsShiftKeyDown = function() return false end
-    -- resize grip: left 150, top 750, cursor 700/300 -> 550 x 450 -> square 550
+    -- resize grip: left 150, top 750, cursor 700/300 -> 550 x 450
     local grip
     for _, f in ipairs(FRAMES) do if f:GetScript("OnMouseDown") then grip = f end end
     grip:GetScript("OnMouseDown")(grip)
     grip:GetScript("OnUpdate")(grip, 0.1)
     grip:GetScript("OnMouseUp")(grip)
-    check("grip sizes square (550)", db.w == 550)
+    check("grip sizes width and height (550 x 450)", db.w == 550 and db.h == 450)
     CURSOR[1] = 5000
     grip:GetScript("OnMouseDown")(grip); grip:GetScript("OnUpdate")(grip, 0.1); grip:GetScript("OnMouseUp")(grip)
     check("grip clamps to 1400", db.w == 1400)
@@ -178,6 +178,13 @@ L.execute('''
     check("settings rows: 1 header, 2 bindings, 7 layers",
         kinds.header == 1 and kinds.binding == 2 and kinds.layerrow == 7)
     check("mode dropdown has 3 entries", #INITS[17].options == 3)
+    -- values changed outside the panel are pushed to the settings rows
+    local notified = {}
+    Settings.NotifyUpdate = function(v) notified[v] = true end
+    view:GetScript("OnMouseWheel")(view, 1)
+    SlashCmdList.RUNEWAY("size 900 500")
+    check("live update: zoom and size notified", notified.RUNEWAY_ZOOM and notified.RUNEWAY_W and notified.RUNEWAY_H
+        and db.w == 900 and db.h == 500)
     -- layer row: the colour swatch opens the picker and writes the layer colour
     local row
     for _, i in ipairs(INITS) do if i.kind == "layerrow" and i.data.name == NS.L.LAYER_ROADS then row = i end end
@@ -200,7 +207,7 @@ L.execute('''
     SETTINGS.RUNEWAY_AUTOHIDE_COMBAT:SetValue(true)
     check("opacity and auto-hide write the db", db.colors.roads.a == 0.5 and db.autoHide.combat == true)
     for _, st in pairs(SETTINGS) do st:SetValue(st.default) end
-    check("defaults restored", db.edge == 3 and db.w == 800 and db.mode == "key" and db.colors.roads.a == 0.65
+    check("defaults restored", db.edge == 3 and db.w == 800 and db.h == 600 and db.mode == "key" and db.colors.roads.a == 0.65
         and math.abs(db.colors.fill.r) < 0.01 and db.zoom == 0.3 and db.questMerge == true and db.corpseSize == 25)
     view:GetScript("OnUpdate")(view, 0.05)
 ''')

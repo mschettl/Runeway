@@ -20,7 +20,7 @@ local COMMANDS = {
     { "/rnw lock  |  unlock", L.CMD_LOCK },
     { "/rnw alpha 5-100", L.CMD_ALPHA },
     { "/rnw zoom 0.08-5", L.CMD_ZOOM },
-    { "/rnw size 200-1400", L.CMD_SIZE },
+    { "/rnw size W [H]", L.CMD_SIZE },
     { "/rnw rotate", L.CMD_ROTATE },
     { "/rnw edge 1-5", L.CMD_EDGE },
     { "/rnw mode key | mapkey | permanent", L.CMD_MODE },
@@ -171,10 +171,12 @@ local function Build()
     end
 
     Page(L.HEADER_WINDOW)
-    Check("rotate", L.ROTATE)
     Check("locked", L.LOCKED, L.LOCKED_TIP, function() ns.ApplyAll() end)
+    Check("rotate", L.ROTATE)
     Check("hover", L.HOVER, nil, function() ns.ApplyAll() end)
-    Slider("w", L.SIZE, ns.SIZE_MIN, ns.SIZE_MAX, 10, function(v) return ("%d px"):format(v) end, function() ns.ApplyAll() end)
+    local function Px(v) return ("%d px"):format(v) end
+    Slider("h", L.HEIGHT, ns.SIZE_MIN, ns.SIZE_MAX, 10, Px, function() ns.ApplyAll() end)
+    Slider("w", L.WIDTH, ns.SIZE_MIN, ns.SIZE_MAX, 10, Px, function() ns.ApplyAll() end)
 
     Page(L.HEADER_DISPLAY)
     Slider("alpha", L.MAP_OPACITY, 0.05, 1, 0.01, Pct, function() ns.ApplyAll() end)

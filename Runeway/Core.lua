@@ -26,7 +26,7 @@ local STYLE = 6            -- bump when the default look changes (see migration 
 -- One calm colour for all lines (Diablo IV style); quest areas glow blue like the minimap blobs
 local LINE = { 0xD1 / 255, 0xDB / 255, 0xE3 / 255 }
 local defaults = {
-    x = nil, y = nil, w = 800,          -- square map (w = edge length)
+    x = nil, y = nil, w = 800, h = 600, -- map width and height
     zoom = 0.3, alpha = 0.7, rotate = true, locked = false, shown = false,
     mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
     autoHide = { combat = false, instance = false, mounted = false, city = false },
@@ -515,9 +515,10 @@ local function UpdateCorpse()
     if not corpseN then corpse:Hide() return end
     local x, y = ToScreen(corpseN, corpseW)
     local W, H = view:GetSize()
-    local edge = math.min(W, H) / 2 - db.corpseSize             -- keep the whole icon inside the round map
-    local d = math.sqrt(x * x + y * y)
-    if d > edge then x, y = x * edge / d, y * edge / d end
+    -- keep the whole icon inside the oval map
+    local rx, ry = math.max(1, W / 2 - db.corpseSize), math.max(1, H / 2 - db.corpseSize)
+    local d = math.sqrt((x / rx) ^ 2 + (y / ry) ^ 2)
+    if d > 1 then x, y = x / d, y / d end
     corpse:SetSize(db.corpseSize, db.corpseSize)
     corpse:ClearAllPoints()
     corpse:SetPoint("CENTER", view, "CENTER", x, y)
@@ -615,10 +616,16 @@ local function ApplyPos()
     end
 end
 
+-- Settings rows show values changed outside the panel (wheel, grip, slash commands) right away
+local function Notify(...)
+    if not (Settings and Settings.NotifyUpdate) then return end
+    for _, path in ipairs({ ... }) do Settings.NotifyUpdate("RUNEWAY_" .. path:upper()) end
+end
+
 local function ApplySize()
-    db.h = nil
-    db.w = math.max(SIZE_MIN, math.min(SIZE_MAX, db.w))
-    view:SetSize(db.w, db.w)
+    db.w = math.floor(math.max(SIZE_MIN, math.min(SIZE_MAX, db.w)) + 0.5)
+    db.h = math.floor(math.max(SIZE_MIN, math.min(SIZE_MAX, db.h)) + 0.5)
+    view:SetSize(db.w, db.h)
 end
 
 -- Mouse wheel zooms locked and unlocked; clicks only reach the map when unlocked (locked: they pass through)
@@ -645,10 +652,12 @@ view:SetScript("OnDragStop", function(self)
 end)
 view:SetScript("OnMouseWheel", function(_, delta)
     if IsShiftKeyDown() and not db.locked then
-        db.w = db.w + delta * 30
+        db.w, db.h = db.w + delta * 30, db.h + delta * 30
         ApplySize()
+        Notify("w", "h")
     else
         SetZoom(db.zoom * (delta > 0 and 1.15 or 1 / 1.15))
+        Notify("zoom")
     end
 end)
 view:SetScript("OnShow", RefreshQuests)
@@ -661,7 +670,7 @@ view:SetScript("OnLeave", UpdateBorder)
 grip:SetScript("OnEnter", UpdateBorder)
 grip:SetScript("OnLeave", UpdateBorder)
 
--- Square sizing from the top left corner, follows the cursor
+-- Sizing from the top left corner, width and height follow the cursor
 local sizeLeft, sizeTop
 grip:SetScript("OnMouseDown", function()
     sizeLeft, sizeTop = view:GetLeft(), view:GetTop()
@@ -670,8 +679,9 @@ grip:SetScript("OnMouseDown", function()
     grip:SetScript("OnUpdate", function()
         local x, y = GetCursorPosition()
         local s = view:GetEffectiveScale()
-        db.w = math.floor(math.max(x / s - sizeLeft, sizeTop - y / s) + 0.5)
+        db.w, db.h = x / s - sizeLeft, sizeTop - y / s
         ApplySize()
+        Notify("w", "h")
     end)
 end)
 grip:SetScript("OnMouseUp", function()
@@ -916,13 +926,16 @@ SlashCmdList.RUNEWAY = function(msg)
         Print(L.MSG_OPACITY:format(db.alpha * 100))
     elseif cmd == "zoom" and n then
         SetZoom(n)
+        Notify("zoom")
         Print(L.MSG_ZOOM:format(db.zoom))
     elseif cmd == "size" then
-        if n then
-            db.w = n
+        local w, h = arg:match("^(%d+)%s*(%d*)$")
+        if w then
+            db.w, db.h = tonumber(w), tonumber(h) or tonumber(w)
             ApplySize()
+            Notify("w", "h")
         end
-        Print(L.MSG_SIZE:format(db.w, db.w))
+        Print(L.MSG_SIZE:format(db.w, db.h))
     elseif cmd == "rotate" then
         db.rotate = not db.rotate
         Print(db.rotate and L.MSG_ROTATE_ON or L.MSG_ROTATE_OFF)

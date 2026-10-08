@@ -13,7 +13,7 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 - **Kartenebenen:** Begehbare Fläche (leicht abgedunkelt), schraffierte nicht begehbare Bereiche (Gebirge, Wasser, Mauern), Geländelinien, Wasserlinien und Wege.
 - **Questbereiche:** Exakt dieselben Bereiche wie auf der Weltkarte, als blauer, mitdrehender Rand.
 - **Questmarker:** Nur für punktuelle Ziele (Abgabe, Gespräche), im Weltkarten-Stil.
-- **Zoom:** Nahtlos durch Überblendung der Kachel-Zoomstufen. Die Karte ist quadratisch und blendet rund aus.
+- **Zoom:** Nahtlos durch Überblendung der Kachel-Zoomstufen. Breite und Höhe sind frei einstellbar (Standard 800 × 600), die Karte blendet oval aus.
 
 Im Spiel getestet und für Version 1 abgenommen.
 
@@ -77,7 +77,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 ### Standardwerte (`RunewayDB`)
 | Schlüssel | Standard |
 |---|---|
-| `w` | 800 (quadratisch, Seitenlänge) |
+| `w`, `h` | 800, 600 (Breite, Höhe; je 200–1400) |
 | `zoom` | 0.3 (0.08–5) |
 | `alpha` | 0.7 (nur Kartenebenen; Pfeil, Marker und Questränder immer voll) |
 | `rotate`, `locked`, `shown` | true, false, false |
@@ -122,7 +122,7 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 - **Mausrad:** zoomt gesperrt wie entsperrt (`EnableMouseWheel` immer an, `EnableMouse` nur entsperrt).
 - **Nur entsperrt:**
   - Ziehen verschiebt die Karte.
-  - Der Griff unten rechts ändert die Größe. Sie bleibt quadratisch, die obere linke Ecke bleibt stehen.
+  - Der Griff unten rechts ändert Breite und Höhe unabhängig; die obere linke Ecke bleibt stehen.
   - Shift+Mausrad ändert die Größe.
   - Beim Überfahren erscheint ein Rahmen, abschaltbar.
 
@@ -147,6 +147,7 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 
 ### Aufbau der Einstellungen
 - **Hauptseite „Runeway“:** Einleitungstext (`L.INTRO`, Zeilenvorlage `RunewayTextRowTemplate` mit fester Höhe über `GetExtent`) und darunter „Quick commands“.
+- **Live-Werte:** Änderungen außerhalb des Fensters (Mausrad-Zoom, Griff, Shift+Mausrad, `/rnw zoom`, `/rnw size`) erscheinen sofort in den Reglern (`Settings.NotifyUpdate`).
 - **Knopf „Karte ein-/ausblenden“:** im Kopf des Einstellungsfensters links neben „Standard“, nur auf den Runeway-Seiten (`Settings.CategoryChanged` über `EventRegistry`); Text wechselt zwischen „Show map“ und „Hide map“.
 - **Ebenen:** eine Zeile je Ebene mit Häkchen, Farbfeld und Deckkraft-Regler (`RunewayLayerRowTemplate`, baut auf Blizzards Häkchen-plus-Regler-Zeile auf; die Farbe ist ein eigenes Proxy-Setting, „Standard“ setzt sie mit zurück).
 - **Unterpunkte im Baum links** (Runeway aufklappbar, `RegisterVerticalLayoutSubcategory`): Open with, Hide automatically, Window, Display, Layers. Jeder Unterpunkt hat eigene Proxy-Settings, „Standard“ setzt nur diesen Unterpunkt zurück.
@@ -423,7 +424,7 @@ cd <repo> && zip -r build/Runeway-1.2.zip Runeway
 2. **Farbe:** Ein Farbfeld öffnet den Farbwähler. „Abbrechen“ stellt die alte Farbe wieder her.
 3. **Rand:** Die Stufen 1–5 sind sichtbar unterschiedlich. Die Questränder blenden passend dazu aus.
 4. **Mausrad gesperrt:** Über der Karte wird gezoomt, Klicks gehen durch die Karte hindurch.
-5. **Entsperrt:** Ziehen verschiebt. Der Griff unten rechts ändert die Größe, die Karte bleibt quadratisch. Der Rahmen erscheint beim Überfahren.
+5. **Entsperrt:** Ziehen verschiebt. Der Griff unten rechts ändert Breite und Höhe unabhängig. Der Rahmen erscheint beim Überfahren.
 6. **Taste M:** M öffnet und schließt das Overlay, die Belegung „World map (map key mode)“ öffnet die Weltkarte. Auch nach einem Kampf und nach `/reload` prüfen.
 7. **Permanent:** Das Overlay ist nach dem Login sichtbar.
 8. **Ausblenden:** Kampf, Instanz, Reittier oder Flug und Stadt einzeln prüfen. Nach dem Ende der Bedingung erscheint das Overlay wieder.
@@ -434,7 +435,7 @@ cd <repo> && zip -r build/Runeway-1.2.zip Runeway
 3. **Quest areas:** durchgehend in jeder Zoomstufe, weich ausgeblendet zum Kartenrand, korrekt bei Fortschritt.
 4. **Quest marks:** nur für Punktziele, ohne Springen beim Gehen.
 5. **City:** Ruinen von Lordaeron erkennbar, auch herausgezoomt.
-6. **Window:** quadratisch, Position und Größe bleiben über Logout erhalten.
+6. **Window:** Position, Breite und Höhe bleiben über Logout erhalten.
 
 ---
 

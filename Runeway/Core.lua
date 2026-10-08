@@ -1,7 +1,7 @@
 -- Runeway
 -- Player-centred, rotating contour overlay (line layers per ADT tile in world coordinates)
 
-local ADDON, ns = ...               -- ns: shared with QuestAreas.lua
+local ADDON, ns = ...               -- ns: shared by all addon files
 local L = ns.L                      -- texts in the client language (Locales/)
 local T = 1600 / 3                 -- edge length of an ADT tile in yards (533.33)
 local PATH = "Interface\\AddOns\\Runeway\\tiles\\"
@@ -21,9 +21,9 @@ local LAYER_LEVEL = { fill = 0, hatch = 1, shade = 2, terrain = 3, water = 4, ro
 -- per zoom level (media/hatch<lod>.tga), cut out by that mask.
 local FILE_LOD = { fill = { [128] = 128, [256] = 128, [512] = 128 }, shade = { [128] = 128, [256] = 256, [512] = 256 } }
 local HATCH_MASK_LOD = 256
-local STYLE = 6            -- bump when the default look changes (see migration in ADDON_LOADED)
+local STYLE = 6            -- bump when the default colours change: resets the saved colours once (ADDON_LOADED)
 
--- One calm colour for all lines (Diablo IV style); quest areas glow blue like the minimap blobs
+-- One calm colour for terrain and water lines (Diablo IV style)
 local LINE = { 0xD1 / 255, 0xDB / 255, 0xE3 / 255 }
 local defaults = {
     x = nil, y = nil, w = 800, h = 600, -- map width and height
@@ -35,7 +35,7 @@ local defaults = {
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
     arrowSize = 25, pinSize = 25, corpseSize = 25, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
     questMerge = true,       -- overlapping quest areas as one combined outline
-    zoneDim = 0.3,           -- opacity factor of the neighbouring zones (the player is not in)
+    zoneDim = 0.3,           -- opacity factor of the adjacent zones (the player is not in)
     colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,
         fill    = { r = 0, g = 0, b = 0, a = 0.10 },              -- roads #EBB748, quest areas #73C7FF
         hatch   = { r = 0xCC / 255, g = 0xD6 / 255, b = 0xE0 / 255, a = 0.20 },
@@ -77,7 +77,6 @@ local view = CreateFrame("Frame", "RunewayFrame", UIParent)
 view:SetFrameStrata("BACKGROUND")
 view:SetClampedToScreen(true)
 view:SetMovable(true)
-view:SetResizable(true)
 view:RegisterForDrag("LeftButton")
 view:Hide()
 -- position and size live in RunewayDB; keep WoW's layout cache from restoring an old size
@@ -105,7 +104,6 @@ ns.NoSnap = NoSnap
 local function Fade(tex)
     if fade and tex.AddMaskTexture then tex:AddMaskTexture(fade) end
 end
-ns.Fade = Fade
 ns.FadeWidth = function() return FADE_WIDTH[db.edge] or FADE_WIDTH[3] end
 
 local function ApplyEdge()
@@ -175,7 +173,7 @@ ns.Player = function() return pN, pW, k end
 ---------------------------------------------------------------------------
 -- Contour tiles
 ---------------------------------------------------------------------------
--- Each tile layer has one texture per zoom level (loaded once, then kept). Around each switch point the two
+-- Each tile layer has one texture per zoom level (released after ~20 s unused). Around each switch point the two
 -- neighbouring levels are cross-faded, so zooming is seamless; a level that is still loading hands its
 -- weight to a loaded one.
 local LODS = { 128, 256, 512 }
@@ -243,7 +241,6 @@ local function ApplyColors()
             if e[lod] then ApplyColor(e[lod], e.layer, e[lod].weight) end
         end
     end
-    if ns.ApplyQuestAreaColor then ns.ApplyQuestAreaColor() end
 end
 
 local function HideTiles()
@@ -481,6 +478,11 @@ local function SetAtlasOr(t, atlas, file)
     if not ok or res == false then t:SetTexture(file) end
 end
 
+-- Mouse-over (also on the locked, click-through map: the cursor position is polled, no mouse events):
+-- the marker under the cursor is enlarged; quest marks and areas get a tooltip like on the minimap.
+local HOVER_SCALE = 1.3
+local hovered                         -- "arrow", "corpse", a quest pin table or nil
+
 -- Corpse marker while dead (ghost): Blizzard's world map corpse icon. The corpse is looked up on the
 -- player's map, then on its parent maps (the graveyard can be in another zone); when it is outside the
 -- view, the marker sits on the edge in its direction.
@@ -527,11 +529,6 @@ local function UpdateCorpse()
     corpse:SetPoint("CENTER", view, "CENTER", x, y)
     corpse:Show()
 end
-
--- Mouse-over (also on the locked, click-through map: the cursor position is polled, no mouse events):
--- the marker under the cursor is enlarged; quest marks and areas get a tooltip like on the minimap.
-local HOVER_SCALE = 1.3
-local hovered                         -- "arrow", "corpse", a quest pin table or nil
 
 local tipKey                          -- what the tooltip shows now (avoids rebuilding it every update)
 
@@ -910,7 +907,6 @@ ns.Print = Print
 ns.SetZoom = SetZoom
 ns.ApplyAll = ApplyAll
 ns.ApplyColors = ApplyColors
-ns.ResetSettings = ResetSettings
 ns.UpdateVisibility = UpdateVisibility
 
 local function CreateWorldMapButton()
@@ -936,13 +932,8 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         if arg1 ~= ADDON then return end
         RunewayDB = RunewayDB or {}
         db = RunewayDB
-        local style = db.style or 0
-        if style < 2 then db.colors = nil end                              -- 2: Diablo IV style
-        if style < 3 and db.colors then db.colors.questAreas = nil end     -- 3: blue glow quest areas
-        if style < 4 and db.colors then db.colors.fill = nil end           -- 4: brown fill
-        if style < 6 and db.colors then db.colors.questAreas = nil end     -- 5/6: quest area colour
+        if (db.style or 0) < STYLE then db.colors = nil end   -- default look changed: colours back to defaults
         db.style = STYLE
-        db.worldMapKey = nil                                               -- 1.1 test builds: now a key binding
         ApplyDefaults(db, defaults)
         canvas:SetAlpha(db.alpha)      -- map layers only; player arrow, quest marks and areas stay opaque
         ApplyEdge()

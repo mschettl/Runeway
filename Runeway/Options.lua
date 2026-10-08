@@ -3,6 +3,8 @@
 
 local ADDON, ns = ...
 local L = ns.L                       -- texts in the client language (Locales/)
+local Get = ns.GetPath                -- dotted paths into RunewayDB or the defaults (Profile.lua)
+local function Hex(r, g, b) return CreateColor(r, g, b):GenerateHexColor() end
 
 local LAYER_LABELS = {
     fill = L.LAYER_FILL, hatch = L.LAYER_HATCH, shade = L.LAYER_SHADE, terrain = L.LAYER_TERRAIN,
@@ -13,6 +15,11 @@ local MODES = {
     { "mapkey", L.MODE_MAPKEY, L.MODE_MAPKEY_TIP },
     { "permanent", L.MODE_PERMANENT, L.MODE_PERMANENT_TIP },
 }
+local AUTO_HIDE = {
+    { "combat", L.HIDE_COMBAT }, { "instance", L.HIDE_INSTANCE }, { "mounted", L.HIDE_MOUNTED },
+    { "city", L.HIDE_CITY },
+}
+
 -- Quick commands: shown at the top of the settings (command stays English, description translated)
 local COMMANDS = {
     { "/rnw", L.CMD_TOGGLE },
@@ -64,7 +71,6 @@ function RunewayLayerRowMixin:Init(initializer)
     local setting, title = initializer.data.colorSetting, initializer.data.colorLabel
     local swatch = self.ColorSwatch
     local function Show() swatch:SetColor(CreateColorFromHexString(setting:GetValue())) end
-    local function Hex(r, g, b) return CreateColor(r, g, b):GenerateHexColor() end
     Show()
     swatch:SetScript("OnClick", function()
         local r, g, b = CreateColorFromHexString(setting:GetValue()):GetRGB()
@@ -83,11 +89,6 @@ function RunewayLayerRowMixin:Init(initializer)
     self.cbrHandles:SetOnValueChangedCallback(setting:GetVariable(), Show)   -- picker, Defaults
 end
 
-local AUTO_HIDE = {
-    { "combat", L.HIDE_COMBAT }, { "instance", L.HIDE_INSTANCE }, { "mounted", L.HIDE_MOUNTED },
-    { "city", L.HIDE_CITY },
-}
-
 local category, cat                 -- main category; category the settings below are added to
 local ours = {}                     -- [category] = true for the Runeway pages
 
@@ -101,22 +102,11 @@ function ns.NotifyAllSettings()
     for _, v in ipairs(vars) do Settings.NotifyUpdate(v) end
 end
 
--- Value at a dotted path in RunewayDB or in the defaults, e.g. "colors.fill.a"
-local function Get(tbl, path)
-    for part in path:gmatch("[^.]+") do tbl = tbl[part] end
-    return tbl
-end
-local function Set(path, v)
-    local tbl, last = ns.db(), path:match("([^.]+)$")
-    for part in path:gmatch("([^.]+)%.") do tbl = tbl[part] end
-    tbl[last] = v
-end
-
 -- Proxy setting bound to a db path; apply runs after every change
 local function Setting(path, varType, label, apply)
     return Proxy(cat, "RUNEWAY_" .. path:upper():gsub("%.", "_"), varType, label,
         Get(ns.DEFAULTS, path), function() return Get(ns.db(), path) end,
-        function(v) Set(path, v); if apply then apply(v) end end)
+        function(v) ns.SetPath(ns.db(), path, v); if apply then apply(v) end end)
 end
 
 local function Check(path, label, tooltip, apply)
@@ -211,9 +201,9 @@ local function Build()
         local opacity = Proxy(cat, "RUNEWAY_OPACITY_" .. layer:upper(), Settings.VarType.Number,
             L.LAYER_OPACITY:format(label), ns.DEFAULTS.colors[layer].a, function() return ns.db().colors[layer].a end,
             function(v) ns.db().colors[layer].a = v; Apply() end)
-        local function Hex(col) return CreateColor(col.r, col.g, col.b):GenerateHexColor() end
+        local function HexOf(col) return Hex(col.r, col.g, col.b) end
         local color = Proxy(cat, "RUNEWAY_COLOR_" .. layer:upper(), Settings.VarType.String,
-            L.LAYER_COLOUR:format(label), Hex(Get(ns.DEFAULTS, c)), function() return Hex(Get(ns.db(), c)) end,
+            L.LAYER_COLOUR:format(label), HexOf(Get(ns.DEFAULTS, c)), function() return HexOf(Get(ns.db(), c)) end,
             function(v)
                 local col = Get(ns.db(), c)
                 col.r, col.g, col.b = CreateColorFromHexString(v):GetRGB()

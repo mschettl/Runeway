@@ -8,6 +8,13 @@ from lupa import lua51       # WoW runs Lua 5.1
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 L = lua51.LuaRuntime(unpack_returned_tuples=True)
 L.execute(open(os.path.join(ROOT, 'tests', 'wow_stub.lua')).read())
+# undefined globals read by addon code: usually a local used before its declaration (a nil global)
+L.execute('''
+UNDEFINED_GLOBALS = {}
+setmetatable(_G, { __index = function(_, k)
+    local i = debug.getinfo(2, "S")
+    if i and i.source:find("Runeway/", 1, true) then UNDEFINED_GLOBALS[k] = i.short_src end
+end })''')
 LOCALES = ['Runeway/Locales/enUS.lua'] + sorted(f'Runeway/Locales/{os.path.basename(p)}' for p in glob.glob(os.path.join(ROOT, 'Runeway', 'Locales', '*.lua')) if not p.endswith('enUS.lua'))
 L.execute('LOCALE = ...', os.environ.get('RUNEWAY_LOCALE', 'enUS'))   # client language for this run
 for f in (*LOCALES, 'Runeway/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Profile.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
@@ -166,6 +173,16 @@ L.execute('''
     view:GetScript("OnUpdate")(view, 0.05)
     local co = TEXTURE_OBJECTS[("Interface/Minimap/POIIcons"):gsub("/", string.char(92))]
     local corpseShown = co:IsShown()
+    -- mouse-over on the corpse enlarges it (regression: hover state was read before its declaration)
+    rawset(view, "IsMouseOver", function() return true end)
+    local shownBefore = view:IsShown()
+    view:Show()
+    CURSOR[1], CURSOR[2] = 500 + co.x, 400 + co.y
+    view:GetScript("OnUpdate")(view, 0.05)
+    view:GetScript("OnUpdate")(view, 0.05)
+    check("hover: corpse marker enlarged", math.abs(co._w - db.corpseSize * 1.3) < 0.01)
+    rawset(view, "IsMouseOver", nil)
+    if not shownBefore then view:Hide() end
     STATE.dead = false
     view:GetScript("OnUpdate")(view, 0.05)
     check("corpse marker while dead", corpseShown and not TEXTURE_OBJECTS[("Interface/Minimap/POIIcons"):gsub("/", string.char(92))]:IsShown())
@@ -267,6 +284,10 @@ L.execute('''
     view:GetScript("OnUpdate")(view, 0.05)
 ''')
 
+# optional WoW APIs the stub leaves out on purpose, and the SavedVariables table before the first login
+known = {'GetMouseFoci', 'GetMouseFocus', 'RunewayDB', 'CORPSE_RED'}
+undefined = {k: v for k, v in L.eval('UNDEFINED_GLOBALS').items() if k not in known}
+print('undefined globals read:', (str(undefined) + '  FAIL') if undefined else 'none')
 # every referenced texture file must exist
 missing = [p for p in L.globals().TEXTURES.values() if p.startswith('Interface\\AddOns\\Runeway')
            and not os.path.exists(os.path.join(ROOT, p.replace('Interface\\AddOns\\', '').replace('\\', os.sep)))]

@@ -1,6 +1,6 @@
 # Runeway – Stand Version 1.4 und Übergabe
 
-Diese Datei fasst den kompletten Stand nach Version 1.2 zusammen, damit eine neue Session nahtlos weitermachen kann. Sie ersetzt den Chatverlauf. Vorgaben und Ziele stehen in `Runeway_Prompt_v1.md`, Arbeitsregeln in `CLAUDE.md`.
+Diese Datei fasst den kompletten Stand zusammen, damit eine neue Session nahtlos weitermachen kann. Sie ersetzt den Chatverlauf. Vorgaben und Ziele stehen in `Runeway_Prompt_v1.md`, Arbeitsregeln in `CLAUDE.md`, alle sichtbaren Texte in `Runeway_Strings.md`.
 
 ---
 
@@ -8,24 +8,22 @@ Diese Datei fasst den kompletten Stand nach Version 1.2 zusammen, damit eine neu
 
 Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forever** (Interface 16001) im Stil von Path of Exile und Diablo IV.
 
-**Stand 1.0:**
-- **Zone:** Tirisfal ist vollständig aus den RAW-Spieldaten gebaut. Die Ruinen von Lordaeron sind als Stadt eingezeichnet.
-- **Kartenebenen:** Begehbare Fläche (leicht abgedunkelt), schraffierte nicht begehbare Bereiche (Gebirge, Wasser, Mauern), Geländelinien, Wasserlinien und Wege.
-- **Questbereiche:** Exakt dieselben Bereiche wie auf der Weltkarte, als blauer, mitdrehender Rand.
-- **Questmarker:** Nur für punktuelle Ziele (Abgabe, Gespräche), im Weltkarten-Stil.
-- **Zoom:** Nahtlos durch Überblendung der Kachel-Zoomstufen. Breite und Höhe sind frei einstellbar (Standard 800 × 600), die Karte blendet oval aus.
+**Funktionen (Stand 1.4, alles im Spiel getestet):**
+- **Karte:** fünf Zonen aus den RAW-Spieldaten (Tirisfal, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains) mit begehbarer Fläche, Schraffur für nicht begehbare Bereiche, Gelände-, Wasser- und Weglinien; Ruinen von Lordaeron als Stadt. Angrenzende Zonen gedimmt, nahtloser Zoom, frei einstellbare Breite und Höhe, ovale Randausblendung.
+- **Quests:** Questbereiche wie auf der Weltkarte (auch aus angrenzenden Zonen), Questmarker für Punktziele, Tooltips und Hervorhebung beim Überfahren.
+- **Leichnam-Marker** im Tod, am Kartenrand in Richtung des Leichnams, wenn er außerhalb liegt.
+- **Bedienung:** drei Aufruf-Modi (eigene Taste, Kartentaste M, dauerhaft), automatisches Ausblenden, gesperrt/klickdurchlässig oder verschiebbar, Mausrad-Zoom abschaltbar, Slash-Befehle.
+- **Einstellungen** im Blizzard-Stil mit Unterpunkten, Profil-Export/-Import als Text, Lokalisierung in allen elf Client-Sprachen.
 
-Im Spiel getestet und für Version 1 abgenommen.
+**Versionen:**
 
-**Stand 1.1 (im Spiel getestet und abgenommen):** Punkt 3.4 ist umgesetzt. Dazu gehören die Einstellungsseite im Blizzard-Stil (`Options.lua`), die Aufruf-Modi samt eigener Weltkarten-Tastenbelegung, das automatische Ausblenden und die Fensterbedienung laut Vorgabe.
-
-**Stand 1.4 (im Spiel getestet):** Profil-Export und -Import als Text (Unterpunkt „Profile“, Abschnitt 3).
-
-**Stand 1.3 (im Spiel getestet):** Lokalisierung in allen elf WoW-Client-Sprachen (Abschnitt 3, „Lokalisierung“); Französisch im Spiel geprüft, die KI-Übersetzungen außer Deutsch sind noch nicht von Muttersprachlern geprüft.
-
-**Stand 1.2 (im Spiel getestet und abgenommen):** Etappe 1 des Pakets „weitere Zonen“ (Abschnitt 8), dazu Dimmung angrenzender Zonen, glatte Wege, Leichnam-Marker, Tooltips und Hervorhebung beim Überfahren, frei einstellbare Breite und Höhe, neue Einstellungsstruktur (Hauptseite mit Einleitung und Schnellbefehlen, Unterpunkte) und Lokalisierung Englisch/Deutsch.
-- **Zonen:** Tirisfal, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains in einem Mosaik (Kacheln 26–38 / 24–36). Alterac ist dabei, weil es zwischen den anderen liegt; ohne es entstünde ein ausgeblendetes Loch.
-- **Questbereiche und Questmarker angrenzender Zonen:** siehe Abschnitt 5, „Nachbarzonen“.
+| Version | Inhalt |
+|---|---|
+| 1.0 | Tirisfal aus RAW-Daten, Ebenen, Questbereiche, Diablo-Look, Ruinen von Lordaeron |
+| 1.1 | Einstellungsseite, Aufruf-Modi, automatisches Ausblenden, Fensterbedienung (Prompt 3.4) |
+| 1.2 | Etappe 1 (fünf Zonen), Questbereiche und Dimmung angrenzender Zonen, kleinere Kacheln, glatte Wege, Leichnam-Marker, Tooltips, Breite/Höhe, neue Einstellungsstruktur, Englisch/Deutsch |
+| 1.3 | Lokalisierung in elf Sprachen (außer Deutsch KI-Übersetzungen, Französisch im Spiel geprüft) |
+| 1.4 | Profil-Export und -Import |
 
 ---
 
@@ -33,14 +31,14 @@ Im Spiel getestet und für Version 1 abgenommen.
 
 | Branch | Inhalt |
 |---|---|
-| `main` | Version 1.0 (PR mschettl/Runeway#1), 1.1 per Folge-PR. |
+| `main` | Freigegebener Stand, je Version ein PR (zuletzt 1.4, mschettl/Runeway#7). |
 | `claude/dreamy-lovelace-efolxg` | Entwicklungsbranch (Addon, Build-Skripte, Tests, diese Datei). |
 | `data` (orphan) | Rohdaten aus wow.export, nie auf `main`. ~1,6 GB. |
 
 **Inhalt von `data`** (Ordner `Wow export files/`):
 - `maps/azeroth/`: ADT-Export der Östlichen Königreiche (736 Kacheln: Root, `_tex0`, `_obj0/1`, `_lod`), WDT/WDL, Minimap-PNGs von Tirisfal (26–34 / 26–29), `adt_<c>_<r>_ModelPlacementInformation.csv` (Modellplatzierungen).
 - `AreaTable.csv`, `QuestPOIBlob.csv`, `QuestPOIPoint.csv`. Die beiden QuestPOI-Tabellen sind für Questbereiche unbrauchbar, siehe Abschnitt 6.
-- `world/`: kompletter `world`-Ordner (WMO, M2, BLP). Für 1.0 wird nur genutzt:
+- `world/`: kompletter `world`-Ordner (WMO, M2, BLP). Genutzt werden bisher nur:
   - `world/wmo/autogen-names/undercity/` (OBJ-Export mit „Split WMO Groups“, 215 Gruppen, plus `20736.json`)
   - `world/generic/undead/passivedoodads/lordaerontowers/*.m2` (Türme der Stadtmauer)
 
@@ -57,14 +55,16 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 
 | Datei | Inhalt |
 |---|---|
-| `Runeway.toc` | Interface 16001, Version 1.1, SavedVariables `RunewayDB`; lädt `Tiles.lua`, `Core.lua`, `QuestAreas.lua`, `Options.lua` |
-| `Core.lua` | Fenster, Kacheln, Zoom, Drehung, Questmarker, Sichtbarkeit und Aufruf-Modi, Slash-Befehle, Einstellungen |
-| `Options.lua` | Einstellungen im Blizzard-Stil (`Settings.RegisterVerticalLayoutCategory` mit Proxy-Settings) unter Optionen → AddOns → Runeway, Layer als eigener Abschnitt auf derselben Seite; auch über `/rnw config`. Wird bei `PLAYER_LOGIN` aufgebaut, weil die Tastenbelegungs-Zeilen `GetNumBindings` brauchen |
-| `QuestAreas.lua` | Questbereiche: Abtasten, Umriss, Zeichnen |
-| `Tiles.lua` | generiert: vorhandene Kacheln und Ebenen je Kachel, z. B. `["31_28"] = "fhstwr"` |
-| `Bindings.xml` | Tastenbelegung `RUNEWAY_TOGGLE` |
-| `media/` | `hatch512/256/128.tga` (gemeinsames Schraffurmuster je Zoomstufe, erzeugt von `build_raw.py`), `fade1.tga`–`fade5.tga` (runde Ausblendmasken je Randstärke, erzeugt mit `scripts/make_masks.py`), `arrow.tga` (Spielerpfeil), `edge.tga` (kantengeglättete Linientextur), `dot.tga` (Rückfall-Symbol) |
-| `tiles/0/[256/ \| 128/]<c>_<r>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Speicherbedarf siehe „Dateigröße“ unten |
+| `Runeway.toc` | Interface 16001, Version 1.4, SavedVariables `RunewayDB`; lädt `Locales/*.lua`, `Tiles.lua`, `Core.lua`, `QuestAreas.lua`, `Profile.lua`, `Options.lua`, `Options.xml` |
+| `Locales/` | Texte je Client-Sprache (`ns.L`): `enUS.lua` (Basis) und `deDE.lua` aus `Runeway_Strings.md` erzeugt, die übrigen neun von Hand gepflegt |
+| `Core.lua` | Fenster, Kacheln, Zoom, Drehung, Zonen-Dimmung, Questmarker, Leichnam, Mouse-over, Sichtbarkeit und Aufruf-Modi, Slash-Befehle, Standardwerte |
+| `QuestAreas.lua` | Questbereiche: Abtasten, Umriss, Zeichnen, Trefferprüfung für Mouse-over |
+| `Profile.lua` | Profil-Export/-Import und sein Dialog; Pfad-Hilfen `ns.GetPath`/`ns.SetPath` |
+| `Options.lua`, `Options.xml` | Einstellungen im Blizzard-Stil (`Settings.RegisterVerticalLayoutCategory` mit Proxy-Settings), eigene Zeilenvorlagen; wird bei `PLAYER_LOGIN` aufgebaut, weil die Tastenbelegungs-Zeilen `GetNumBindings` brauchen |
+| `Tiles.lua` | generiert: Kacheln mit ihren Ebenen (`["31_28"] = "fhstwr"`, Grenzkacheln als Zonenteile `"c_r_z<zone>"`) und `RunewayZones` |
+| `Bindings.xml` | Tastenbelegungen `RUNEWAY_TOGGLE` und `RUNEWAY_WORLDMAP` |
+| `media/` | `hatch512/256/128.tga` (gemeinsames Schraffurmuster je Zoomstufe, erzeugt von `build_raw.py`), `fade1.tga`–`fade5.tga` (Ausblendmasken je Randstärke, `scripts/make_masks.py`), `arrow.tga` (Spielerpfeil), `edge.tga` (kantengeglättete Linientextur), `dot.tga` (Rückfall-Symbol) |
+| `tiles/0/[256/ \| 128/]<key>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Speicherbedarf siehe „Dateigröße“ unten |
 
 `tools/Probe.lua` ist ein Entwicklungswerkzeug und nicht im Release (siehe Abschnitt 6).
 
@@ -73,7 +73,7 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 
 Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 
-### Dateigröße (1.2)
+### Dateigröße
 - **Gespeicherte Zoomstufen je Ebene** (`FILE_LODS` in `build_raw.py`, `FILE_LOD` in `Core.lua`): Linien (`terrain`, `water`, `roads`) in 512/256/128, `shade` in 256/128 (die 512-Stufe nutzt 256), `fill` nur in 128. Fallen zwei Zoomstufen auf dieselbe Datei, wird nicht überblendet.
 - **Schraffur:** Die Kachel `256/<c>_<r>_hatch.tga` ist nur noch die Maske der nicht begehbaren Fläche. Die Linien kommen aus `media/hatch<lod>.tga` (ganze Zahl Linien pro Kachel: 57 / 43 / 32, daher über Kachelgrenzen fortlaufend). Die Maske ist eine `MaskTexture`, die wie die Kachel platziert und gedreht wird; jede Schraffur-Textur hat damit zwei Masken (Randausblendung + Fläche). Ohne Masken-Unterstützung entfällt die Schraffur.
 - **Ergebnis:** 5 Zonen 17,3 MB Kacheln + 0,8 MB Muster (vorher 68,5 MB, also −75 %). Hochrechnung: Östliche Königreiche ≈ 70 MB, beide Kontinente ≈ 140 MB. Im Spiel belegen nur die Kacheln im Sichtfeld Speicher (Freigabe nach ~20 s), unabhängig von der Zahl der Zonen.
@@ -111,7 +111,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `/rnw lock` / `unlock` | gesperrt = klickdurchlässig |
 | `/rnw alpha 5-100` | Deckkraft der Kartenebenen |
 | `/rnw zoom 0.08-5` | Zoom setzen |
-| `/rnw size N` | Seitenlänge 200–1400 px |
+| `/rnw size W [H]` | Breite und Höhe 200–1400 px (ohne H: beide gleich) |
 | `/rnw rotate` | mitdrehen oder Norden oben |
 | `/rnw edge 1-5` | Stärke des weichen Rands |
 | `/rnw mode key\|mapkey\|permanent` | Aufruf-Modus |
@@ -121,7 +121,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `/rnw pos` | Position, Instanz und Karten-ID zum Kopieren |
 | `/rnw reset` | Einstellungen zurücksetzen |
 
-Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
+Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „Karte ein-/ausblenden“ im Kopf der Einstellungen.
 
 **Bedienung:**
 - **Mausrad:** zoomt gesperrt wie entsperrt, abschaltbar über „Zoom with the mouse wheel“ (`wheelZoom`, dann `EnableMouseWheel(false)` und das Mausrad steuert die Kamera). `EnableMouse` nur entsperrt.
@@ -182,7 +182,7 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 
 ### Wichtige Laufzeit-Mechanik
 - **Weltkoordinaten:** `UnitPosition` liefert (Nord, West). Eine ADT-Kachel ist 1600/3 Yards groß. Kachelmitte: `nord = (32 - zeile) * T - T/2`, `west = (32 - spalte) * T - T/2`.
-- **Nahtloser Zoom:** Pro Kachel und Ebene gibt es eine Textur je Zoomstufe, einmal geladen und dann behalten. Um die Umschaltpunkte (Kachelgröße 160 / 360 px, ±25 %) werden zwei Stufen per Vertex-Alpha überblendet. Eine Stufe, die noch lädt (`IsObjectLoaded`), gibt ihr Gewicht an eine geladene ab. Texturen, die etwa 20 s unbenutzt sind, werden freigegeben.
+- **Nahtloser Zoom:** Pro Kachel und Ebene gibt es eine Textur je gespeicherter Zoomstufe. Um die Umschaltpunkte (Kachelgröße 160 / 360 px, ±25 %) werden zwei Stufen per Vertex-Alpha überblendet. Eine Stufe, die noch lädt (`IsObjectLoaded`), gibt ihr Gewicht an eine geladene ab. Texturen, die etwa 20 s unbenutzt sind, werden freigegeben.
 - **Ausblendrand:** Kacheln über eine `MaskTexture` (`fade<edge>.tga`). Linien nehmen keine Masken an, deshalb bekommen die Questlinien dieselbe ovale Ausblendung rechnerisch pro Segment.
 - **Pixelraster:** Bewegte Texturen und Linien rasten nicht ein (`SetSnapToPixelGrid(false)`, `SetTexelSnappingBias(0)`), sonst springen sie beim Gehen.
 - **Achsen:** Die Achsenreihenfolge von `C_Map.GetWorldPosFromMapPos` wird je Karte einmal gegen die Spielerposition geprüft (`MapToWorld` in `Core.lua`).
@@ -292,7 +292,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 | 3.3 Questgebiete | **erledigt**, über das Abtasten statt DB2 (die Tabellen sind leer) |
 | 3.4 Konfigurationsoberfläche und Bedienung | **erledigt** in 1.1, im Spiel getestet |
 | 3.5 Abschluss (Lua-Prüfung, Simulation, Version 1.0, ZIP) | **erledigt** (Tests mit Lua 5.1, `simulate.py`, Release-ZIP) |
-| Zusätzlich | Diablo-IV-Stil, frei skalierbare ovale Karte, nahtloser Zoom, Ruinen von Lordaeron, Questmarker im Weltkarten-Stil |
+| Zusätzlich | Diablo-IV-Stil, frei skalierbare ovale Karte, nahtloser Zoom, Ruinen von Lordaeron, Questmarker im Weltkarten-Stil, angrenzende Zonen, Leichnam-Marker, Mouse-over-Tooltips, Profil-Export/-Import, Lokalisierung |
 
 ---
 
@@ -357,44 +357,22 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 - **Pipeline:** unverändert nutzbar (gleiches Split-ADT- und WMO-Format), Eingabe ist der wow.export-Export des jeweiligen Clients. Die Parameter (Steigung, Wege-Texturen) brauchen eventuell Feinjustierung für neuere Gebiete.
 - **Konsequenz schon jetzt:** Datenpfade und Paketnamen nicht fest an „Forever“ binden, sondern über Spielversion und Karten-ID auflösen; dann ist Retail nur ein weiterer Datensatz.
 
-### Nächstes Paket (neue Session): Fundament + weitere Zonen + Questbereiche angrenzender Zonen
+### Nächstes Paket (neue Session): Fundament, dann weitere Zonen
 
-**Reihenfolge in der Session:** zuerst das Fundament (Roadmap Schritt 1: Block-Build, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID), dann Etappe 1.
+**Ziel:** Roadmap Schritt 1 (Fundament), danach die nächsten Etappen der Östlichen Königreiche.
 
-**Hinweis:** Etappe 1 (5 Zonen) und die Kachel-Optimierung wurden vor dem Fundament umgesetzt (1.2); das Fundament (Block-Build) folgt vor weiteren Etappen.
+**Fundament:**
+1. **Block-Build:** `build_raw.py` rechnet in Blöcken (z. B. 8 × 8 Kacheln) mit 1–2 Kacheln Überlappung und schreibt nur das Innere. Ergebnis identisch zum Gesamtbau, RAM-Bedarf konstant. Nicht-lokale Schritte (Entfernen kleiner Inseln `MIN_WALK`/`MIN_ISLAND`, Wegstücke) brauchen einen ausreichend breiten Rand oder eine globale Vorstufe auf grobem Raster.
+2. **Schraffur in Weltkoordinaten:** Die Phase des Musters hängt heute an ganzen Linien pro Kachel (`hatch_pattern`), das passt bereits blockübergreifend; beim Umbau prüfen, dass das so bleibt.
+3. **Kachelliste pro Karten-ID:** `Tiles.lua` und `RunewayZones` sind schon nach Instanz-ID geschlüsselt (`[0]`); Laufzeit und Build so verallgemeinern, dass weitere Karten (Kalimdor = 1, Instanzen) nur ein weiterer Datensatz sind.
 
-**Ziel:** Die Karte wächst über Tirisfal hinaus, nahtlos über Zonengrenzen. Questbereiche benachbarter Zonen erscheinen, sobald sie im Sichtfeld liegen.
-
-**Ausgangslage:**
-- Die ADTs der kompletten Östlichen Königreiche (736 Kacheln, inkl. `_tex0`, `_obj0/1`) liegen bereits auf `data`. Für die Kartenebenen ist **kein neuer Export** nötig.
-- Minimap-PNGs gibt es nur für Tirisfal (Kacheln 26–34 / 26–29). Sie dienen nur der Vorschau `preview_over_minimap.png`. Für neue Zonen braucht es dafür einen Minimap-Export aus wow.export (Mario).
-- `build_raw.py` baut alle Zonen eines Laufs als **ein Mosaik**. Gemeinsame Grenzen sind damit nahtlos; die weiche Ausblendung (`EDGE_FADE`) liegt nur am Außenrand der gebauten Zonen. Deshalb immer alle gewünschten Zonen zusammen bauen (über `zones.txt`), nie einzeln nacheinander, sonst überschreiben sich Grenzkacheln.
-
-**Stand Etappe 1 (1.2):** gebaut und im Spiel getestet und abgenommen (Testliste 1.2 in Abschnitt 9).
-- `build_raw.py` braucht für die 5 Zonen (13 × 13 Kacheln) wenige GB RAM; die Texturgewichte der ~570 Weg-Texturen werden direkt in ein Raster summiert (vorher ein Raster je Textur).
-- Die Parameter sind unverändert (an Tirisfal kalibriert). Die Vorschau zeigt plausible Ergebnisse; ohne Minimap-Export der neuen Zonen ist der Abgleich aber nur grob möglich.
-- Questbereiche angrenzender Zonen: umgesetzt (Abschnitt 5, Punkt 7). Im Spiel bestätigt: `C_QuestLog.GetQuestsOnMap(Nachbarzone)` und `QuestPOIFrame:SetMapID(Nachbarzone)` liefern in Forever.
-
-**Vorgehen in Etappen:**
-1. **Etappe 1 (erledigt, siehe oben):** Nachbarn von Tirisfal: `Silverpine Forest`, `Western Plaguelands`, ggf. `Hillsbrad Foothills` (Namen exakt wie `AreaName_lang` in `AreaTable.csv` prüfen). In `zones.txt` eintragen, `build_raw.py` laufen lassen.
-2. **Pro Zone prüfen** (Vorschauen in `build/`): Steigung bzw. Begehbarkeit, Wege, Wasser, Zonengrenze, Meeresküste. Die Parameter (`BLOCK_CLOSE`, `MIN_WALK`, `MIN_ISLAND`, Weg-Gewicht 0.3) sind an Tirisfal kalibriert und können je Landschaft (z. B. Pestländer, Gebirge in Hillsbrad) Nachjustieren brauchen.
-3. **Im Spiel testen:** Übergang über die Zonengrenze ohne Kante oder Lücke, Zoom, Ladezeiten.
-4. Weitere Etappen danach: restliche Östliche Königreiche.
-
-**Risiken / offene Fragen:**
-- **Speicher beim Bauen:** Das Mosaik hat 512 px pro Kachel und mehrere Ebenen. Für viele Zonen auf einmal wird das groß (ganze Östliche Königreiche ≈ mehrere GB RAM). Gelöst durch den Block-Build (Roadmap Schritt 1).
-- **Addon-Größe:** seit 1.2 optimiert (Abschnitt 3, „Dateigröße“), Hochrechnung ≈ 70 MB für die Östlichen Königreiche. Größe je Etappe messen (Ausgabe von `build_raw.py`). Falls zwei Masken pro Textur im Spiel nicht funktionieren: Schraffur wieder als Bild in 256 px (≈ +10 MB für 5 Zonen).
-- **`Tiles.lua`:** wird bei jedem Lauf komplett neu geschrieben; Kacheln nicht mehr gebauter Zonen bleiben sonst als Dateien liegen (vor einem Lauf `Runeway/tiles/0` leeren).
-- **Städte:** Undercity bzw. Ruinen von Lordaeron bleiben über `structures.py` erhalten. Andere Städte (z. B. Ironforge, Stormwind) brauchen eigene WMO-Exporte, siehe unten „Weitere Städte“.
-
-**Questbereiche angrenzender Zonen (`QuestAreas.lua`):**
-- **Heute:** Abgefragt und abgetastet werden nur die Quests der aktuellen Zonenkarte (`C_Map.GetBestMapForUnit`). Bereiche jenseits der Grenze fehlen, grenzüberschreitende Bereiche werden an der Grenze abgeschnitten, weil die Weltkarte jeder Zone nur ihren Ausschnitt liefert.
-- **Plan:**
-  1. Nachbarzonen bestimmen, deren Kartenrechteck das Sichtfeld schneidet: Kinder der Kontinentkarte (`C_Map.GetMapChildrenInfo`) mit ihren Weltrechtecken (`C_Map.GetWorldPosFromMapPos` an den Ecken bzw. `C_Map.GetMapRectOnMap`).
-  2. Pro Nachbarzone die Quests (`C_QuestLog.GetQuestsOnMap`) holen und mit demselben `QuestPOIFrame`-Abtasten verarbeiten (`SetMapID` je Zone, Budget 3 ms pro Frame, aktuelle Zone zuerst).
-  3. Ergebnisse liegen bereits in Weltkoordinaten vor und sind je Karte in `questAreaCache` gespeichert; beim Zeichnen die Bereiche aller relevanten Karten zusammenführen. Dieselbe Quest auf zwei Karten nur einmal zeichnen bzw. Teilbereiche zusammenführen.
-  4. Questmarker (Punktziele) ebenso aus den Nachbarzonen übernehmen.
-- **Prüfen:** ob `C_QuestLog.GetQuestsOnMap(Nachbarzone)` in Forever die Quests der Nachbarzone liefert, solange der Spieler nicht dort ist (Abschnitt 6: Bereiche kommen vom Server, nach dem Login auch ohne geöffnete Karte). Betroffen sind `QuestAreas.lua` (~Zeile 396) und die Questmarker in `Core.lua` (~Zeile 371).
+**Ausgangslage für weitere Zonen:**
+- Die ADTs der kompletten Östlichen Königreiche liegen auf `data`; für die Kartenebenen ist kein neuer Export nötig. Minimap-PNGs (nur für die Vorschau) gibt es nur für Tirisfal.
+- `build_raw.py` baut alle Zonen aus `zones.txt` als ein Mosaik. Immer alle Zonen zusammen bauen, nie einzeln nacheinander (Grenzkacheln, Zonenteile, Randausblendung).
+- Pro Zone die Vorschauen prüfen (Begehbarkeit, Wege, Wasser, Zonengrenze, Küste). Die Parameter (`BLOCK_CLOSE`, `MIN_WALK`, `MIN_ISLAND`, Weg-Gewicht 0.3) sind an Tirisfal kalibriert und haben für Etappe 1 gepasst.
+- Im Spiel: Übergang über Zonengrenzen, Dimmung, Zoom, Ladezeiten.
+- Größe je Etappe messen; Hochrechnung ≈ 70 MB für die Östlichen Königreiche (Abschnitt 3, „Dateigröße“).
+- Andere Städte (Ironforge, Stormwind) brauchen eigene WMO-Exporte, siehe „Weitere Städte“.
 
 ### Später
 - **Weitere Städte:**
@@ -417,45 +395,27 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 ```bash
 python tests/check_locales.py                 # Sprachdateien: Schlüssel und Platzhalter wie enUS
 RUNEWAY_LOCALE=ruRU python tests/run_stub.py  # derselbe Test mit anderer Client-Sprache (Standard enUS)
-python tests/run_stub.py                      # lädt das Addon (Lua 5.1) gegen einen WoW-API-Stub, prüft Kacheln/Questbereiche/Zoom-Laden
+python tests/run_stub.py                      # lädt das Addon (Lua 5.1) gegen einen WoW-API-Stub: Kacheln, Questbereiche, Optionen, Profil, Mouse-over; meldet versehentliche globale Variablen
 python tests/render_quest_outlines.py <SavedVariables/Runeway.lua>   # Questumrisse aus Probe-Daten mit dem Addon-Code
 python scripts/simulate.py                    # Darstellung aus den Kacheln
-cd <repo> && zip -r build/Runeway-1.2.zip Runeway
+cd <repo> && zip -r build/Runeway-<version>.zip Runeway
 ```
 
 **Testwerkzeug `/rnw probe`:** Nur in Entwicklungsbuilds; dazu `tools/Probe.lua` in den Addon-Ordner kopieren und in der `.toc` eintragen. Es tastet die Questbereiche der aktuellen Zone ab und speichert sie in `RunewayDB.probe`. Die Auswertung macht `scripts/probe_view.py`.
 
-**Installation:** Alten Ordner `Interface\AddOns\Runeway` löschen, `Runeway-1.2.zip` dort entpacken und WoW komplett neu starten. Neue Texturdateien (hier die Kacheln der neuen Zonen) lädt WoW erst nach einem Neustart, `/reload` reicht nicht.
+**Installation:** Alten Ordner `Interface\AddOns\Runeway` löschen, das ZIP dort entpacken und WoW komplett neu starten. Neue Dateien (Kacheln, Einträge in der `.toc`, `Bindings.xml`) lädt WoW erst nach einem Neustart; reine Lua-Änderungen an bestehenden Dateien reichen mit `/reload`.
 
-**Testliste 1.2 (alle Punkte im Spiel bestanden):**
-1. **Neue Zonen:** Silverpine, Western Plaguelands, Hillsbrad, Alterac ablaufen: Begehbarkeit, Wasser, Wege, Küste plausibel? Auffällige Stellen mit `/rnw pos` und Screenshot melden.
-2. **Zonengrenzen:** Übergang Tirisfal ↔ Silverpine und Tirisfal ↔ Western Plaguelands ohne Kante, Lücke oder Flackern, in allen Zoomstufen. Außenrand (z. B. Richtung Eastern Plaguelands) blendet weich aus.
-3. **Ladezeit:** spürbare Ruckler beim Zoomen oder an Zonengrenzen?
-4. **Schraffur (neu als Muster + Maske):** nur auf nicht begehbaren Flächen, beim Drehen deckungsgleich mit den Geländelinien, weicher Rand zum Kartenrand wie bisher, keine Nähte zwischen Kacheln, Zoomstufen-Wechsel ohne Springen.
-5. **Questbereiche Nachbarzone:** In Tirisfal nahe der Grenze eine Quest aus Silverpine im Log haben: Ihr Bereich erscheint (nach etwa 1 s), auch wenn man noch in Tirisfal steht. Beim Herauszoomen kommen weitere Zonen hinzu.
-6. **Questmarker Nachbarzone:** Abgabe-Marker einer Quest der Nachbarzone erscheint, ohne doppelt zu sein.
-7. **Grenzüberschreitender Bereich:** Ein Bereich über die Zonengrenze wird nicht an der Grenze abgeschnitten und nicht doppelt gezeichnet.
-8. **Zonen-Dimmung:** In Tirisfal ist Tirisfal voll, die Nachbarzonen gedimmt („Adjacent zones opacity“, Standard 30 %). Beim Überschreiten der Grenze tauschen die Zonen weich (~0,4 s). Kein Flackern direkt auf der Grenze, keine sichtbaren Kachelkanten im Übergang.
-9. **Wege, Standardwerte, Kombinieren-Option:** Wege glatt und gleich breit wie Geländelinien; „Standard“ setzt die neuen Werte; „Combine overlapping quest areas“ aus → jede Quest eigener Umriss.
-10. **Leichnam:** Sterben, Geist freigeben: der Leichnam ist auf der Karte markiert, außerhalb des Sichtfelds am Rand in seiner Richtung; nach der Wiederbelebung verschwindet der Marker.
-
-**Testliste 1.1 (Punkt 3.4, alle Punkte im Spiel bestanden):**
-1. **Optionen:** Optionen → AddOns → Runeway und `/rnw config` öffnen die Seite. Alle Regler, Häkchen und Farbfelder wirken sofort. „Standard“ setzt die jeweilige Seite zurück.
-2. **Farbe:** Ein Farbfeld öffnet den Farbwähler. „Abbrechen“ stellt die alte Farbe wieder her.
-3. **Rand:** Die Stufen 1–5 sind sichtbar unterschiedlich. Die Questränder blenden passend dazu aus.
-4. **Mausrad gesperrt:** Über der Karte wird gezoomt, Klicks gehen durch die Karte hindurch.
-5. **Entsperrt:** Ziehen verschiebt. Der Griff unten rechts ändert Breite und Höhe unabhängig. Der Rahmen erscheint beim Überfahren.
-6. **Taste M:** M öffnet und schließt das Overlay, die Belegung „World map (map key mode)“ öffnet die Weltkarte. Auch nach einem Kampf und nach `/reload` prüfen.
-7. **Permanent:** Das Overlay ist nach dem Login sichtbar.
-8. **Ausblenden:** Kampf, Instanz, Reittier oder Flug und Stadt einzeln prüfen. Nach dem Ende der Bedingung erscheint das Overlay wieder.
-
-**Abnahme-Checkliste (für spätere Builds):**
-1. **Look:** Kartenstil wie im Diablo-Screenshot.
-2. **Zoom:** nahtlos, ohne Flackern und ohne Kachelkanten.
-3. **Quest areas:** durchgehend in jeder Zoomstufe, weich ausgeblendet zum Kartenrand, korrekt bei Fortschritt.
-4. **Quest marks:** nur für Punktziele, ohne Springen beim Gehen.
-5. **City:** Ruinen von Lordaeron erkennbar, auch herausgezoomt.
-6. **Window:** Position, Breite und Höhe bleiben über Logout erhalten.
+**Regressionsliste (vor jedem Release im Spiel prüfen, Stand 1.4 alles bestanden):**
+1. **Karte:** Look wie im Diablo-Screenshot; Zoom nahtlos ohne Flackern oder Kachelkanten; Schraffur deckungsgleich mit den Geländelinien; Ruinen von Lordaeron erkennbar.
+2. **Zonen:** Übergänge zwischen den gebauten Zonen ohne Kante oder Lücke; angrenzende Zonen gedimmt, beim Grenzübertritt weicher Tausch; Außenrand blendet weich aus.
+3. **Questbereiche:** durchgehend in jeder Zoomstufe, weich zum Kartenrand, korrekt bei Fortschritt; auch aus angrenzenden Zonen, grenzüberschreitende nicht abgeschnitten oder doppelt; Option „Combine overlapping quest areas“ an/aus.
+4. **Questmarker und Mouse-over:** Marker nur für Punktziele, kein Springen beim Gehen; Tooltips wie auf der Minimap, bei überlappenden Bereichen nur die betroffenen Quests; Hervorhebung von Pfeil, Leichnam, Markern und Bereichen.
+5. **Leichnam:** im Tod markiert, außerhalb am Rand in seiner Richtung, nach der Wiederbelebung weg.
+6. **Fenster:** Gesperrt = klickdurchlässig; entsperrt verschieben, Griff ändert Breite und Höhe; Mausrad-Zoom an/aus; Position und Größe bleiben über Logout; Regler zeigen Änderungen per Mausrad/Griff sofort.
+7. **Aufruf-Modi:** eigene Taste; Kartentaste M (Weltkarte über „World map (map key mode)“, auch nach Kampf und `/reload`); dauerhaft; automatisches Ausblenden (Kampf, Instanz, Reittier/Flug, Stadt).
+8. **Einstellungen:** Hauptseite mit Einleitung und Schnellbefehlen, Unterpunkte; Ebenen-Zeilen (Häkchen, Farbe, Deckkraft); „Standard“ je Seite; Knopf „Karte ein-/ausblenden“ neben „Standard“.
+9. **Profil:** Export, Einstellungen ändern, Import stellt alles wieder her; ungültiger Text wird abgelehnt.
+10. **Sprache:** mit deutschem und einem weiteren Client (z. B. Französisch) alle Texte übersetzt; keine Lua-Fehler, keine blockierten Aktionen („Runeway wurde geblockt“) beim Durchklicken der Blizzard-Menüs.
 
 ---
 

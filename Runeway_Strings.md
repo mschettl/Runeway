@@ -144,7 +144,7 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `LOADED` | Chat beim Login | v%s loaded. | v%s geladen. |
 | `NO_POSITION` | Statuszeile der Karte | No position (instance?) | Keine Position (Instanz?) |
 | `NO_DATA` | Statuszeile der Karte | No contours for this area yet | Für dieses Gebiet gibt es noch keine Karte |
-| `PACK_FAILED` | Chat, wenn das Datenpaket der aktuellen Karte nicht lädt (Paketname, Grund); die Karte bleibt dann ausgeblendet | Data pack %s is missing (%s), so the map data could not be loaded. The map stays hidden. | Datenpaket %s fehlt (%s), daher konnten die Kartendaten nicht geladen werden. Die Karte bleibt ausgeblendet. |
+| `PACK_FAILED` | Chat, wenn das Datenpaket der aktuellen Karte nicht lädt (Paketname ohne „Runeway_“); die Karte bleibt dann ausgeblendet | Data pack %s not found. Map data could not be loaded. | Datenpaket %s nicht gefunden. Kartendaten konnten nicht geladen werden. |
 | `VIEW_MODE` | Statuszeile der Karte im Ansichtsmodus | View mode: drag to pan, /rnw view returns to the player | Ansichtsmodus: Ziehen verschiebt, /rnw view kehrt zum Spieler zurück |
 | `NO_MASKS` | Chat beim Laden | Note: this client does not support mask textures, the edge is clipped hard. | Hinweis: Dieser Client unterstützt keine Maskentexturen, der Rand wird hart abgeschnitten. |
 | `MSG_LOCKED` | Chat `/rnw lock` | locked (clicks pass through) | gesperrt (Klicks gehen durch) |

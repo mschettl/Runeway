@@ -214,6 +214,11 @@ local function PackOf(inst)
     return packOf[inst]
 end
 
+-- Chat note for a data pack that cannot be loaded, named without the "Runeway_" prefix
+local function PackFailed(pack)
+    Print(L.PACK_FAILED:format((pack:gsub("^Runeway_", ""))))
+end
+
 -- Loads the data pack of a map once; reports a pack that cannot be loaded (disabled, wrong version, ...)
 local function LoadPack(inst)
     local pack = inst and PackOf(inst)
@@ -222,7 +227,7 @@ local function LoadPack(inst)
     local loaded, reason = (C_AddOns and C_AddOns.LoadAddOn or LoadAddOn)(pack)
     if not loaded then
         packTried[pack] = _G["ADDON_" .. tostring(reason)] or tostring(reason)
-        Print(L.PACK_FAILED:format(pack, packTried[pack]))
+        PackFailed(pack)
     end
 end
 
@@ -924,8 +929,8 @@ local function UpdateVisibility()
 end
 
 function Runeway_Toggle()
-    local pack, err = MissingPack()
-    if pack then return Print(L.PACK_FAILED:format(pack, err)) end
+    local pack = MissingPack()
+    if pack then return PackFailed(pack) end
     if lastReason or db.mode == "permanent" then
         override = not view:IsShown()
     else

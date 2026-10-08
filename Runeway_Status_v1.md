@@ -79,7 +79,7 @@ Seit 1.6 besteht das Release aus zwei Ordnern, die beide nach `Interface\AddOns`
 ### Datenpakete laden (`Core.lua`, `PackOf`/`LoadPack`)
 - **Zuordnung:** Beim ersten Bedarf liest der Kern alle installierten Addons (`C_AddOns.GetNumAddOns`/`GetAddOnInfo`) und deren Feld `X-Runeway-Maps` (Karten-IDs, durch Leerzeichen oder Komma getrennt). Paketnamen sind damit nicht im Code festgelegt; ein späteres Retail-Paket bräuchte zusätzlich eine Unterscheidung nach Spieltyp.
 - **Laden:** `C_AddOns.LoadAddOn(paket)` einmal je Paket, sobald eine Karte gebraucht wird: bei `PLAYER_ENTERING_WORLD` (hinter dem Ladebildschirm), sonst beim ersten Kachelzugriff (`TileIndex`) bzw. bei `/rnw view <Gebiet>`. Kachelpfade: `Interface\AddOns\<paket>\tiles\<id>\…`.
-- **Fehler:** Lädt ein Paket nicht (z. B. in der Addon-Liste deaktiviert), meldet der Chat einmal „Map data <Paket> could not be loaded: <Grund>“ (`L.PACK_FAILED`, Grund über Blizzards `ADDON_<REASON>`-Texte), die Statuszeile zeigt dasselbe, die Karte bleibt leer. Ohne Paket für die Karte: wie bisher „No contours for this area yet“.
+- **Fehler:** Lädt das Paket der aktuellen Karte nicht (z. B. in der Addon-Liste deaktiviert), meldet der Chat „Data pack <Paket> is missing (<Grund>), so the map data could not be loaded. The map stays hidden.“ (`L.PACK_FAILED`, Grund über Blizzards `ADDON_<REASON>`-Texte), beim Laden und bei jedem Öffnen der Karte. Die Karte bleibt ausgeblendet (`MissingPack` in `UpdateVisibility` und `Runeway_Toggle`), also auch keine Questbereiche, Marker oder Spielerpfeil; auf einer Karte mit Daten erscheint sie wieder. Ohne Paket für die Karte: wie bisher „No contours for this area yet“.
 
 ### Ebenen (Zeichenreihenfolge, Kennbuchstabe in `Tiles.lua`)
 `fill` (f, begehbar) → `hatch` (h, Schraffur nicht begehbar) → `shade` (s, dunkler Saum) → `terrain` (t) → `water` (w) → `roads` (r). Darüber `questAreas` (Linien aus `QuestAreas.lua`), Questmarker und Spielerpfeil.
@@ -439,7 +439,7 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway Runeway_EasternKingdoms
 
 **Installation:** Alte Ordner `Interface\AddOns\Runeway` und `Runeway_*` löschen, das ZIP dort entpacken (beide Ordner) und WoW komplett neu starten. Neue Dateien (Kacheln, Einträge in der `.toc`, `Bindings.xml`) lädt WoW erst nach einem Neustart; reine Lua-Änderungen an bestehenden Dateien reichen mit `/reload`.
 
-**Im Spiel prüfen (1.6):** beide Ordner installiert, WoW neu starten; in der Addon-Liste erscheint „Runeway - Eastern Kingdoms“ (bei Bedarf geladen); Login in den Östlichen Königreichen zeigt die Karte sofort; `/rnw view <Gebiet>` funktioniert; Paket in der Addon-Liste deaktivieren → Chat- und Statuszeilen-Meldung, keine Lua-Fehler; Kalimdor bzw. Instanz → „No contours …“.
+**Im Spiel prüfen (1.6):** beide Ordner installiert, WoW neu starten; in der Addon-Liste erscheint „Runeway - Eastern Kingdoms“ (bei Bedarf geladen); Login in den Östlichen Königreichen zeigt die Karte sofort; `/rnw view <Gebiet>` funktioniert; Paket in der Addon-Liste deaktivieren → Chat-Meldung, Karte bleibt ausgeblendet (auch beim Umschalten), keine Lua-Fehler; Kalimdor bzw. Instanz → „No contours …“.
 
 **Regressionsliste (vor jedem Release im Spiel prüfen, Stand 1.4 alles bestanden; 1.5: Punkte 1–2 für Etappen 2–4 über den Ansichtsmodus geprüft):**
 1. **Karte:** Look wie im Diablo-Screenshot; Zoom nahtlos ohne Flackern oder Kachelkanten; Schraffur deckungsgleich mit den Geländelinien; Ruinen von Lordaeron erkennbar.

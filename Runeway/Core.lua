@@ -226,10 +226,14 @@ local function LoadPack(inst)
     end
 end
 
--- Reason text when the pack of a map could not be loaded, else nil
-local function PackError(inst)
-    local state = packTried[PackOf(inst) or false]
-    return type(state) == "string" and state or nil
+-- Pack name and reason when the data pack of the player's map could not be loaded, else nil.
+-- Without its data the map stays hidden (no quest areas or player arrow on an empty map).
+local function MissingPack()
+    local inst = select(4, UnitPosition("player"))
+    LoadPack(inst)
+    local pack = inst and PackOf(inst)
+    local state = pack and packTried[pack]
+    if type(state) == "string" then return pack, state end
 end
 
 local function TilePath(inst, key, layer, lod)
@@ -763,8 +767,7 @@ view:SetScript("OnUpdate", function(self, e)
     if UpdateTiles(inst, angle) then
         status:SetText(viewAt and L.VIEW_MODE or "")
     else
-        local err = PackError(inst)
-        status:SetText(err and L.PACK_FAILED:format(PackOf(inst), err) or L.NO_DATA)
+        status:SetText(L.NO_DATA)
     end
     UpdateQuestPins()
     UpdateCorpse()
@@ -916,10 +919,13 @@ local function UpdateVisibility()
     else
         want = (db.mode == "permanent" or db.shown) and not reason
     end
+    want = want and not MissingPack()
     if view:IsShown() ~= want then view:SetShown(want) end
 end
 
 function Runeway_Toggle()
+    local pack, err = MissingPack()
+    if pack then return Print(L.PACK_FAILED:format(pack, err)) end
     if lastReason or db.mode == "permanent" then
         override = not view:IsShown()
     else

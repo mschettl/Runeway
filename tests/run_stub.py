@@ -131,11 +131,23 @@ L.execute('''
     SlashCmdList.RUNEWAY("color questareas 1 0.5 0")
     SlashCmdList.RUNEWAY("color fill 1 1 1 0.1")
     upd(RunewayFrame, 0.05)
-    -- a map whose data pack is switched off: reported once in the chat and in the status line, map stays empty
+    -- a map whose data pack is switched off: reported in the chat, the map is hidden (also against a toggle)
+    -- and comes back on a map with data
+    local function poll()
+        for _, f in ipairs(FRAMES) do
+            local h = f:GetScript("OnUpdate")
+            if h and f ~= RunewayFrame then h(f, 0.25) end
+        end
+    end
     POS[4] = 1
-    upd(RunewayFrame, 0.05)
-    upd(RunewayFrame, 0.05)
+    poll()
+    print("map without data pack shown:", tostring(RunewayFrame:IsShown()))
+    SlashCmdList.RUNEWAY("toggle")
+    poll()
+    print("after toggle shown:", tostring(RunewayFrame:IsShown()))
     POS[4] = 0
+    poll()
+    print("back on map 0 shown:", tostring(RunewayFrame:IsShown()))
     upd(RunewayFrame, 0.05)
     SlashCmdList.RUNEWAY("reset")
     POS[1] = nil

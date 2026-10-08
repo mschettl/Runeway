@@ -1,5 +1,7 @@
 -- Minimal WoW API stub to load and exercise the addon outside the game (lupa / Lua 5.x)
 unpack = unpack or table.unpack
+tinsert = table.insert
+UISpecialFrames = {}
 TEXTURE_OBJECTS = {}            -- [file] = last texture object it was set on
 local function obj(name)
     local o = { _name = name, _shown = false, _scripts = {} }
@@ -31,7 +33,8 @@ local function obj(name)
         if k == "SetChecked" then return function(self, v) self._checked = v end end
         if k == "SetValue" then return function(self, v) self._value = v end end
         if k == "SetText" then return function(self, v) self._text = v end end
-        if k == "Text" or k == "Low" or k == "High" then local c = obj(k); rawset(t, k, c); return c end
+        if k == "GetText" then return function(self) return rawget(self, "_text") end end
+        if k == "Text" or k == "Low" or k == "High" or k == "TitleText" or k == "EditBox" or k == "CharCount" then local c = obj(k); rawset(t, k, c); return c end
         if k == "GetFrameLevel" then return function() return 1 end end
         if k == "SetMapID" then return function(self, m) self._map = m end end
         if k == "GetMapID" then return function(self) return rawget(self, "_map") end end

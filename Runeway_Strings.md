@@ -101,6 +101,21 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 
 Werte-Formate (bleiben meist gleich): `%d px`, `%d %%`, `%.2f`, `%.2f x`.
 
+## 3a. Optionen – Profil
+
+| Schlüssel | Englisch | Deutsch |
+|---|---|---|
+| `HEADER_PROFILE` | Profile | Profil |
+| `PROFILE_INTRO` | Export your settings as text, for example before a reinstall, and import them again later. An import replaces all current settings. Key bindings are not part of the profile. | Exportiere deine Einstellungen als Text, zum Beispiel vor einer Neuinstallation, und importiere sie später wieder. Ein Import ersetzt alle aktuellen Einstellungen. Tastenbelegungen sind nicht Teil des Profils. |
+| `PROFILE_EXPORT_TITLE` | Export profile | Profil exportieren |
+| `PROFILE_IMPORT_TITLE` | Import profile | Profil importieren |
+| `PROFILE_EXPORT` | Export | Exportieren |
+| `PROFILE_IMPORT` | Import | Importieren |
+| `PROFILE_EXPORT_HINT` | Copy the text with Ctrl+C and keep it somewhere safe. | Kopiere den Text mit Strg+C und bewahre ihn sicher auf. |
+| `PROFILE_IMPORT_HINT` | Paste a profile text with Ctrl+V and click Import. All current settings are replaced. | Füge einen Profiltext mit Strg+V ein und klicke auf Importieren. Alle aktuellen Einstellungen werden ersetzt. |
+| `PROFILE_IMPORTED` | Profile imported (%d settings). | Profil importiert (%d Einstellungen). |
+| `PROFILE_INVALID` | This is not a valid Runeway profile. | Das ist kein gültiges Runeway-Profil. |
+
 ## 4. Optionen – Ebenen
 
 Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… opacity“ und „… colour“ erscheinen als Tooltip von Regler und Farbfeld.

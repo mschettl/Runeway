@@ -10,7 +10,7 @@ L = lua51.LuaRuntime(unpack_returned_tuples=True)
 L.execute(open(os.path.join(ROOT, 'tests', 'wow_stub.lua')).read())
 LOCALES = ['Runeway/Locales/enUS.lua'] + sorted(f'Runeway/Locales/{os.path.basename(p)}' for p in glob.glob(os.path.join(ROOT, 'Runeway', 'Locales', '*.lua')) if not p.endswith('enUS.lua'))
 L.execute('LOCALE = ...', os.environ.get('RUNEWAY_LOCALE', 'enUS'))   # client language for this run
-for f in (*LOCALES, 'Runeway/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
+for f in (*LOCALES, 'Runeway/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Profile.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
     src = open(os.path.join(ROOT, f), encoding='utf8').read()
     L.execute('NS = NS or {}; local f = assert(loadstring(..., "@' + f + '")); f("Runeway", NS)', src)
 
@@ -176,7 +176,7 @@ L.execute('''
     local hiddenElsewhere = not tg:IsShown()
     EVENT_CALLBACKS["Settings.CategoryChanged"](SETTINGS_MAIN)
     check("show/hide button only on Runeway pages", hiddenElsewhere and tg:IsShown())
-    check("main page: intro + 14 quick commands", kinds.element == 15 and INITS[1].data.text == NS.L.INTRO and INITS[3].data.desc ~= nil)
+    check("main page: intro + 14 quick commands (+ profile text)", kinds.element == 16 and INITS[1].data.text == NS.L.INTRO and INITS[3].data.desc ~= nil)
     check("settings rows: 1 header, 2 bindings, 7 layers",
         kinds.header == 1 and kinds.binding == 2 and kinds.layerrow == 7)
     check("mode dropdown has 3 entries", #INITS[17].options == 3)
@@ -223,6 +223,23 @@ L.execute('''
     local wheelOff = rawget(view, "_wheel") == false
     SETTINGS.RUNEWAY_WHEELZOOM:SetValue(true)
     check("option: wheel zoom off releases the mouse wheel", wheelOff and rawget(view, "_wheel") == true)
+    -- profile: export, change settings, import the export again -> same settings as before
+    local text = NS.ExportProfile()
+    check("profile: export text", text:sub(1, 5) == "RNW1;" and text:find("colors.fill.a=", 1, true) ~= nil)
+    local zoom, roads, hatch, mode = db.zoom, db.colors.roads.r, db.layers.hatch, db.mode
+    db.zoom, db.colors.roads.r, db.layers.hatch, db.mode = 2, 0.5, not hatch, "permanent"
+    local n = NS.ImportProfile(text)
+    check("profile: import restores the settings", n and n > 40 and db.zoom == zoom
+        and math.abs(db.colors.roads.r - roads) < 0.001 and db.layers.hatch == hatch and db.mode == mode)
+    check("profile: rejects other text", NS.ImportProfile("hello") == nil)
+    check("profile: ignores unknown keys and bad values", NS.ImportProfile("RNW1;mode=os.exit;zoom=abc;evil.key=1") == nil
+        and db.mode == mode and db.zoom == zoom)
+    NS.ShowExport()
+    check("profile: export dialog shows the text", RunewayProfileDialog.edit:GetText() == text)
+    NS.ShowImport()
+    RunewayProfileDialog.edit:SetText(text)
+    RunewayProfileDialog.action:GetScript("OnClick")()
+    check("profile: import dialog applies the text", not RunewayProfileDialog:IsShown())
     -- layer row: the colour swatch opens the picker and writes the layer colour
     local row
     for _, i in ipairs(INITS) do if i.kind == "layerrow" and i.data.name == NS.L.LAYER_ROADS then row = i end end

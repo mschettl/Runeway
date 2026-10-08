@@ -2,32 +2,33 @@
 -- or /rnw config. All values live in RunewayDB and apply immediately.
 
 local ADDON, ns = ...
+local L = ns.L                       -- texts in the client language (Locales/)
 
 local LAYER_LABELS = {
-    fill = "Walkable area", hatch = "Not walkable (hatching)", shade = "Dark edge", terrain = "Terrain lines",
-    water = "Water lines", roads = "Roads", questAreas = "Quest areas",
+    fill = L.LAYER_FILL, hatch = L.LAYER_HATCH, shade = L.LAYER_SHADE, terrain = L.LAYER_TERRAIN,
+    water = L.LAYER_WATER, roads = L.LAYER_ROADS, questAreas = L.LAYER_QUESTAREAS,
 }
 local MODES = {
-    { "key", "Own key", "Overlay on its own key binding (Toggle overlay map). The map key stays the world map." },
-    { "mapkey", "Map key (M)", "The world map key opens the overlay. The world map moves to the key bound to \"World map\"." },
-    { "permanent", "Permanent", "The overlay is always shown (except when auto-hidden)." },
+    { "key", L.MODE_KEY, L.MODE_KEY_TIP },
+    { "mapkey", L.MODE_MAPKEY, L.MODE_MAPKEY_TIP },
+    { "permanent", L.MODE_PERMANENT, L.MODE_PERMANENT_TIP },
 }
--- Quick commands: shown at the top of the settings (command, what it does)
+-- Quick commands: shown at the top of the settings (command stays English, description translated)
 local COMMANDS = {
-    { "/rnw", "Show or hide the overlay" },
-    { "/rnw config", "Open these settings" },
-    { "/rnw lock  |  unlock", "Lock (clicks pass through) or unlock the map" },
-    { "/rnw alpha 5-100", "Map opacity in percent" },
-    { "/rnw zoom 0.08-5", "Zoom" },
-    { "/rnw size 200-1400", "Map size in pixels" },
-    { "/rnw rotate", "Rotate with the player or north up" },
-    { "/rnw edge 1-5", "Soft edge strength" },
-    { "/rnw mode key | mapkey | permanent", "How the overlay opens" },
-    { "/rnw layer NAME", "Show or hide a layer: fill, hatch, shade, terrain, water, roads, questareas" },
-    { "/rnw color NAME R G B [A]", "Layer colour and opacity, values 0-1" },
-    { "/rnw keys", "Show what the map key triggers" },
-    { "/rnw pos", "Position and map ID to copy" },
-    { "/rnw reset", "Reset all settings" },
+    { "/rnw", L.CMD_TOGGLE },
+    { "/rnw config", L.CMD_CONFIG },
+    { "/rnw lock  |  unlock", L.CMD_LOCK },
+    { "/rnw alpha 5-100", L.CMD_ALPHA },
+    { "/rnw zoom 0.08-5", L.CMD_ZOOM },
+    { "/rnw size 200-1400", L.CMD_SIZE },
+    { "/rnw rotate", L.CMD_ROTATE },
+    { "/rnw edge 1-5", L.CMD_EDGE },
+    { "/rnw mode key | mapkey | permanent", L.CMD_MODE },
+    { "/rnw layer NAME", L.CMD_LAYER },
+    { "/rnw color NAME R G B [A]", L.CMD_COLOR },
+    { "/rnw keys", L.CMD_KEYS },
+    { "/rnw pos", L.CMD_POS },
+    { "/rnw reset", L.CMD_RESET },
 }
 
 -- Settings row: command on the left, description on the right (template in Options.xml)
@@ -39,8 +40,8 @@ function RunewayCommandRowMixin:Init(initializer)
 end
 
 local AUTO_HIDE = {
-    { "combat", "In combat" }, { "instance", "In instances" }, { "mounted", "Mounted, flying or on a taxi" },
-    { "city", "In cities and inns (resting)" },
+    { "combat", L.HIDE_COMBAT }, { "instance", L.HIDE_INSTANCE }, { "mounted", L.HIDE_MOUNTED },
+    { "city", L.HIDE_CITY },
 }
 
 local category
@@ -95,13 +96,13 @@ local function Build()
     category, layout = Settings.RegisterVerticalLayoutCategory("Runeway")
     local function Header(text) layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(text)) end
 
-    Header("Quick commands")
+    Header(L.HEADER_COMMANDS)
     for _, c in ipairs(COMMANDS) do
         layout:AddInitializer(Settings.CreateElementInitializer("RunewayCommandRowTemplate", { name = c[1], desc = c[2] }))
     end
 
-    Header("Open with")
-    local mode = Setting("mode", Settings.VarType.String, "Open with", function() ns.ApplyAll() end)
+    Header(L.HEADER_OPEN)
+    local mode = Setting("mode", Settings.VarType.String, L.OPEN_WITH, function() ns.ApplyAll() end)
     Settings.CreateDropdown(category, mode, function()
         local container = Settings.CreateControlTextContainer()
         for _, m in ipairs(MODES) do container:Add(m[1], m[2], m[3]) end
@@ -110,34 +111,31 @@ local function Build()
     Binding(layout, "RUNEWAY_TOGGLE")
     Binding(layout, "RUNEWAY_WORLDMAP")
 
-    Header("Hide automatically")
+    Header(L.HEADER_AUTOHIDE)
     for _, a in ipairs(AUTO_HIDE) do
         Check("autoHide." .. a[1], a[2], nil, function() ns.UpdateVisibility() end)
     end
 
-    Header("Window")
-    Check("rotate", "Rotate with the player")
-    Check("locked", "Locked (clicks pass through)",
-        "Unlocked: drag to move, corner grip to resize. The mouse wheel zooms in both states.", function() ns.ApplyAll() end)
-    Check("hover", "Frame on mouse-over (unlocked)", nil, function() ns.ApplyAll() end)
-    Slider("w", "Size", ns.SIZE_MIN, ns.SIZE_MAX, 10, function(v) return ("%d px"):format(v) end, function() ns.ApplyAll() end)
-    layout:AddInitializer(CreateSettingsButtonInitializer("Overlay", "Show / hide", function() Runeway_Toggle() end, nil, false))
+    Header(L.HEADER_WINDOW)
+    Check("rotate", L.ROTATE)
+    Check("locked", L.LOCKED, L.LOCKED_TIP, function() ns.ApplyAll() end)
+    Check("hover", L.HOVER, nil, function() ns.ApplyAll() end)
+    Slider("w", L.SIZE, ns.SIZE_MIN, ns.SIZE_MAX, 10, function(v) return ("%d px"):format(v) end, function() ns.ApplyAll() end)
+    layout:AddInitializer(CreateSettingsButtonInitializer(L.OVERLAY, L.SHOW_HIDE, function() Runeway_Toggle() end, nil, false))
 
-    Header("Display")
-    Slider("alpha", "Map opacity", 0.05, 1, 0.01, Pct, function() ns.ApplyAll() end)
-    Slider("zoom", "Zoom", ns.ZOOM_MIN, ns.ZOOM_MAX, 0.01, function(v) return ("%.2f"):format(v) end, function(v) ns.SetZoom(v) end)
-    Slider("zoneDim", "Neighbouring zones", 0, 1, 0.01, Pct, nil,
-        "Opacity of the neighbouring zones, relative to the zone you are in.")
-    Slider("edge", "Soft edge", 1, 5, 1, function(v) return ("%d"):format(v) end, function() ns.ApplyAll() end)
-    Slider("arrowSize", "Player arrow", 12, 48, 1, function(v) return ("%d px"):format(v) end)
-    Slider("pinSize", "Quest marks", 14, 48, 1, function(v) return ("%d px"):format(v) end)
-    Slider("corpseSize", "Corpse marker", 12, 48, 1, function(v) return ("%d px"):format(v) end)
-    Slider("questEdge", "Quest area edge", 0.5, 2.5, 0.05, function(v) return ("%.2f x"):format(v) end)
-    Check("questMerge", "Combine overlapping quest areas",
-        "Quests whose areas overlap get one shared outline. Off: every quest keeps its own outline.")
+    Header(L.HEADER_DISPLAY)
+    Slider("alpha", L.MAP_OPACITY, 0.05, 1, 0.01, Pct, function() ns.ApplyAll() end)
+    Slider("zoom", L.ZOOM, ns.ZOOM_MIN, ns.ZOOM_MAX, 0.01, function(v) return ("%.2f"):format(v) end, function(v) ns.SetZoom(v) end)
+    Slider("zoneDim", L.NEIGHBOUR_ZONES, 0, 1, 0.01, Pct, nil, L.NEIGHBOUR_ZONES_TIP)
+    Slider("edge", L.SOFT_EDGE, 1, 5, 1, function(v) return ("%d"):format(v) end, function() ns.ApplyAll() end)
+    Slider("arrowSize", L.PLAYER_ARROW, 12, 48, 1, function(v) return ("%d px"):format(v) end)
+    Slider("pinSize", L.QUEST_MARKS, 14, 48, 1, function(v) return ("%d px"):format(v) end)
+    Slider("corpseSize", L.CORPSE_MARKER, 12, 48, 1, function(v) return ("%d px"):format(v) end)
+    Slider("questEdge", L.QUEST_EDGE, 0.5, 2.5, 0.05, function(v) return ("%.2f x"):format(v) end)
+    Check("questMerge", L.QUEST_MERGE, L.QUEST_MERGE_TIP)
 
     -- Layers: show + opacity in one row, colour in the row below
-    Header("Layers")
+    Header(L.HEADER_LAYERS)
     local function Apply() ns.ApplyColors() end
     for _, layer in ipairs(ns.LAYER_KEYS) do
         local label, c = LAYER_LABELS[layer], "colors." .. layer
@@ -145,13 +143,13 @@ local function Build()
             label, ns.DEFAULTS.layers[layer], function() return ns.db().layers[layer] end,
             function(v) ns.db().layers[layer] = v; Apply() end)
         local opacity = Settings.RegisterProxySetting(category, "RUNEWAY_OPACITY_" .. layer:upper(), Settings.VarType.Number,
-            label .. " opacity", ns.DEFAULTS.colors[layer].a, function() return ns.db().colors[layer].a end,
+            L.LAYER_OPACITY:format(label), ns.DEFAULTS.colors[layer].a, function() return ns.db().colors[layer].a end,
             function(v) ns.db().colors[layer].a = v; Apply() end)
         layout:AddInitializer(CreateSettingsCheckboxSliderInitializer(shown, label, nil, opacity,
-            SliderOptions(0, 1, 0.01, Pct), label .. " opacity"))
+            SliderOptions(0, 1, 0.01, Pct), L.LAYER_OPACITY:format(label)))
         local function Hex(col) return CreateColor(col.r, col.g, col.b):GenerateHexColor() end
         local color = Settings.RegisterProxySetting(category, "RUNEWAY_COLOR_" .. layer:upper(), Settings.VarType.String,
-            label .. " colour", Hex(Get(ns.DEFAULTS, c)), function() return Hex(Get(ns.db(), c)) end,
+            L.LAYER_COLOUR:format(label), Hex(Get(ns.DEFAULTS, c)), function() return Hex(Get(ns.db(), c)) end,
             function(v)
                 local col = Get(ns.db(), c)
                 col.r, col.g, col.b = CreateColorFromHexString(v):GetRGB()

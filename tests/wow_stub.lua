@@ -103,6 +103,7 @@ C_Map.GetWorldPosFromMapPos = function(m, v) return 0, { x = 3000 - v.y * 4000, 
 function date() return "2026-10-07" end
 -- 3.4: visibility, bindings, settings
 function GetTime() return clock end
+function GetLocale() return LOCALE or "enUS" end
 STATE = { combat = false, instance = false, mounted = false, resting = false, dead = false }
 function UnitIsDeadOrGhost() return STATE.dead end
 C_DeathInfo = { GetCorpseMapPosition = function(m)

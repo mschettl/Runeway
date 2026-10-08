@@ -7,7 +7,7 @@ from lupa import lua51       # WoW runs Lua 5.1
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 L = lua51.LuaRuntime(unpack_returned_tuples=True)
 L.execute(open(os.path.join(ROOT, 'tests', 'wow_stub.lua')).read())
-for f in ('Runeway/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
+for f in ('Runeway/Locales/enUS.lua', 'Runeway/Locales/deDE.lua', 'Runeway/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
     src = open(os.path.join(ROOT, f), encoding='utf8').read()
     L.execute('NS = NS or {}; local f = assert(loadstring(..., "@' + f + '")); f("Runeway", NS)', src)
 

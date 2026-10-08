@@ -2,6 +2,7 @@
 -- Player-centred, rotating contour overlay (line layers per ADT tile in world coordinates)
 
 local ADDON, ns = ...               -- ns: shared with QuestAreas.lua
+local L = ns.L                      -- texts in the client language (Locales/)
 local T = 1600 / 3                 -- edge length of an ADT tile in yards (533.33)
 local PATH = "Interface\\AddOns\\Runeway\\tiles\\"
 local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
@@ -61,8 +62,8 @@ local function ApplyDefaults(dst, src)
 end
 
 BINDING_HEADER_RUNEWAY = "Runeway"
-BINDING_NAME_RUNEWAY_TOGGLE = "Toggle overlay map"
-BINDING_NAME_RUNEWAY_WORLDMAP = "World map (map key mode)"
+BINDING_NAME_RUNEWAY_TOGGLE = L.BINDING_TOGGLE
+BINDING_NAME_RUNEWAY_WORLDMAP = L.BINDING_WORLDMAP
 
 local function Print(msg)
     print("|cff66ccffRuneway:|r " .. msg)
@@ -575,7 +576,7 @@ view:SetScript("OnUpdate", function(self, e)
     if not n then
         HideTiles()
         if ns.HideQuestAreas then ns.HideQuestAreas() end
-        status:SetText("No position (instance?)")
+        status:SetText(L.NO_POSITION)
         return
     end
     pN, pW, k = n, w, db.zoom
@@ -591,7 +592,7 @@ view:SetScript("OnUpdate", function(self, e)
     if UpdateTiles(inst, angle) then
         status:SetText("")
     else
-        status:SetText("No contours for this area yet")
+        status:SetText(L.NO_DATA)
     end
     UpdateQuestPins()
     UpdateCorpse()
@@ -813,7 +814,7 @@ local function CreateWorldMapButton()
     if not WorldMapFrame then return end
     local b = CreateFrame("Button", nil, WorldMapFrame, "UIPanelButtonTemplate")
     b:SetSize(90, 22)
-    b:SetText("Overlay")
+    b:SetText(L.WORLDMAP_BUTTON)
     b:SetPoint("TOPRIGHT", WorldMapFrame, "TOPRIGHT", -40, -2)
     b:SetFrameLevel(WorldMapFrame:GetFrameLevel() + 20)
     b:SetScript("OnClick", function()
@@ -846,7 +847,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         ApplyPos()
         ApplyLock()
         CreateWorldMapButton()
-        if not fade then Print("Note: this client does not support mask textures, the edge is clipped hard.") end
+        if not fade then Print(L.NO_MASKS) end
         self:UnregisterEvent("ADDON_LOADED")
         self:RegisterEvent("PLAYER_ENTERING_WORLD")
         self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
@@ -908,36 +909,36 @@ SlashCmdList.RUNEWAY = function(msg)
     elseif cmd == "lock" or cmd == "unlock" then
         db.locked = (cmd == "lock")
         ApplyLock()
-        Print(db.locked and "locked (clicks pass through)" or "unlocked")
+        Print(db.locked and L.MSG_LOCKED or L.MSG_UNLOCKED)
     elseif cmd == "alpha" and n then
         db.alpha = math.max(5, math.min(100, n)) / 100
         canvas:SetAlpha(db.alpha)
-        Print(("Opacity %d %%"):format(db.alpha * 100))
+        Print(L.MSG_OPACITY:format(db.alpha * 100))
     elseif cmd == "zoom" and n then
         SetZoom(n)
-        Print(("Zoom %.2f"):format(db.zoom))
+        Print(L.MSG_ZOOM:format(db.zoom))
     elseif cmd == "size" then
         if n then
             db.w = n
             ApplySize()
         end
-        Print(("Size %d x %d"):format(db.w, db.w))
+        Print(L.MSG_SIZE:format(db.w, db.w))
     elseif cmd == "rotate" then
         db.rotate = not db.rotate
-        Print(db.rotate and "map rotates with the player" or "north up")
+        Print(db.rotate and L.MSG_ROTATE_ON or L.MSG_ROTATE_OFF)
     elseif cmd == "edge" and n then
         db.edge = math.max(1, math.min(#FADE_WIDTH, math.floor(n + 0.5)))
         ApplyEdge()
-        Print(("Soft edge %d"):format(db.edge))
+        Print(L.MSG_EDGE:format(db.edge))
     elseif cmd == "mode" and (arg == "key" or arg == "mapkey" or arg == "permanent") then
         db.mode = arg
         ApplyBindings()
         UpdateVisibility()
-        Print("mode " .. arg)
+        Print(L.MSG_MODE:format(arg))
     elseif cmd == "layer" and LayerKey(arg) then
         local key = LayerKey(arg)
         db.layers[key] = not db.layers[key]
-        Print(("%s %s"):format(key, db.layers[key] and "shown" or "hidden"))
+        Print((db.layers[key] and L.MSG_LAYER_SHOWN or L.MSG_LAYER_HIDDEN):format(key))
     elseif cmd == "color" then
         local layer, r, g, b, a = arg:match("^(%a+)%s+([%d.]+)%s+([%d.]+)%s+([%d.]+)%s*([%d.]*)")
         layer = layer and LayerKey(layer)
@@ -946,9 +947,9 @@ SlashCmdList.RUNEWAY = function(msg)
             c.r, c.g, c.b = tonumber(r), tonumber(g), tonumber(b)
             c.a = tonumber(a) or c.a
             ApplyColors()
-            Print(("%s colour %.2f %.2f %.2f, opacity %.2f"):format(layer, c.r, c.g, c.b, c.a))
+            Print(L.MSG_COLOUR:format(layer, c.r, c.g, c.b, c.a))
         else
-            Print("/rnw color fill|hatch|shade|terrain|water|roads|questareas R G B [A]   (0-1)")
+            Print(L.USAGE_COLOR)
         end
     elseif cmd == "probe" then
         -- dev tool, not part of the release: add tools/Probe.lua to the .toc to use it
@@ -963,9 +964,8 @@ SlashCmdList.RUNEWAY = function(msg)
             tostring(pn), tostring(pw), tostring(inst), tostring(mapID), GetPlayerFacing() or -1))
     elseif cmd == "reset" then
         ResetSettings()
-        Print("settings reset")
+        Print(L.MSG_RESET)
     else
-        Print("/rnw [toggle] | config | lock | unlock | alpha 5-100 | zoom 0.08-5 | size N | rotate | edge 1-5"
-            .. " | mode key|mapkey|permanent | layer NAME | color NAME R G B [A] | keys | pos | reset")
+        Print(L.USAGE)
     end
 end

@@ -4,6 +4,8 @@
 ## Version: 1.2
 ## SavedVariables: RunewayDB
 
+Locales\enUS.lua
+Locales\deDE.lua
 Tiles.lua
 Core.lua
 QuestAreas.lua

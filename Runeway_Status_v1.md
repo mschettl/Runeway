@@ -148,8 +148,11 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 ### Schnellbefehle
 - Ganz oben in den Einstellungen („Quick commands“): alle Slash-Befehle mit Beschreibung. Eigene Zeilenvorlage `RunewayCommandRowTemplate` (`Options.xml`, erbt `SettingsListElementTemplate`): Befehl links, Beschreibung rechts. Der frühere Bedienhinweis oben auf der entsperrten Karte ist entfernt.
 
-### Lokalisierung (geplant)
-- Sichtbare Texte und Vorschläge: `Runeway_Strings.md`. Sprache nach `GetLocale()`, Rückfall Englisch.
+### Lokalisierung
+- **Quelle:** `Runeway_Strings.md` enthält alle sichtbaren Texte mit Schlüssel, Englisch und Deutsch (von Mario abgestimmt). `python scripts/make_locales.py` erzeugt daraus `Runeway/Locales/enUS.lua` und `deDE.lua` – nicht von Hand ändern, sondern die Liste pflegen und neu erzeugen.
+- **Laufzeit:** `enUS.lua` legt `ns.L` mit allen englischen Texten an; jede weitere Sprachdatei prüft `GetLocale()` und überschreibt nur ihre Schlüssel. Fehlt ein Schlüssel, bleibt der englische Text. Code verwendet nur `L.KEY`.
+- **Weitere Sprachen:** je eine Datei `Runeway/Locales/<locale>.lua` (Aufbau wie `deDE.lua`), in der `.toc` nach `enUS.lua` eintragen. Nicht übersetzt: Befehle, Ebenen-Namen in Befehlen, Entwickler-Ausgaben.
+- **Prüfung:** `python tests/check_locales.py` – keine unbekannten Schlüssel, gleiche Platzhalter wie Englisch, Liste der noch englischen Texte je Sprache.
 
 ### Wichtige Laufzeit-Mechanik
 - **Weltkoordinaten:** `UnitPosition` liefert (Nord, West). Eine ADT-Kachel ist 1600/3 Yards groß. Kachelmitte: `nord = (32 - zeile) * T - T/2`, `west = (32 - spalte) * T - T/2`.
@@ -386,6 +389,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 ## 9. Testen und Release
 
 ```bash
+python tests/check_locales.py                 # Sprachdateien: Schlüssel und Platzhalter wie enUS
 python tests/run_stub.py                      # lädt das Addon (Lua 5.1) gegen einen WoW-API-Stub, prüft Kacheln/Questbereiche/Zoom-Laden
 python tests/render_quest_outlines.py <SavedVariables/Runeway.lua>   # Questumrisse aus Probe-Daten mit dem Addon-Code
 python scripts/simulate.py                    # Darstellung aus den Kacheln

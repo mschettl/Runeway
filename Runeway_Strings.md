@@ -1,6 +1,6 @@
 # Runeway – sichtbare Texte (Basis für die Lokalisierung)
 
-Alle Texte, die der Spieler sieht. Spalte „Englisch“ ist der aktuelle Text im Code (Quellsprache), „Deutsch“ ist ein Vorschlag zum Überarbeiten. Der Schlüssel wird später im Code verwendet (`L.KEY`); er bleibt in allen Sprachen gleich.
+Alle Texte, die der Spieler sieht. Englisch ist die Quellsprache. Englisch und Deutsch sind von Mario abgestimmt; `scripts/make_locales.py` erzeugt daraus `Runeway/Locales/enUS.lua` und `deDE.lua`. Weitere Sprachen liegen als eigene Dateien in `Runeway/Locales/`. Der Schlüssel wird später im Code verwendet (`L.KEY`); er bleibt in allen Sprachen gleich.
 
 Nicht übersetzt werden: der Addon-Name „Runeway“, Slash-Befehle und ihre Argumente (`/rnw config`, `mode mapkey` …), Ebenen-Namen in Befehlen (`fill`, `hatch` …) sowie reine Entwickler-Ausgaben (Abschnitt 6).
 
@@ -24,7 +24,7 @@ Ob WoW Forever alle Sprachen ausliefert, ist im Client zu prüfen; der Code fäl
 
 ## 1. Optionen – Abschnitte
 
-| Schlüssel | Englisch | Deutsch (Vorschlag) |
+| Schlüssel | Englisch | Deutsch |
 |---|---|---|
 | `HEADER_COMMANDS` | Quick commands | Schnellbefehle |
 | `HEADER_OPEN` | Open with | Öffnen mit |
@@ -37,7 +37,7 @@ Ob WoW Forever alle Sprachen ausliefert, ist im Client zu prüfen; der Code fäl
 
 Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte Beschreibung.
 
-| Schlüssel | Befehl | Englisch | Deutsch (Vorschlag) |
+| Schlüssel | Befehl | Englisch | Deutsch |
 |---|---|---|---|
 | `CMD_TOGGLE` | /rnw | Show or hide the overlay | Overlay ein- oder ausblenden |
 | `CMD_CONFIG` | /rnw config | Open these settings | Diese Einstellungen öffnen |
@@ -56,7 +56,7 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 
 ## 2. Optionen – Öffnen mit
 
-| Schlüssel | Englisch | Deutsch (Vorschlag) |
+| Schlüssel | Englisch | Deutsch |
 |---|---|---|
 | `OPEN_WITH` | Open with | Öffnen mit |
 | `MODE_KEY` | Own key | Eigene Taste |
@@ -68,7 +68,7 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 
 ## 3. Optionen – Automatisch ausblenden, Fenster, Darstellung
 
-| Schlüssel | Englisch | Deutsch (Vorschlag) |
+| Schlüssel | Englisch | Deutsch |
 |---|---|---|
 | `HIDE_COMBAT` | In combat | Im Kampf |
 | `HIDE_INSTANCE` | In instances | In Instanzen |
@@ -80,18 +80,18 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `HOVER` | Frame on mouse-over (unlocked) | Rahmen bei Mauskontakt (entsperrt) |
 | `SIZE` | Size | Größe |
 | `OVERLAY` | Overlay | Overlay |
-| `SHOW_HIDE` | Show / hide | Ein / aus |
+| `SHOW_HIDE` | Show / hide | Anzeigen / Verstecken |
 | `MAP_OPACITY` | Map opacity | Kartendeckkraft |
 | `ZOOM` | Zoom | Zoom |
-| `NEIGHBOUR_ZONES` | Neighbouring zones | Angrenzende Zonen |
-| `NEIGHBOUR_ZONES_TIP` | Opacity of the neighbouring zones, relative to the zone you are in. | Deckkraft der angrenzenden Zonen, bezogen auf die Zone, in der du bist. |
+| `NEIGHBOUR_ZONES` | Adjacent zones opacity | Deckkraft angrenzender Zonen |
+| `NEIGHBOUR_ZONES_TIP` | Opacity of the adjacent zones, relative to the zone you are in. | Deckkraft der angrenzenden Zonen, bezogen auf die Zone, in der du bist. |
 | `SOFT_EDGE` | Soft edge | Weicher Rand |
 | `PLAYER_ARROW` | Player arrow | Spielerpfeil |
 | `QUEST_MARKS` | Quest marks | Questmarker |
 | `CORPSE_MARKER` | Corpse marker | Leichnam-Marker |
-| `QUEST_EDGE` | Quest area edge | Questbereich-Rand |
+| `QUEST_EDGE` | Quest area edge | Rand des Questgebiets |
 | `QUEST_MERGE` | Combine overlapping quest areas | Überlappende Questbereiche zusammenfassen |
-| `QUEST_MERGE_TIP` | Quests whose areas overlap get one shared outline. Off: every quest keeps its own outline. | Quests mit überlappenden Bereichen erhalten einen gemeinsamen Umriss. Aus: jede Quest behält ihren eigenen Umriss. |
+| `QUEST_MERGE_TIP` | Quests whose areas overlap get one shared outline. Off: every quest keeps its own outline. | Quests mit überlappenden Bereichen erhalten einen gemeinsamen Umriss. Deaktiviert: jede Quest behält ihren eigenen Umriss. |
 
 Werte-Formate (bleiben meist gleich): `%d px`, `%d %%`, `%.2f`, `%.2f x`.
 
@@ -99,9 +99,9 @@ Werte-Formate (bleiben meist gleich): `%d px`, `%d %%`, `%.2f`, `%.2f x`.
 
 Je Ebene drei Texte: Name (Häkchen), „… opacity“ (Regler, nur Suche/Tooltip) und „… colour“ (Farbzeile).
 
-| Schlüssel | Englisch | Deutsch (Vorschlag) |
+| Schlüssel | Englisch | Deutsch |
 |---|---|---|
-| `LAYER_FILL` | Walkable area | Begehbare Fläche |
+| `LAYER_FILL` | Walkable area | Begehbare Bereiche |
 | `LAYER_HATCH` | Not walkable (hatching) | Nicht begehbar (Schraffur) |
 | `LAYER_SHADE` | Dark edge | Dunkle Kante |
 | `LAYER_TERRAIN` | Terrain lines | Geländelinien |
@@ -113,7 +113,7 @@ Je Ebene drei Texte: Name (Häkchen), „… opacity“ (Regler, nur Suche/Toolt
 
 ## 5. Tastenbelegung, Karte, Chat
 
-| Schlüssel | Wo | Englisch | Deutsch (Vorschlag) |
+| Schlüssel | Wo | Englisch | Deutsch |
 |---|---|---|---|
 | `BINDING_TOGGLE` | Tastenbelegung | Toggle overlay map | Overlay-Karte ein/aus |
 | `BINDING_WORLDMAP` | Tastenbelegung | World map (map key mode) | Weltkarte (Modus Kartentaste) |

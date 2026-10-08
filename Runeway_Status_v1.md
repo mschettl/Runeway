@@ -120,7 +120,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `/rnw color NAME R G B [A]` | Farbe und optional Deckkraft (0–1) |
 | `/rnw keys` | Tastenübernahme neu anwenden und anzeigen, was die Kartentaste auslöst |
 | `/rnw pos` | Position, Instanz und Karten-ID zum Kopieren |
-| `/rnw view [ZONE \| N W]` | Ansichtsmodus: Karte auf ein kartiertes Gebiet (Namensteil, englisch wie in `zones_<id>.txt`) oder Weltkoordinaten zentrieren, Norden oben, Ziehen verschiebt (auch gesperrt); Dimmung nach der Zone in der Kartenmitte. Ohne Angabe zurück zum Spieler. Nicht gespeichert. Gedacht zum Prüfen von Gebieten, die die Figur nicht erreicht |
+| `/rnw view [ZONE \| N W]` | Ansichtsmodus: Karte auf ein kartiertes Gebiet (Namensteil, englisch wie in `zones_<id>.txt`) oder Weltkoordinaten zentrieren, Norden oben, Ziehen verschiebt (auch gesperrt); Dimmung nach der Zone in der Kartenmitte. Ohne Angabe: ein (an der eigenen Position) bzw. aus (zurück zum Spieler). Nicht gespeichert. Gedacht zum Prüfen von Gebieten, die die Figur nicht erreicht |
 | `/rnw reset` | Einstellungen zurücksetzen |
 
 Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „Karte ein-/ausblenden“ im Kopf der Einstellungen.

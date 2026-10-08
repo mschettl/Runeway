@@ -226,6 +226,16 @@ L.execute('''
     SlashCmdList.RUNEWAY("view")
     view:GetScript("OnUpdate")(view, 0.05)
     check("view: back to the player", select(1, NS.Player()) == POS[1])
+    SlashCmdList.RUNEWAY("view")
+    CURSOR[1], CURSOR[2] = 500, 400
+    view:GetScript("OnDragStart")(view)
+    CURSOR[1], CURSOR[2] = 500, 500
+    view:GetScript("OnUpdate")(view, 0.05)
+    view:GetScript("OnDragStop")(view)
+    check("view: without a value starts at the player, drag up pans south", select(1, NS.Player()) < POS[1] - 1)
+    SlashCmdList.RUNEWAY("view")
+    view:GetScript("OnUpdate")(view, 0.05)
+    check("view: second /rnw view returns", select(1, NS.Player()) == POS[1])
     for _ = 1, 400 do debugprofilestop(); view:GetScript("OnUpdate")(view, 0.05) end
     local tg = NS.ToggleButton
     EVENT_CALLBACKS["Settings.CategoryChanged"]({ GetID = function() return 1 end })

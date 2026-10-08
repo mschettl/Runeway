@@ -58,7 +58,7 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `CMD_COLOR` | /rnw color NAME R G B [A] | Layer colour and opacity, values 0-1 | Farbe und Deckkraft einer Ebene, Werte 0-1 |
 | `CMD_KEYS` | /rnw keys | Show what the map key triggers | Anzeigen, was die Kartentaste auslöst |
 | `CMD_POS` | /rnw pos | Position and map ID to copy | Position und Karten-ID zum Kopieren |
-| `CMD_VIEW` | /rnw view [ZONE \| N W] | Look at another place (drag to pan); without a value back to the player | Anderen Ort ansehen (Ziehen verschiebt); ohne Angabe zurück zum Spieler |
+| `CMD_VIEW` | /rnw view [ZONE \| N W] | View mode at an area or position, drag to pan; without a value on/off at the player | Ansichtsmodus bei einem Gebiet oder einer Position, Ziehen verschiebt; ohne Angabe ein/aus beim Spieler |
 | `CMD_RESET` | /rnw reset | Reset all settings | Alle Einstellungen zurücksetzen |
 
 ## 2. Optionen – Öffnen mit
@@ -144,7 +144,7 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `LOADED` | Chat beim Login | v%s loaded. | v%s geladen. |
 | `NO_POSITION` | Statuszeile der Karte | No position (instance?) | Keine Position (Instanz?) |
 | `NO_DATA` | Statuszeile der Karte | No contours for this area yet | Für dieses Gebiet gibt es noch keine Karte |
-| `VIEW_MODE` | Statuszeile der Karte im Ansichtsmodus | View mode: drag to pan, /rnw view returns | Ansichtsmodus: Ziehen verschiebt, /rnw view kehrt zurück |
+| `VIEW_MODE` | Statuszeile der Karte im Ansichtsmodus | View mode: drag to pan, /rnw view returns to the player | Ansichtsmodus: Ziehen verschiebt, /rnw view kehrt zum Spieler zurück |
 | `NO_MASKS` | Chat beim Laden | Note: this client does not support mask textures, the edge is clipped hard. | Hinweis: Dieser Client unterstützt keine Maskentexturen, der Rand wird hart abgeschnitten. |
 | `MSG_LOCKED` | Chat `/rnw lock` | locked (clicks pass through) | gesperrt (Klicks gehen durch) |
 | `MSG_UNLOCKED` | Chat `/rnw unlock` | unlocked | entsperrt |

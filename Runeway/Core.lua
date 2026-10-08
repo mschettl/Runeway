@@ -1136,9 +1136,12 @@ SlashCmdList.RUNEWAY = function(msg)
             tostring(pn), tostring(pw), tostring(inst), tostring(mapID), GetPlayerFacing() or -1))
     elseif cmd == "view" then
         local vn, vw = arg:match("^(%-?[%d%.]+)%s+(%-?[%d%.]+)$")
-        if arg == "" then
+        if arg == "" and viewAt then
             viewAt, pan = nil, nil
             Print(L.MSG_VIEW_OFF)
+        elseif arg == "" then                       -- start at the player position
+            viewAt = { n = pN, w = pW }
+            Print(L.MSG_VIEW:format(("%.0f %.0f"):format(pN, pW)))
         elseif vn then
             viewAt = { n = tonumber(vn), w = tonumber(vw) }
             Print(L.MSG_VIEW:format(("%.0f %.0f"):format(viewAt.n, viewAt.w)))

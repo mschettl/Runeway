@@ -2,6 +2,7 @@
 -- Player-centred, rotating contour overlay (line layers per ADT tile in world coordinates)
 
 local ADDON, ns = ...               -- ns: shared with QuestAreas.lua
+local L = ns.L                      -- texts in the client language (Locales/)
 local T = 1600 / 3                 -- edge length of an ADT tile in yards (533.33)
 local PATH = "Interface\\AddOns\\Runeway\\tiles\\"
 local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
@@ -15,26 +16,34 @@ local FADE_WIDTH = { 0.12, 0.25, 0.38, 0.55, 0.75 }
 local LAYERS = { "fill", "hatch", "shade", "terrain", "water", "roads" }
 local LAYER_CODE = { fill = "f", hatch = "h", shade = "s", terrain = "t", water = "w", roads = "r" }
 local LAYER_LEVEL = { fill = 0, hatch = 1, shade = 2, terrain = 3, water = 4, roads = 5 }   -- texture sublevel
+-- Zoom levels stored per layer (FILE_LODS in scripts/build_raw.py); a missing level uses the nearest stored one.
+-- hatch: the tile file is only the mask of the not walkable area (256 px); the lines are one shared pattern
+-- per zoom level (media/hatch<lod>.tga), cut out by that mask.
+local FILE_LOD = { fill = { [128] = 128, [256] = 128, [512] = 128 }, shade = { [128] = 128, [256] = 256, [512] = 256 } }
+local HATCH_MASK_LOD = 256
 local STYLE = 6            -- bump when the default look changes (see migration in ADDON_LOADED)
 
 -- One calm colour for all lines (Diablo IV style); quest areas glow blue like the minimap blobs
-local LINE = { 0.82, 0.86, 0.89 }
+local LINE = { 0xD1 / 255, 0xDB / 255, 0xE3 / 255 }
 local defaults = {
-    x = nil, y = nil, w = 600,          -- square map (w = edge length)
-    zoom = 1.5, alpha = 0.7, rotate = true, locked = false, shown = false,
+    x = nil, y = nil, w = 800, h = 600, -- map width and height
+    zoom = 0.3, alpha = 0.7, rotate = true, locked = false, shown = false,
     mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
     autoHide = { combat = false, instance = false, mounted = false, city = false },
     hover = true,            -- unlocked: subtle frame while the mouse is over the map
+    wheelZoom = true,        -- mouse wheel over the map zooms (off: the wheel goes to the game camera)
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
-    arrowSize = 23, pinSize = 26, questEdge = 1,   -- quest edge = width factor of the quest area outline
-    colors = {
-        fill    = { r = 0.80, g = 0.64, b = 0.44, a = 0.07 },   -- warm brown like Diablo IV
-        hatch   = { r = 0.80, g = 0.84, b = 0.88, a = 0.22 },
-        shade   = { r = 0.05, g = 0.05, b = 0.06, a = 0.45 },
+    arrowSize = 25, pinSize = 25, corpseSize = 25, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
+    questMerge = true,       -- overlapping quest areas as one combined outline
+    zoneDim = 0.3,           -- opacity factor of the neighbouring zones (the player is not in)
+    colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,
+        fill    = { r = 0, g = 0, b = 0, a = 0.10 },              -- roads #EBB748, quest areas #73C7FF
+        hatch   = { r = 0xCC / 255, g = 0xD6 / 255, b = 0xE0 / 255, a = 0.20 },
+        shade   = { r = 0, g = 0, b = 0, a = 0.45 },
         terrain = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
-        water   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.85 },
-        roads   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.4 },
-        questAreas = { r = 0.45, g = 0.78, b = 1.00, a = 1 },
+        water   = { r = LINE[1], g = LINE[2], b = LINE[3], a = 0.80 },
+        roads   = { r = 0xEB / 255, g = 0xB7 / 255, b = 0x48 / 255, a = 0.65 },
+        questAreas = { r = 0x73 / 255, g = 0xC7 / 255, b = 0xFF / 255, a = 0.90 },
     },
     layers = { fill = true, hatch = true, shade = true, terrain = true, water = true, roads = true, questAreas = true },
     questAreaCache = {},     -- [mapID] = { areas = {}, groups = {} }, see QuestAreas.lua
@@ -54,8 +63,8 @@ local function ApplyDefaults(dst, src)
 end
 
 BINDING_HEADER_RUNEWAY = "Runeway"
-BINDING_NAME_RUNEWAY_TOGGLE = "Toggle overlay map"
-BINDING_NAME_RUNEWAY_WORLDMAP = "World map (map key mode)"
+BINDING_NAME_RUNEWAY_TOGGLE = L.BINDING_TOGGLE
+BINDING_NAME_RUNEWAY_WORLDMAP = L.BINDING_WORLDMAP
 
 local function Print(msg)
     print("|cff66ccffRuneway:|r " .. msg)
@@ -113,18 +122,8 @@ local top = CreateFrame("Frame", nil, view)
 top:SetAllPoints()
 top:SetFrameLevel(canvas:GetFrameLevel() + 5)
 
-local editHint = top:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-editHint:SetPoint("TOP", 0, -4)
-editHint:SetText("Drag = move  |  Wheel = zoom  |  Corner or Shift+wheel = size  |  /rnw config")
-
 local status = top:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 status:SetPoint("BOTTOM", 0, 6)
-
--- Size and zoom readout while moving, sizing or zooming; fades out shortly after the last action
-local info = top:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-info:SetPoint("CENTER", 0, -40)
-info:Hide()
-local infoUntil, infoHold = 0, false
 
 -- Hover frame (unlocked only): 1 px lines along the edges
 local border = {}
@@ -149,24 +148,6 @@ grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
 grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
 grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
 grip:Hide()
-
-local function ShowInfo(hold)
-    local w, h = view:GetSize()
-    info:SetFormattedText("%d \195\151 %d   Zoom %.2f", w + 0.5, h + 0.5, db.zoom)
-    info:SetAlpha(1)
-    info:Show()
-    infoHold = hold or false
-    infoUntil = GetTime() + 1.5
-end
-
-local function UpdateInfo()
-    if infoHold then
-        ShowInfo(true)
-    elseif info:IsShown() then
-        local left = infoUntil - GetTime()
-        if left <= 0 then info:Hide() else info:SetAlpha(math.min(1, left / 0.5)) end
-    end
-end
 
 -- Player arrow, fixed in the centre
 local arrowShadow = top:CreateTexture(nil, "OVERLAY", nil, 0)   -- dark silhouette for contrast
@@ -223,7 +204,20 @@ local function GetTex(e, inst, key, lod)
         t = canvas:CreateTexture(nil, "ARTWORK", nil, LAYER_LEVEL[e.layer])
         Fade(t)
         NoSnap(t)
-        t:SetTexture(TilePath(inst, key, e.layer, lod))
+        if e.layer == "hatch" then
+            if not e.mask then
+                e.mask = canvas:CreateMaskTexture()
+                NoSnap(e.mask)
+            end
+            if not e.maskSet then
+                e.mask:SetTexture(TilePath(inst, key, "hatch", HATCH_MASK_LOD), "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+                e.maskSet = true
+            end
+            t:AddMaskTexture(e.mask)
+            t:SetTexture(MEDIA .. "hatch" .. lod .. ".tga")
+        else
+            t:SetTexture(TilePath(inst, key, e.layer, lod))
+        end
         e[lod] = t
     end
     return t
@@ -260,6 +254,13 @@ local function HideTiles()
     end
 end
 
+local function PlaceMask(m, x, y, size, angle)
+    m:ClearAllPoints()
+    m:SetPoint("CENTER", view, "CENTER", x, y)
+    m:SetSize(size, size)
+    m:SetRotation(angle)
+end
+
 local function PlaceTex(t, x, y, size, angle, layer, weight)
     t:ClearAllPoints()
     t:SetPoint("CENTER", view, "CENTER", x, y)
@@ -273,10 +274,42 @@ local function PlaceTex(t, x, y, size, angle, layer, weight)
     t:Show()
 end
 
+-- Zone dimming: the zone the player stands in is drawn in full, all other zones with db.zoneDim.
+-- The zone comes from the tile data (zone per tile, per chunk on border tiles), so it matches the map.
+local zoneAlpha, lastZoneTime = {}, nil      -- [zone] = current factor, eased towards the target
+local function ActiveZone(zones)
+    local fc, fr = 32 - pW / T, 32 - pN / T
+    local c, r = math.floor(fc), math.floor(fr)
+    local key = c .. "_" .. r
+    local g = zones.chunks[key]
+    if g then
+        local i = math.floor((fr - r) * 16) * 16 + math.floor((fc - c) * 16) + 1
+        return tonumber(g:sub(i, i))
+    end
+    return zones.tile[key]
+end
+
+local function UpdateZoneAlpha(zones)
+    local now = GetTime()
+    local step = lastZoneTime and math.min(1, (now - lastZoneTime) / 0.4) or 1   -- ~0.4 s cross-fade
+    lastZoneTime = now
+    local active = ActiveZone(zones)
+    for z in ipairs(zones.names) do
+        local target = (not active or z == active) and 1 or db.zoneDim
+        local a = zoneAlpha[z] or target
+        if math.abs(target - a) < 0.01 then a = target else a = a + (target - a) * step end
+        zoneAlpha[z] = a
+    end
+end
+
+ns.ZoneAlpha = function() return zoneAlpha end     -- for tests
+
 local function UpdateTiles(inst, angle)
     local data = RunewayTiles and RunewayTiles[inst]
     frame = frame + 1
     if not data then HideTiles() return false end
+    local zones = RunewayZones and RunewayZones[inst]
+    if zones then UpdateZoneAlpha(zones) end
 
     local W, H = view:GetSize()
     local reach = math.sqrt(W * W + H * H) / 2 / k + T   -- visible radius in yards plus one tile
@@ -290,28 +323,34 @@ local function UpdateTiles(inst, angle)
         local cw = (32 - c) * T - T / 2
         if math.abs(cn - pN) < reach and math.abs(cw - pW) < reach then
             local x, y = ToScreen(cn, cw)
+            local zf = zones and zoneAlpha[zones.tile[key]] or 1
             for _, layer in ipairs(LAYERS) do
-                if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) then
+                if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) and (layer ~= "hatch" or fade) then
                     local id = inst .. ":" .. key .. ":" .. layer
                     local e = tiles[id]
                     if not e then e = { layer = layer }; tiles[id] = e end
-                    local a = GetTex(e, inst, key, loA)
-                    local b = wB > 0 and GetTex(e, inst, key, loB)
+                    -- levels not stored for this layer: the nearest stored one, cross-fade only between two files
+                    local fl = FILE_LOD[layer]
+                    local la, lb, ta, tb = loA, loB, wA, wB
+                    if fl then la, lb = fl[loA], fl[loB] end
+                    if la == lb then ta, tb = 1, 0 end
+                    local a = GetTex(e, inst, key, la)
+                    local b = tb > 0 and GetTex(e, inst, key, lb)
+                    if e.mask then PlaceMask(e.mask, x, y, size, angle) end
                     local okA, okB = IsLoaded(a), b and IsLoaded(b)
-                    local ta, tb = wA, wB
                     if not okA and okB then ta, tb = 0, 1 elseif okA and b and not okB then ta, tb = 1, 0 end
                     if not okA and not okB then
                         -- nothing loaded yet for these levels: keep any loaded level of this tile on screen
                         for _, lod in ipairs(LODS) do
                             local t = e[lod]
                             if t and t ~= a and t ~= b and IsLoaded(t) then
-                                PlaceTex(t, x, y, size, angle, layer, 1)
+                                PlaceTex(t, x, y, size, angle, layer, zf)
                                 break
                             end
                         end
                     end
-                    PlaceTex(a, x, y, size, angle, layer, okA and ta or 0)   -- shown at weight 0 while loading
-                    if b then PlaceTex(b, x, y, size, angle, layer, okB and tb or 0) end
+                    PlaceTex(a, x, y, size, angle, layer, okA and ta * zf or 0)   -- shown at weight 0 while loading
+                    if b then PlaceTex(b, x, y, size, angle, layer, okB and tb * zf or 0) end
                 end
             end
         end
@@ -326,6 +365,10 @@ local function UpdateTiles(inst, angle)
                     e[lod] = nil
                 end
             end
+        end
+        if e.maskSet and not (e[128] or e[256] or e[512]) then
+            e.mask:SetTexture(nil)
+            e.maskSet = false
         end
     end
     return true
@@ -345,7 +388,8 @@ end
 
 -- Map position -> world (north, west). The axis order of GetWorldPosFromMapPos is checked once per map
 -- against the player position.
-local swapByMap = {}
+-- Maps the player is not on (neighbouring zones) use the order found on another map.
+local swapByMap, anySwap = {}, nil
 local function MapToWorld(mapID, x, y)
     local a, b = WorldFromMap(mapID, x, y)
     if not a then return end
@@ -357,34 +401,161 @@ local function MapToWorld(mapID, x, y)
             local pa, pb = WorldFromMap(mapID, mp:GetXY())
             if pa then
                 swap = math.abs(pa - un) + math.abs(pb - uw) > math.abs(pb - un) + math.abs(pa - uw)
-                swapByMap[mapID] = swap
+                swapByMap[mapID], anySwap = swap, swap
             end
         end
+        if swap == nil then swap = anySwap end
     end
     if swap then return b, a end
     return a, b
 end
 ns.MapToWorld = MapToWorld
 
+-- Zone maps near the player: the player's map first, then the zones of the same continent whose map
+-- rectangle comes within view reach (+ margin), nearest first. Quest areas and pins come from all of them.
+local REACH_MARGIN = 200                 -- yards beyond the map corner
+local UIMAP_CONTINENT, UIMAP_ZONE = 2, 3 -- Enum.UIMapType
+local zoneRect = {}                      -- [mapID] = { n0, n1, w0, w1 } in world yards, or false
+local function NearbyMaps()
+    local m = C_Map.GetBestMapForUnit("player")
+    if not m then return end
+    local list = { m }
+    local pn, pw = UnitPosition("player")
+    if not (pn and C_Map.GetMapInfo and C_Map.GetMapChildrenInfo) then return list end
+    local cont, info = m, C_Map.GetMapInfo(m)
+    while info and info.mapType ~= UIMAP_CONTINENT and (info.parentMapID or 0) > 0 do
+        cont = info.parentMapID
+        info = C_Map.GetMapInfo(cont)
+    end
+    if not (info and info.mapType == UIMAP_CONTINENT) then return list end
+    MapToWorld(m, 0, 0)                  -- settles the axis order on the player's map first
+    local W, H = view:GetSize()
+    local reach = math.sqrt(W * W + H * H) / 2 / db.zoom + REACH_MARGIN
+    local found = {}
+    for _, c in ipairs(C_Map.GetMapChildrenInfo(cont, UIMAP_ZONE) or {}) do
+        local id = c.mapID
+        if id ~= m then
+            local r = zoneRect[id]
+            if r == nil then
+                local n0, w0 = MapToWorld(id, 0, 0)
+                local n1, w1 = MapToWorld(id, 1, 1)
+                r = n0 and n1 and { math.min(n0, n1), math.max(n0, n1), math.min(w0, w1), math.max(w0, w1) } or false
+                zoneRect[id] = r
+            end
+            if r then
+                local dn, dw = math.max(r[1] - pn, 0, pn - r[2]), math.max(r[3] - pw, 0, pw - r[4])
+                local d = math.sqrt(dn * dn + dw * dw)
+                if d < reach then found[#found + 1] = { id, d } end
+            end
+        end
+    end
+    table.sort(found, function(a, b) return a[2] < b[2] end)
+    for _, f in ipairs(found) do list[#list + 1] = f[1] end
+    return list
+end
+ns.NearbyMaps = NearbyMaps
+
 local function RefreshQuests()
     wipe(quests)
-    local mapID = C_Map.GetBestMapForUnit("player")
-    if not (mapID and C_QuestLog and C_QuestLog.GetQuestsOnMap) then return end
-    for _, q in ipairs(C_QuestLog.GetQuestsOnMap(mapID) or {}) do
-        local n, w = MapToWorld(mapID, q.x, q.y)
-        if n then
-            local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
-                or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
-            quests[#quests + 1] = { n, w, questID = q.questID, done = done and true or false }
+    local maps = NearbyMaps()
+    if not (maps and C_QuestLog and C_QuestLog.GetQuestsOnMap) then return end
+    local seen = {}          -- a quest can show on two zone maps: the first (nearest) map wins
+    for _, mapID in ipairs(maps) do
+        for _, q in ipairs(C_QuestLog.GetQuestsOnMap(mapID) or {}) do
+            local n, w = MapToWorld(mapID, q.x, q.y)
+            if n and not seen[q.questID] then
+                seen[q.questID] = true
+                local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
+                    or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
+                quests[#quests + 1] = { n, w, questID = q.questID, done = done and true or false }
+            end
         end
     end
 end
+ns.RefreshQuests = RefreshQuests
 
 -- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
 -- Same look as the world map pins: dark round badge with gold rim, "?" for turn-in, yellow "..." in progress.
 local function SetAtlasOr(t, atlas, file)
     local ok, res = pcall(t.SetAtlas, t, atlas)
     if not ok or res == false then t:SetTexture(file) end
+end
+
+-- Corpse marker while dead (ghost): Blizzard's world map corpse icon. The corpse is looked up on the
+-- player's map, then on its parent maps (the graveyard can be in another zone); when it is outside the
+-- view, the marker sits on the edge in its direction.
+local corpse = top:CreateTexture(nil, "OVERLAY", nil, 2)
+corpse:SetTexture("Interface\\Minimap\\POIIcons")
+corpse:SetTexCoord(0.56640625, 0.6328125, 0.001953125, 0.03515625)
+NoSnap(corpse)
+corpse:Hide()
+local corpseN, corpseW, corpseCheck = nil, nil, 0
+
+local function FindCorpse()
+    if not (C_DeathInfo and C_DeathInfo.GetCorpseMapPosition) then return end
+    local m = C_Map.GetBestMapForUnit("player")
+    while m and m > 0 do
+        local pos = C_DeathInfo.GetCorpseMapPosition(m)
+        if pos then return MapToWorld(m, pos:GetXY()) end
+        local info = C_Map.GetMapInfo(m)
+        m = info and info.parentMapID
+    end
+end
+
+local function UpdateCorpse()
+    if not UnitIsDeadOrGhost("player") then
+        corpseN = nil
+        corpse:Hide()
+        return
+    end
+    local now = GetTime()
+    if not corpseN and now >= corpseCheck then   -- the position is known shortly after releasing
+        corpseCheck = now + 1
+        corpseN, corpseW = FindCorpse()
+    end
+    if not corpseN then corpse:Hide() return end
+    local x, y = ToScreen(corpseN, corpseW)
+    local size = db.corpseSize * (hovered == "corpse" and HOVER_SCALE or 1)
+    local W, H = view:GetSize()
+    -- keep the whole icon inside the oval map
+    local rx, ry = math.max(1, W / 2 - db.corpseSize), math.max(1, H / 2 - db.corpseSize)
+    local d = math.sqrt((x / rx) ^ 2 + (y / ry) ^ 2)
+    if d > 1 then x, y = x / d, y / d end
+    corpse.x, corpse.y = x, y
+    corpse:SetSize(size, size)
+    corpse:ClearAllPoints()
+    corpse:SetPoint("CENTER", view, "CENTER", x, y)
+    corpse:Show()
+end
+
+-- Mouse-over (also on the locked, click-through map: the cursor position is polled, no mouse events):
+-- the marker under the cursor is enlarged; quest marks and areas get a tooltip like on the minimap.
+local HOVER_SCALE = 1.3
+local hovered                         -- "arrow", "corpse", a quest pin table or nil
+
+local tipKey                          -- what the tooltip shows now (avoids rebuilding it every update)
+
+local function AddQuestLines(questID)
+    local title = C_QuestLog.GetTitleForQuestID and C_QuestLog.GetTitleForQuestID(questID) or ("#" .. questID)
+    GameTooltip:AddLine(title, 1, 0.82, 0)
+    for _, o in ipairs(C_QuestLog.GetQuestObjectives and C_QuestLog.GetQuestObjectives(questID) or {}) do
+        if o.text and o.text ~= "" then
+            local c = o.finished and 0.6 or 1
+            GameTooltip:AddLine("-" .. o.text, c, c, c)
+        end
+    end
+end
+
+local function ShowTip(key, fill)
+    if tipKey == key then return end
+    tipKey = key
+    if not key then
+        if GameTooltip:IsOwned(view) then GameTooltip:Hide() end
+        return
+    end
+    GameTooltip:SetOwner(view, "ANCHOR_CURSOR")
+    fill()
+    GameTooltip:Show()
 end
 
 local function UpdateQuestPins()
@@ -402,10 +573,11 @@ local function UpdateQuestPins()
                 end
                 qpins[n] = p
             end
-            if p.size ~= db.pinSize then
-                p.size = db.pinSize
-                p.back:SetSize(p.size, p.size)
-                p.icon:SetSize(p.size, p.size)
+            local size = db.pinSize * (hovered == p and HOVER_SCALE or 1)
+            if p.size ~= size then
+                p.size = size
+                p.back:SetSize(size, size)
+                p.icon:SetSize(size, size)
             end
             if p.done ~= q.done then
                 p.done = q.done
@@ -413,6 +585,7 @@ local function UpdateQuestPins()
                     "Interface\\GossipFrame\\ActiveQuestIcon")
             end
             local x, y = ToScreen(q[1], q[2])
+            p.x, p.y, p.questID, p.shown = x, y, q.questID, true
             for _, t in ipairs({ p.back, p.icon }) do
                 t:ClearAllPoints()
                 t:SetPoint("CENTER", view, "CENTER", x, y)
@@ -421,6 +594,7 @@ local function UpdateQuestPins()
         end
     end
     for i = n + 1, #qpins do
+        qpins[i].shown = false
         qpins[i].back:Hide()
         qpins[i].icon:Hide()
     end
@@ -430,17 +604,71 @@ end
 -- Main loop
 ---------------------------------------------------------------------------
 local elapsed = 0
+-- Cursor -> marker or quest areas under it. Only when the cursor is over the visible (oval) map and no
+-- other frame lies on top of it (action bars, minimap ...).
+local function CursorFree()
+    local foci = GetMouseFoci and GetMouseFoci()
+    local f = foci and foci[1] or (GetMouseFocus and GetMouseFocus())
+    return not f or f == WorldFrame or f == view or f == UIParent
+end
+
+local function UpdateHover()
+    local target, quests
+    if view:IsShown() and view:IsMouseOver() and CursorFree() then
+        local cx, cy = GetCursorPosition()
+        local s = view:GetEffectiveScale()
+        local vx, vy = view:GetCenter()
+        local x, y = cx / s - vx, cy / s - vy
+        local W, H = view:GetSize()
+        if (x / (W / 2)) ^ 2 + (y / (H / 2)) ^ 2 < 1 then
+            local function Near(px, py, size) return (x - px) ^ 2 + (y - py) ^ 2 <= (size / 2) ^ 2 end
+            if Near(0, 0, db.arrowSize) then
+                target = "arrow"
+            elseif corpse:IsShown() and Near(corpse.x, corpse.y, db.corpseSize) then
+                target = "corpse"
+            else
+                for _, p in ipairs(qpins) do
+                    if p.shown and Near(p.x, p.y, db.pinSize) then target = p break end
+                end
+            end
+            if not target and ns.QuestAreasAt then
+                -- screen -> world: inverse of ToScreen
+                local sx, sy = x * cosA + y * sinA, -x * sinA + y * cosA
+                quests = ns.QuestAreasAt(pN + sy / k, pW - sx / k)
+            end
+        end
+    end
+    if not quests and ns.QuestAreasAt then ns.QuestAreasAt(nil) end
+    hovered = target
+    if target == "corpse" then
+        ShowTip("corpse", function() GameTooltip:SetText(CORPSE_RED or L.CORPSE_MARKER) end)
+    elseif type(target) == "table" then
+        ShowTip("q" .. target.questID, function() AddQuestLines(target.questID) end)
+    elseif quests and #quests > 0 then
+        ShowTip("a" .. table.concat(quests, ","), function()
+            for _, qid in ipairs(quests) do AddQuestLines(qid) end
+        end)
+    else
+        ShowTip(nil)
+    end
+end
+
+view:SetScript("OnHide", function()
+    hovered = nil
+    if ns.QuestAreasAt then ns.QuestAreasAt(nil) end
+    ShowTip(nil)
+end)
+
 view:SetScript("OnUpdate", function(self, e)
     elapsed = elapsed + e
     if elapsed < 0.025 then return end
     elapsed = 0
-    UpdateInfo()
 
     local n, w, _, inst = UnitPosition("player")
     if not n then
         HideTiles()
         if ns.HideQuestAreas then ns.HideQuestAreas() end
-        status:SetText("No position (instance?)")
+        status:SetText(L.NO_POSITION)
         return
     end
     pN, pW, k = n, w, db.zoom
@@ -448,17 +676,20 @@ view:SetScript("OnUpdate", function(self, e)
     local facing = GetPlayerFacing() or 0
     local angle = db.rotate and -facing or 0
     cosA, sinA = math.cos(angle), math.sin(angle)
-    arrow:SetSize(db.arrowSize, db.arrowSize)
-    arrowShadow:SetSize(db.arrowSize + 4, db.arrowSize + 4)
+    local as = db.arrowSize * (hovered == "arrow" and HOVER_SCALE or 1)
+    arrow:SetSize(as, as)
+    arrowShadow:SetSize(as + 4, as + 4)
     arrow:SetRotation(db.rotate and 0 or facing)
     arrowShadow:SetRotation(db.rotate and 0 or facing)
 
     if UpdateTiles(inst, angle) then
         status:SetText("")
     else
-        status:SetText("No contours for this area yet")
+        status:SetText(L.NO_DATA)
     end
     UpdateQuestPins()
+    UpdateCorpse()
+    UpdateHover()
     if ns.DrawQuestAreas then ns.DrawQuestAreas() end
 end)
 
@@ -478,18 +709,23 @@ local function ApplyPos()
     end
 end
 
-local function ApplySize()
-    db.h = nil
-    db.w = math.max(SIZE_MIN, math.min(SIZE_MAX, db.w))
-    view:SetSize(db.w, db.w)
+-- Settings rows show values changed outside the panel (wheel, grip, slash commands) right away
+local function Notify(...)
+    if not (Settings and Settings.NotifyUpdate) then return end
+    for _, path in ipairs({ ... }) do Settings.NotifyUpdate("RUNEWAY_" .. path:upper()) end
 end
 
--- Mouse wheel zooms locked and unlocked; clicks only reach the map when unlocked (locked: they pass through)
+local function ApplySize()
+    db.w = math.floor(math.max(SIZE_MIN, math.min(SIZE_MAX, db.w)) + 0.5)
+    db.h = math.floor(math.max(SIZE_MIN, math.min(SIZE_MAX, db.h)) + 0.5)
+    view:SetSize(db.w, db.h)
+end
+
+-- Mouse wheel zooms locked and unlocked (option); clicks only reach the map when unlocked (locked: they pass through)
 local function ApplyLock()
     local unlocked = not db.locked
     view:EnableMouse(unlocked)
-    view:EnableMouseWheel(true)
-    editHint:SetShown(unlocked)
+    view:EnableMouseWheel(db.wheelZoom)
     grip:SetShown(unlocked)
     ShowBorder(unlocked and db.hover and view:IsMouseOver())
 end
@@ -500,23 +736,22 @@ end
 
 view:SetScript("OnDragStart", function(self)
     self:StartMoving()
-    ShowInfo(true)
 end)
 view:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
     if self.SetUserPlaced then self:SetUserPlaced(false) end
     SavePos()
     ApplyPos()
-    ShowInfo()
 end)
 view:SetScript("OnMouseWheel", function(_, delta)
     if IsShiftKeyDown() and not db.locked then
-        db.w = db.w + delta * 30
+        db.w, db.h = db.w + delta * 30, db.h + delta * 30
         ApplySize()
+        Notify("w", "h")
     else
         SetZoom(db.zoom * (delta > 0 and 1.15 or 1 / 1.15))
+        Notify("zoom")
     end
-    ShowInfo()
 end)
 view:SetScript("OnShow", RefreshQuests)
 
@@ -528,7 +763,7 @@ view:SetScript("OnLeave", UpdateBorder)
 grip:SetScript("OnEnter", UpdateBorder)
 grip:SetScript("OnLeave", UpdateBorder)
 
--- Square sizing from the top left corner, follows the cursor
+-- Sizing from the top left corner, width and height follow the cursor
 local sizeLeft, sizeTop
 grip:SetScript("OnMouseDown", function()
     sizeLeft, sizeTop = view:GetLeft(), view:GetTop()
@@ -537,16 +772,15 @@ grip:SetScript("OnMouseDown", function()
     grip:SetScript("OnUpdate", function()
         local x, y = GetCursorPosition()
         local s = view:GetEffectiveScale()
-        db.w = math.floor(math.max(x / s - sizeLeft, sizeTop - y / s) + 0.5)
+        db.w, db.h = x / s - sizeLeft, sizeTop - y / s
         ApplySize()
-        ShowInfo(true)
+        Notify("w", "h")
     end)
 end)
 grip:SetScript("OnMouseUp", function()
     grip:SetScript("OnUpdate", nil)
     SavePos()
     ApplyPos()
-    ShowInfo()
     UpdateBorder()
 end)
 
@@ -627,10 +861,11 @@ local function ApplyBindings()
             SetOverrideBinding(bindOwner, true, key, "RUNEWAY_TOGGLE")
             mapKeys[#mapKeys + 1] = key
         end
-        -- the world map moves to the keys of RUNEWAY_WORLDMAP, run through Blizzard's own command
-        for _, key in ipairs({ GetBindingKey("RUNEWAY_WORLDMAP") }) do
-            SetOverrideBinding(bindOwner, true, key, "TOGGLEWORLDMAP")
-        end
+    end
+    -- keys of RUNEWAY_WORLDMAP always run Blizzard's own command (calling ToggleWorldMap from addon code
+    -- would taint the panel system)
+    for _, key in ipairs({ GetBindingKey("RUNEWAY_WORLDMAP") }) do
+        SetOverrideBinding(bindOwner, true, key, "TOGGLEWORLDMAP")
     end
     binding = false
 end
@@ -682,7 +917,7 @@ local function CreateWorldMapButton()
     if not WorldMapFrame then return end
     local b = CreateFrame("Button", nil, WorldMapFrame, "UIPanelButtonTemplate")
     b:SetSize(90, 22)
-    b:SetText("Overlay")
+    b:SetText(L.WORLDMAP_BUTTON)
     b:SetPoint("TOPRIGHT", WorldMapFrame, "TOPRIGHT", -40, -2)
     b:SetFrameLevel(WorldMapFrame:GetFrameLevel() + 20)
     b:SetScript("OnClick", function()
@@ -696,7 +931,7 @@ end
 ---------------------------------------------------------------------------
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
-ev:SetScript("OnEvent", function(self, event, arg1)
+ev:SetScript("OnEvent", function(self, event, arg1, ...)
     if event == "ADDON_LOADED" then
         if arg1 ~= ADDON then return end
         RunewayDB = RunewayDB or {}
@@ -715,7 +950,7 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         ApplyPos()
         ApplyLock()
         CreateWorldMapButton()
-        if not fade then Print("Note: this client does not support mask textures, the edge is clipped hard.") end
+        if not fade then Print(L.NO_MASKS) end
         self:UnregisterEvent("ADDON_LOADED")
         self:RegisterEvent("PLAYER_ENTERING_WORLD")
         self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
@@ -723,6 +958,8 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         self:RegisterEvent("PLAYER_REGEN_DISABLED")
         self:RegisterEvent("PLAYER_REGEN_ENABLED")
         self:RegisterEvent("UPDATE_BINDINGS")
+        self:RegisterEvent("ADDON_ACTION_BLOCKED")
+        self:RegisterEvent("ADDON_ACTION_FORBIDDEN")
     elseif event == "UPDATE_BINDINGS" then
         -- key bindings (re)loaded or changed by the player: take the map key over again
         if not binding then ApplyBindings() end
@@ -732,6 +969,10 @@ ev:SetScript("OnEvent", function(self, event, arg1)
         ApplyBindings()
         UpdateVisibility()
         RefreshQuests()
+    elseif event == "ADDON_ACTION_BLOCKED" or event == "ADDON_ACTION_FORBIDDEN" then
+        -- taint diagnostics: name the protected function the game blocked under our name
+        local func = ...                       -- payload: addon name, function name
+        if arg1 == ADDON then Print(("%s: %s"):format(event, tostring(func))) end
     elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
         if bindPending and event == "PLAYER_REGEN_ENABLED" then ApplyBindings() end
         UpdateVisibility()
@@ -771,36 +1012,39 @@ SlashCmdList.RUNEWAY = function(msg)
     elseif cmd == "lock" or cmd == "unlock" then
         db.locked = (cmd == "lock")
         ApplyLock()
-        Print(db.locked and "locked (clicks pass through)" or "unlocked")
+        Print(db.locked and L.MSG_LOCKED or L.MSG_UNLOCKED)
     elseif cmd == "alpha" and n then
         db.alpha = math.max(5, math.min(100, n)) / 100
         canvas:SetAlpha(db.alpha)
-        Print(("Opacity %d %%"):format(db.alpha * 100))
+        Print(L.MSG_OPACITY:format(db.alpha * 100))
     elseif cmd == "zoom" and n then
         SetZoom(n)
-        Print(("Zoom %.2f"):format(db.zoom))
+        Notify("zoom")
+        Print(L.MSG_ZOOM:format(db.zoom))
     elseif cmd == "size" then
-        if n then
-            db.w = n
+        local w, h = arg:match("^(%d+)%s*(%d*)$")
+        if w then
+            db.w, db.h = tonumber(w), tonumber(h) or tonumber(w)
             ApplySize()
+            Notify("w", "h")
         end
-        Print(("Size %d x %d"):format(db.w, db.w))
+        Print(L.MSG_SIZE:format(db.w, db.h))
     elseif cmd == "rotate" then
         db.rotate = not db.rotate
-        Print(db.rotate and "map rotates with the player" or "north up")
+        Print(db.rotate and L.MSG_ROTATE_ON or L.MSG_ROTATE_OFF)
     elseif cmd == "edge" and n then
         db.edge = math.max(1, math.min(#FADE_WIDTH, math.floor(n + 0.5)))
         ApplyEdge()
-        Print(("Soft edge %d"):format(db.edge))
+        Print(L.MSG_EDGE:format(db.edge))
     elseif cmd == "mode" and (arg == "key" or arg == "mapkey" or arg == "permanent") then
         db.mode = arg
         ApplyBindings()
         UpdateVisibility()
-        Print("mode " .. arg)
+        Print(L.MSG_MODE:format(arg))
     elseif cmd == "layer" and LayerKey(arg) then
         local key = LayerKey(arg)
         db.layers[key] = not db.layers[key]
-        Print(("%s %s"):format(key, db.layers[key] and "shown" or "hidden"))
+        Print((db.layers[key] and L.MSG_LAYER_SHOWN or L.MSG_LAYER_HIDDEN):format(key))
     elseif cmd == "color" then
         local layer, r, g, b, a = arg:match("^(%a+)%s+([%d.]+)%s+([%d.]+)%s+([%d.]+)%s*([%d.]*)")
         layer = layer and LayerKey(layer)
@@ -809,9 +1053,9 @@ SlashCmdList.RUNEWAY = function(msg)
             c.r, c.g, c.b = tonumber(r), tonumber(g), tonumber(b)
             c.a = tonumber(a) or c.a
             ApplyColors()
-            Print(("%s colour %.2f %.2f %.2f, opacity %.2f"):format(layer, c.r, c.g, c.b, c.a))
+            Print(L.MSG_COLOUR:format(layer, c.r, c.g, c.b, c.a))
         else
-            Print("/rnw color fill|hatch|shade|terrain|water|roads|questareas R G B [A]   (0-1)")
+            Print(L.USAGE_COLOR)
         end
     elseif cmd == "probe" then
         -- dev tool, not part of the release: add tools/Probe.lua to the .toc to use it
@@ -826,9 +1070,8 @@ SlashCmdList.RUNEWAY = function(msg)
             tostring(pn), tostring(pw), tostring(inst), tostring(mapID), GetPlayerFacing() or -1))
     elseif cmd == "reset" then
         ResetSettings()
-        Print("settings reset")
+        Print(L.MSG_RESET)
     else
-        Print("/rnw [toggle] | config | lock | unlock | alpha 5-100 | zoom 0.08-5 | size N | rotate | edge 1-5"
-            .. " | mode key|mapkey|permanent | layer NAME | color NAME R G B [A] | keys | pos | reset")
+        Print(L.USAGE)
     end
 end

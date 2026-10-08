@@ -1,2 +1,6 @@
 # Zones built by scripts/build_raw.py (AreaTable names), extended stage by stage
 Tirisfal Glades
+Silverpine Forest
+Western Plaguelands
+Hillsbrad Foothills
+Alterac Mountains

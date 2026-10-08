@@ -1,5 +1,6 @@
 -- Minimal WoW API stub to load and exercise the addon outside the game (lupa / Lua 5.x)
 unpack = unpack or table.unpack
+TEXTURE_OBJECTS = {}            -- [file] = last texture object it was set on
 local function obj(name)
     local o = { _name = name, _shown = false, _scripts = {} }
     return setmetatable(o, { __index = function(t, k)
@@ -9,7 +10,8 @@ local function obj(name)
         if k == "SetShown" then return function(self, v) self._shown = not not v end end
         if k == "SetScript" then return function(self, s, f) self._scripts[s] = f end end
         if k == "GetScript" then return function(self, s) return self._scripts[s] end end
-        if k == "SetTexture" then return function(self, p) self._tex = p; self._loadIn = LOAD_FRAMES; TEXTURES[#TEXTURES + 1] = p end end
+        if k == "SetTexture" then return function(self, p) self._tex = p; self._loadIn = LOAD_FRAMES; TEXTURES[#TEXTURES + 1] = p
+            if p then TEXTURE_OBJECTS[p] = self end end end
         if k == "IsObjectLoaded" then return function(self)
             self._loadIn = (self._loadIn or 0) - 1
             return self._loadIn < 0
@@ -18,6 +20,8 @@ local function obj(name)
         if k == "SetStartPoint" then return function(self, _, _, x, y) self._p0 = { x, y } end end
         if k == "SetEndPoint" then return function(self, _, _, x, y) self._p1 = { x, y } end end
         if k == "SetVertexColor" then return function(self, r, g, b, a) self._color = { r, g, b, a } end end
+        if k == "EnableMouseWheel" then return function(self, v) self._wheel = not not v end end
+        if k == "SetSize" then return function(self, w, h) self._w, self._h = w, h end end
         if k == "GetSize" then return function() return 700, 450 end end
         if k == "GetCenter" then return function() return 500, 400 end end
         if k == "GetLeft" then return function() return 150 end end
@@ -29,11 +33,13 @@ local function obj(name)
         if k == "SetText" then return function(self, v) self._text = v end end
         if k == "Text" or k == "Low" or k == "High" then local c = obj(k); rawset(t, k, c); return c end
         if k == "GetFrameLevel" then return function() return 1 end end
+        if k == "SetMapID" then return function(self, m) self._map = m end end
+        if k == "GetMapID" then return function(self) return rawget(self, "_map") end end
         if k == "DrawNone" then return function() DRAWN = {} end end
         if k == "DrawBlob" then return function(self, q) DRAWN[q] = true end end
         if k == "UpdateMouseOverTooltip" then return function(self, x, y)
             -- test blobs: circles; probe frame tests draw quest 4242 only
-            for q, c in pairs(BLOBS) do
+            for q, c in pairs(BLOBS_BY_MAP[rawget(self, "_map")] or BLOBS) do
                 if (DRAWN[q] or not next(DRAWN)) and (x - c[1]) ^ 2 + (y - c[2]) ^ 2 < c[3] ^ 2 then return q, 1 end
             end
         end end
@@ -54,10 +60,12 @@ LOAD_FRAMES = 0      -- frames until a texture counts as loaded
 CREATED = {}
 DRAWN = {}
 BLOBS = { [4242] = { 0.4, 0.6, 0.2 }, [4243] = { 0.55, 0.6, 0.15 } }
+-- neighbouring zone 1421 (west of 1420): quest 4243 shows there too, cut off at the map border; 5001 only there
+BLOBS_BY_MAP = { [1420] = BLOBS, [1421] = { [4243] = { 0.02, 0.6, 0.15 }, [5001] = { 0.1, 0.5, 0.05 } } }
 function InCombatLockdown() return false end
 local clock = 0
 function debugprofilestop() clock = clock + 0.01 return clock end
-function GetQuestPOIBlobCount(q) return BLOBS[q] and 1 or 0 end
+function GetQuestPOIBlobCount(q) return (BLOBS[q] or BLOBS_BY_MAP[1421][q]) and 1 or 0 end
 UIParent = obj("UIParent")
 WorldMapFrame = obj("WorldMapFrame")
 FRAMES = {}
@@ -82,17 +90,26 @@ function GetPlayerFacing() return 0.5 end
 function IsShiftKeyDown() return false end
 function HideUIPanel() end
 C_Map = { GetBestMapForUnit = function() return 1420 end,
-          GetPlayerMapPosition = function() return { GetXY = function() return 0.4, 0.6 end } end }
+          GetPlayerMapPosition = function(m) if m == 1420 then return { GetXY = function() return 0.4, 0.6 end } end end,
+          GetMapInfo = function(m) return m == 1415 and { mapType = 2 } or { mapType = 3, parentMapID = 1415 } end,
+          GetMapChildrenInfo = function() return { { mapID = 1420 }, { mapID = 1421 }, { mapID = 1422 } } end }
 C_Minimap = { IsInsideQuestBlob = function() return true end }
-C_QuestLog = { GetQuestsOnMap = function() return { { questID = 4242, x = 0.4, y = 0.6 }, { questID = 4243, x = 0.55, y = 0.6 }, { questID = 4244, x = 0.45, y = 0.5 } } end,
+QUESTS_BY_MAP = { [1420] = { { questID = 4242, x = 0.4, y = 0.6 }, { questID = 4243, x = 0.55, y = 0.6 }, { questID = 4244, x = 0.45, y = 0.5 } },
+                  [1421] = { { questID = 4243, x = 0.02, y = 0.6 }, { questID = 5001, x = 0.1, y = 0.5 }, { questID = 5002, x = 0.2, y = 0.5 } } }
+C_QuestLog = { GetQuestsOnMap = function(m) return QUESTS_BY_MAP[m] or {} end,
                IsComplete = function(q) return q == 4244 end,
                GetTitleForQuestID = function(id) return "Test quest " .. id end }
 function CreateVector2D(x, y) return { x = x, y = y } end
-C_Map.GetWorldPosFromMapPos = function(_, v) return 0, { x = 3000 - v.y * 4000, y = 2000 - v.x * 6000 } end
+MAP_WEST = { [1420] = 2000, [1421] = 8000, [1422] = 40000 }   -- west edge of each zone map (yards)
+C_Map.GetWorldPosFromMapPos = function(m, v) return 0, { x = 3000 - v.y * 4000, y = MAP_WEST[m] - v.x * 6000 } end
 function date() return "2026-10-07" end
 -- 3.4: visibility, bindings, settings
 function GetTime() return clock end
-STATE = { combat = false, instance = false, mounted = false, resting = false }
+function GetLocale() return LOCALE or "enUS" end
+STATE = { combat = false, instance = false, mounted = false, resting = false, dead = false }
+function UnitIsDeadOrGhost() return STATE.dead end
+C_DeathInfo = { GetCorpseMapPosition = function(m)
+    if m == 1420 then return { GetXY = function() return 0.42, 0.61 end } end end }
 function UnitAffectingCombat() return STATE.combat end
 function IsInInstance() return STATE.instance, STATE.instance and "party" or "none" end
 function IsMounted() return STATE.mounted end
@@ -122,11 +139,12 @@ local function Row(kind) return function(_, setting, options) INITS[#INITS + 1] 
     options = type(options) == "function" and options() or options } end end
 Settings = {
     VarType = { Boolean = "boolean", Number = "number", String = "string" },
-    RegisterVerticalLayoutCategory = function() return { GetID = function() return 77 end }, Layout() end,
+    RegisterVerticalLayoutCategory = function() SETTINGS_MAIN = { GetID = function() return 77 end }; return SETTINGS_MAIN, Layout() end,
     RegisterVerticalLayoutSubcategory = function() return {}, Layout() end,
     RegisterProxySetting = function(_, var, varType, name, default, get, set)
         assert(type(default) == varType, var .. ": default must be " .. varType)
         local st = { variable = var, default = default, GetValue = function() return get() end,
+                     GetVariable = function() return var end,
                      SetValue = function(_, v) set(v) end }
         SETTINGS[var] = st
         return st
@@ -139,10 +157,24 @@ Settings = {
         return { Add = function(_, v, label) d[#d + 1] = { value = v, label = label } end, GetData = function() return d end }
     end,
     RegisterAddOnCategory = function() end,
+    CreateSettingInitializer = function(template, data)
+        return { kind = "layerrow", template = template, data = data, AddSearchTags = function() end }
+    end,
+    CreateElementInitializer = function(template, data) return { kind = "element", template = template, data = data } end,
     OpenToCategory = function(id) OPENED = id end,
 }
 MinimalSliderWithSteppersMixin = { Label = { Right = 1 } }
+SettingsPanel = { Container = { SettingsList = { Header = obj("Header") } } }
+EventRegistry = { RegisterCallback = function(_, ev, fn, owner) EVENT_CALLBACKS[ev] = function(...) fn(owner, ...) end end }
+EVENT_CALLBACKS = {}
+SettingsListElementMixin = { Init = function() end }
+function CreateFromMixins(...)
+    local t = {}
+    for _, m in ipairs({ ... }) do for k, v in pairs(m) do t[k] = v end end
+    return t
+end
 function CreateSettingsListSectionHeaderInitializer(name) return { kind = "header", name = name } end
 function CreateSettingsButtonInitializer(name, text, click) return { kind = "button", click = click } end
 function CreateSettingsCheckboxSliderInitializer(cb, _, _, slider, options) return { kind = "checkslider", setting = cb, slider = slider, options = options } end
+SettingsCheckboxSliderControlMixin = { OnLoad = function() end, Init = function() end }
 function CreateKeybindingEntryInitializer(i) return { kind = "binding", action = GetBinding(i) } end

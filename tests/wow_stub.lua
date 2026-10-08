@@ -109,6 +109,7 @@ function date() return "2026-10-07" end
 -- 3.4: visibility, bindings, settings
 function GetTime() return clock end
 function GetLocale() return LOCALE or "enUS" end
+C_AddOns = { GetAddOnMetadata = function(_, field) if field == "Version" then return TOC_VERSION end end }
 STATE = { combat = false, instance = false, mounted = false, resting = false, dead = false }
 function UnitIsDeadOrGhost() return STATE.dead end
 C_DeathInfo = { GetCorpseMapPosition = function(m)

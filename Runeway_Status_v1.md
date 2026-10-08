@@ -1,4 +1,4 @@
-# Runeway – Stand Version 1.4 und Übergabe
+# Runeway – Stand Version 1.4.1 und Übergabe
 
 Diese Datei fasst den kompletten Stand zusammen, damit eine neue Session nahtlos weitermachen kann. Sie ersetzt den Chatverlauf. Vorgaben und Ziele stehen in `Runeway_Prompt_v1.md`, Arbeitsregeln in `CLAUDE.md`, alle sichtbaren Texte in `Runeway_Strings.md`.
 
@@ -24,6 +24,7 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 | 1.2 | Etappe 1 (fünf Zonen), Questbereiche und Dimmung angrenzender Zonen, kleinere Kacheln, glatte Wege, Leichnam-Marker, Tooltips, Breite/Höhe, neue Einstellungsstruktur, Englisch/Deutsch |
 | 1.3 | Lokalisierung in elf Sprachen (außer Deutsch KI-Übersetzungen, Französisch im Spiel geprüft) |
 | 1.4 | Profil-Export und -Import |
+| 1.4.1 | Aufräumen (u. a. Fehler beim Hervorheben des Leichnams behoben), Anmeldemeldung mit Version im Chat |
 
 ---
 
@@ -55,7 +56,7 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 
 | Datei | Inhalt |
 |---|---|
-| `Runeway.toc` | Interface 16001, Version 1.4, SavedVariables `RunewayDB`; lädt `Locales/*.lua`, `Tiles.lua`, `Core.lua`, `QuestAreas.lua`, `Profile.lua`, `Options.lua`, `Options.xml` |
+| `Runeway.toc` | Interface 16001, Version 1.4.1, SavedVariables `RunewayDB`; lädt `Locales/*.lua`, `Tiles.lua`, `Core.lua`, `QuestAreas.lua`, `Profile.lua`, `Options.lua`, `Options.xml` |
 | `Locales/` | Texte je Client-Sprache (`ns.L`): `enUS.lua` (Basis) und `deDE.lua` aus `Runeway_Strings.md` erzeugt, die übrigen neun von Hand gepflegt |
 | `Core.lua` | Fenster, Kacheln, Zoom, Drehung, Zonen-Dimmung, Questmarker, Leichnam, Mouse-over, Sichtbarkeit und Aufruf-Modi, Slash-Befehle, Standardwerte |
 | `QuestAreas.lua` | Questbereiche: Abtasten, Umriss, Zeichnen, Trefferprüfung für Mouse-over |
@@ -179,6 +180,9 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 - **Sprachen:** enUS (Quelle), deDE (von Mario abgestimmt, aus `Runeway_Strings.md` erzeugt) sowie frFR, esES, esMX, itIT, ptBR, ruRU, koKR, zhCN, zhTW (KI-Übersetzung, von Muttersprachlern noch nicht geprüft; Dateien von Hand gepflegt). Die Befehlshilfe (`USAGE`, `USAGE_COLOR`) bleibt in allen Sprachen englisch.
 - **Neue oder geänderte Texte:** in `Runeway_Strings.md` (Englisch, Deutsch) ändern, `make_locales.py` laufen lassen, dann die neun anderen Dateien ergänzen; `check_locales.py` meldet fehlende Schlüssel je Sprache.
 - **Prüfung:** `python tests/check_locales.py` – keine unbekannten Schlüssel, gleiche Platzhalter wie Englisch, Liste der noch englischen Texte je Sprache.
+
+### Anmeldemeldung
+- Einmal pro Login bzw. `/reload` (`PLAYER_ENTERING_WORLD`): „Runeway: v<Version> geladen. Einstellungen: /rnw config“; die Version kommt aus der `.toc` (`C_AddOns.GetAddOnMetadata`).
 
 ### Wichtige Laufzeit-Mechanik
 - **Weltkoordinaten:** `UnitPosition` liefert (Nord, West). Eine ADT-Kachel ist 1600/3 Yards groß. Kachelmitte: `nord = (32 - zeile) * T - T/2`, `west = (32 - spalte) * T - T/2`.
@@ -424,7 +428,7 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway
 ```text
 Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch claude/dreamy-lovelace-efolxg.
 Lies zuerst CLAUDE.md, Runeway_Status_v1.md und Runeway_Prompt_v1.md.
-Version 1.4 ist abgeschlossen und in main gemergt (Etappe 1 mit fünf Zonen, Lokalisierung in elf Sprachen, Profil-Export/-Import).
+Version 1.4.1 ist abgeschlossen und in main gemergt (Etappe 1 mit fünf Zonen, Lokalisierung in elf Sprachen, Profil-Export/-Import, Aufräumen).
 Langfristziel und Architektur: Runeway_Status_v1.md, Abschnitt 8 „Roadmap“.
 Aufgabe dieser Session: Fundament (Block-Build, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID),
 danach weitere Etappen der Östlichen Königreiche, siehe Abschnitt 8.

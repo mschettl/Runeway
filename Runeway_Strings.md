@@ -139,6 +139,7 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `BINDING_TOGGLE` | Tastenbelegung | Toggle overlay map | Overlay-Karte ein/aus |
 | `BINDING_WORLDMAP` | Tastenbelegung | World map (map key mode) | Weltkarte (Modus Kartentaste) |
 | `WORLDMAP_BUTTON` | Knopf auf der Weltkarte | Overlay | Overlay |
+| `LOADED` | Chat beim Login | v%s loaded. Settings: /rnw config | v%s geladen. Einstellungen: /rnw config |
 | `NO_POSITION` | Statuszeile der Karte | No position (instance?) | Keine Position (Instanz?) |
 | `NO_DATA` | Statuszeile der Karte | No contours for this area yet | Für dieses Gebiet gibt es noch keine Karte |
 | `NO_MASKS` | Chat beim Laden | Note: this client does not support mask textures, the edge is clipped hard. | Hinweis: Dieser Client unterstützt keine Maskentexturen, der Rand wird hart abgeschnitten. |

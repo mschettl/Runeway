@@ -1,6 +1,7 @@
 # Loads the addon with a WoW API stub, fires the login events, renders frames and runs slash commands.
 #   python tests/run_stub.py
 import os
+import re
 import glob
 import lupa
 from lupa import lua51       # WoW runs Lua 5.1
@@ -17,6 +18,7 @@ setmetatable(_G, { __index = function(_, k)
 end })''')
 LOCALES = ['Runeway/Locales/enUS.lua'] + sorted(f'Runeway/Locales/{os.path.basename(p)}' for p in glob.glob(os.path.join(ROOT, 'Runeway', 'Locales', '*.lua')) if not p.endswith('enUS.lua'))
 L.execute('LOCALE = ...', os.environ.get('RUNEWAY_LOCALE', 'enUS'))   # client language for this run
+L.execute('TOC_VERSION = ...', re.search(r'## Version: (\S+)', open(os.path.join(ROOT, 'Runeway', 'Runeway.toc')).read())[1])
 for f in (*LOCALES, 'Runeway/Tiles.lua', 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Profile.lua', 'Runeway/Options.lua', 'tools/Probe.lua'):
     src = open(os.path.join(ROOT, f), encoding='utf8').read()
     L.execute('NS = NS or {}; local f = assert(loadstring(..., "@' + f + '")); f("Runeway", NS)', src)

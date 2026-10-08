@@ -925,6 +925,7 @@ end
 ---------------------------------------------------------------------------
 -- Events
 ---------------------------------------------------------------------------
+local announced = false
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
 ev:SetScript("OnEvent", function(self, event, arg1, ...)
@@ -955,6 +956,11 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         -- key bindings (re)loaded or changed by the player: take the map key over again
         if not binding then ApplyBindings() end
     elseif event == "PLAYER_ENTERING_WORLD" then
+        if not announced then                 -- once per login / reload: name and version in the chat
+            announced = true
+            local meta = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
+            Print(L.LOADED:format(meta and meta(ADDON, "Version") or "?"))
+        end
         ApplySize()            -- again after WoW's layout restore
         ApplyPos()
         ApplyBindings()

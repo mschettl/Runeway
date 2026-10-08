@@ -12,3 +12,11 @@ The Hinterlands
 Arathi Highlands
 Gilneas
 Ruins of Gilneas
+# Stage 3 (centre)
+Wetlands
+Dun Morogh
+Loch Modan
+Searing Gorge
+Badlands
+Burning Steppes
+Riverglades

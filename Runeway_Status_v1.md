@@ -378,10 +378,12 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
 |---|---|---|
 | 1 | Tirisfal Glades, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains | im Spiel getestet (1.2) |
 | 2 (Norden) | Eastern Plaguelands, The Hinterlands, Arathi Highlands, Gilneas, Ruins of Gilneas | gebaut (285 Kacheln, 28,2 MB, 3,3 min, 2,3 GB RAM), im Spiel offen |
-| 3 (Mitte) | Wetlands, Dun Morogh, Loch Modan, Searing Gorge, Badlands, Burning Steppes, Riverglades | offen, im Probelauf ohne erkennbare Fehler |
+| 3 (Mitte) | Wetlands, Dun Morogh, Loch Modan, Searing Gorge, Badlands, Burning Steppes, Riverglades | gebaut (Etappen 1–3: 499 Kacheln, 50,2 MB, 5,9 min, 3,2 GB RAM), im Spiel offen |
 | 4 (Süden) | Elwynn Forest, Stormwind City, Westfall, Redridge Mountains, Duskwood, Deadwind Pass, Swamp of Sorrows, Blasted Lands, Stranglethorn Vale, Gillijim's Isle | offen, im Probelauf ohne erkennbare Fehler |
 
 **Im Spiel prüfen (Etappe 2):** Übergänge Western Plaguelands ↔ Eastern Plaguelands, Hillsbrad ↔ Arathi, Arathi ↔ Hinterlands, Silverpine ↔ Gilneas; Dimmung beim Grenzübertritt; Küste im Norden der Eastern Plaguelands (weicher Rand statt Schraffur auf offenem Meer); Ladezeiten.
+
+**Im Spiel prüfen (Etappe 3):** Übergänge Arathi ↔ Wetlands (Thandol-Brücke), Wetlands ↔ Dun Morogh / Loch Modan, Dun Morogh ↔ Searing Gorge, Searing Gorge ↔ Burning Steppes, Badlands ↔ Riverglades; Lava in Searing Gorge und Burning Steppes (zählt bisher als Gelände); Ironforge (Innenraum, nicht kartiert); Saum unter den Linien bei starkem Zoom (seit der 128-px-Umstellung etwas weicher).
 
 **Dateigröße:** Alle 27 Gebiete ≈ 106 MB (Hochrechnung war 70 MB). Anteile: Linien `terrain` 32 MB, `shade` 31 MB, `hatch`-Maske 21 MB, `water` 13 MB, `roads` 5 MB, `fill` 4 MB; nach Stufe 512: 34 MB, 256: 55 MB, 128: 18 MB. Umgesetzt: `hatch`-Maske und `shade` nur in 128 (Etappen 1+2: 42,9 → 28,2 MB) und offenes Meer weggelassen (s. Zonen-Zuschnitt).
 

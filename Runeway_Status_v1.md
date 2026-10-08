@@ -91,6 +91,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `mode` | `"key"` (eigene Taste), `"mapkey"` (Kartentaste M öffnet das Overlay), `"permanent"` |
 | `autoHide.combat/instance/mounted/city` | alle false (`city` = ausgeruht, also Städte und Gasthäuser) |
 | `hover` | true (Rahmen bei Mausüberfahrt, nur entsperrt) |
+| `wheelZoom` | true (Mausrad über der Karte zoomt) |
 | `edge` | 3 (Randstärke 1–5, Breite 0,12 / 0,25 / 0,38 / 0,55 / 0,75 des Radius) |
 | `arrowSize`, `pinSize`, `corpseSize`, `questEdge` | 25, 25, 25, 0.8 (Faktor für die Breite der Questränder) |
 | `questMerge` | true: überlappende Questbereiche bekommen einen gemeinsamen Umriss |
@@ -119,7 +120,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 
 **Bedienung:**
-- **Mausrad:** zoomt gesperrt wie entsperrt (`EnableMouseWheel` immer an, `EnableMouse` nur entsperrt).
+- **Mausrad:** zoomt gesperrt wie entsperrt, abschaltbar über „Zoom with the mouse wheel“ (`wheelZoom`, dann `EnableMouseWheel(false)` und das Mausrad steuert die Kamera). `EnableMouse` nur entsperrt.
 - **Nur entsperrt:**
   - Ziehen verschiebt die Karte.
   - Der Griff unten rechts ändert Breite und Höhe unabhängig; die obere linke Ecke bleibt stehen.

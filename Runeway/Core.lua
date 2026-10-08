@@ -31,6 +31,7 @@ local defaults = {
     mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
     autoHide = { combat = false, instance = false, mounted = false, city = false },
     hover = true,            -- unlocked: subtle frame while the mouse is over the map
+    wheelZoom = true,        -- mouse wheel over the map zooms (off: the wheel goes to the game camera)
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
     arrowSize = 25, pinSize = 25, corpseSize = 25, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
     questMerge = true,       -- overlapping quest areas as one combined outline
@@ -720,11 +721,11 @@ local function ApplySize()
     view:SetSize(db.w, db.h)
 end
 
--- Mouse wheel zooms locked and unlocked; clicks only reach the map when unlocked (locked: they pass through)
+-- Mouse wheel zooms locked and unlocked (option); clicks only reach the map when unlocked (locked: they pass through)
 local function ApplyLock()
     local unlocked = not db.locked
     view:EnableMouse(unlocked)
-    view:EnableMouseWheel(true)
+    view:EnableMouseWheel(db.wheelZoom)
     grip:SetShown(unlocked)
     ShowBorder(unlocked and db.hover and view:IsMouseOver())
 end

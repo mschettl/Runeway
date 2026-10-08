@@ -172,6 +172,7 @@ local function Build()
 
     Page(L.HEADER_WINDOW)
     Check("locked", L.LOCKED, L.LOCKED_TIP, function() ns.ApplyAll() end)
+    Check("wheelZoom", L.WHEEL_ZOOM, L.WHEEL_ZOOM_TIP, function() ns.ApplyAll() end)
     Check("rotate", L.ROTATE)
     Check("hover", L.HOVER, nil, function() ns.ApplyAll() end)
     local function Px(v) return ("%d px"):format(v) end

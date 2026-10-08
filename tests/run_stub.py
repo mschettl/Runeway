@@ -205,6 +205,11 @@ L.execute('''
     NS.QuestAreasAt(nil)
     rawset(view, "IsMouseOver", nil)
     if not wasShown then view:Hide() end
+    -- option: mouse wheel zoom off -> the map does not take the wheel
+    SETTINGS.RUNEWAY_WHEELZOOM:SetValue(false)
+    local wheelOff = rawget(view, "_wheel") == false
+    SETTINGS.RUNEWAY_WHEELZOOM:SetValue(true)
+    check("option: wheel zoom off releases the mouse wheel", wheelOff and rawget(view, "_wheel") == true)
     -- layer row: the colour swatch opens the picker and writes the layer colour
     local row
     for _, i in ipairs(INITS) do if i.kind == "layerrow" and i.data.name == NS.L.LAYER_ROADS then row = i end end

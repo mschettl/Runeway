@@ -58,6 +58,7 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `CMD_COLOR` | /rnw color NAME R G B [A] | Layer colour and opacity, values 0-1 | Farbe und Deckkraft einer Ebene, Werte 0-1 |
 | `CMD_KEYS` | /rnw keys | Show what the map key triggers | Anzeigen, was die Kartentaste auslöst |
 | `CMD_POS` | /rnw pos | Position and map ID to copy | Position und Karten-ID zum Kopieren |
+| `CMD_VIEW` | /rnw view [ZONE \| N W] | Look at another place (drag to pan); without a value back to the player | Anderen Ort ansehen (Ziehen verschiebt); ohne Angabe zurück zum Spieler |
 | `CMD_RESET` | /rnw reset | Reset all settings | Alle Einstellungen zurücksetzen |
 
 ## 2. Optionen – Öffnen mit
@@ -143,6 +144,7 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `LOADED` | Chat beim Login | v%s loaded. | v%s geladen. |
 | `NO_POSITION` | Statuszeile der Karte | No position (instance?) | Keine Position (Instanz?) |
 | `NO_DATA` | Statuszeile der Karte | No contours for this area yet | Für dieses Gebiet gibt es noch keine Karte |
+| `VIEW_MODE` | Statuszeile der Karte im Ansichtsmodus | View mode: drag to pan, /rnw view returns | Ansichtsmodus: Ziehen verschiebt, /rnw view kehrt zurück |
 | `NO_MASKS` | Chat beim Laden | Note: this client does not support mask textures, the edge is clipped hard. | Hinweis: Dieser Client unterstützt keine Maskentexturen, der Rand wird hart abgeschnitten. |
 | `MSG_LOCKED` | Chat `/rnw lock` | locked (clicks pass through) | gesperrt (Klicks gehen durch) |
 | `MSG_UNLOCKED` | Chat `/rnw unlock` | unlocked | entsperrt |
@@ -157,8 +159,11 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `MSG_LAYER_HIDDEN` | Chat `/rnw layer` | %s hidden | %s ausgeblendet |
 | `MSG_COLOUR` | Chat `/rnw color` | %s colour %.2f %.2f %.2f, opacity %.2f | %s Farbe %.2f %.2f %.2f, Deckkraft %.2f |
 | `MSG_RESET` | Chat `/rnw reset` | settings reset | Einstellungen zurückgesetzt |
+| `MSG_VIEW` | Chat `/rnw view` | view mode at %s | Ansichtsmodus bei %s |
+| `MSG_VIEW_OFF` | Chat `/rnw view` | back to the player | zurück zum Spieler |
+| `MSG_VIEW_UNKNOWN` | Chat `/rnw view` | unknown area. Mapped areas: %s | Unbekanntes Gebiet. Kartierte Gebiete: %s |
 | `USAGE_COLOR` | Chat, Hilfe | /rnw color fill\|hatch\|shade\|terrain\|water\|roads\|questareas R G B [A]   (0-1) | (Befehl bleibt, nur ggf. „(0-1)“) |
-| `USAGE` | Chat, Hilfe | /rnw [toggle] \| config \| lock \| unlock \| alpha 5-100 \| zoom 0.08-5 \| size W [H] \| rotate \| edge 1-5 \| mode key\|mapkey\|permanent \| layer NAME \| color NAME R G B [A] \| keys \| pos \| reset | (Befehle bleiben englisch) |
+| `USAGE` | Chat, Hilfe | /rnw [toggle] \| config \| lock \| unlock \| alpha 5-100 \| zoom 0.08-5 \| size W [H] \| rotate \| edge 1-5 \| mode key\|mapkey\|permanent \| layer NAME \| color NAME R G B [A] \| keys \| pos \| view [ZONE \| N W] \| reset | (Befehle bleiben englisch) |
 
 Der Leichnam-Marker selbst zeigt keinen Text; das Symbol stammt aus dem Spiel.
 

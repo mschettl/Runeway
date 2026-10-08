@@ -35,6 +35,7 @@ local COMMANDS = {
     { "/rnw color NAME R G B [A]", L.CMD_COLOR },
     { "/rnw keys", L.CMD_KEYS },
     { "/rnw pos", L.CMD_POS },
+    { "/rnw view [ZONE | N W]", L.CMD_VIEW },
     { "/rnw reset", L.CMD_RESET },
 }
 

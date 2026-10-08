@@ -208,12 +208,31 @@ L.execute('''
     check("zones: zone " .. zn .. " (chunk code " .. zch .. ") active", zn > 9 and za[zn] == 1 and math.abs(za[1] - db.zoneDim) < 0.02)
     POS[1], POS[2] = oldN, oldW
     for _ = 1, 400 do debugprofilestop(); view:GetScript("OnUpdate")(view, 0.05) end
+    -- view mode: centre on a mapped zone far from the player, drag pans, empty argument returns
+    SlashCmdList.RUNEWAY("view westfall")
+    for _ = 1, 400 do debugprofilestop(); view:GetScript("OnUpdate")(view, 0.05) end
+    local vn, vw, vk = NS.Player()
+    local wz
+    for z, name in ipairs(RunewayZones[0].names) do if name == "Westfall" then wz = z end end
+    za = NS.ZoneAlpha()
+    check("view: centred on Westfall, Westfall active", vn < -8000 and za[wz] == 1 and math.abs(za[1] - db.zoneDim) < 0.02)
+    CURSOR[1], CURSOR[2] = 500, 400
+    view:GetScript("OnDragStart")(view)
+    CURSOR[1], CURSOR[2] = 600, 400
+    view:GetScript("OnUpdate")(view, 0.05)
+    view:GetScript("OnDragStop")(view)
+    local pn2, pw2 = NS.Player()
+    check("view: dragging right pans west", math.abs(pw2 - (vw + 100 / vk)) < 0.01 and math.abs(pn2 - vn) < 0.01)
+    SlashCmdList.RUNEWAY("view")
+    view:GetScript("OnUpdate")(view, 0.05)
+    check("view: back to the player", select(1, NS.Player()) == POS[1])
+    for _ = 1, 400 do debugprofilestop(); view:GetScript("OnUpdate")(view, 0.05) end
     local tg = NS.ToggleButton
     EVENT_CALLBACKS["Settings.CategoryChanged"]({ GetID = function() return 1 end })
     local hiddenElsewhere = not tg:IsShown()
     EVENT_CALLBACKS["Settings.CategoryChanged"](SETTINGS_MAIN)
     check("show/hide button only on Runeway pages", hiddenElsewhere and tg:IsShown())
-    check("main page: version, intro, 14 quick commands (+ profile text)", kinds.element == 17 and INITS[1].data.text:find("1.4.1", 1, true) and INITS[2].data.text == NS.L.INTRO and INITS[4].data.desc ~= nil)
+    check("main page: version, intro, 15 quick commands (+ profile text)", kinds.element == 18 and INITS[1].data.text:find("1.4.1", 1, true) and INITS[2].data.text == NS.L.INTRO and INITS[4].data.desc ~= nil)
     check("settings rows: 1 header, 2 bindings, 7 layers",
         kinds.header == 1 and kinds.binding == 2 and kinds.layerrow == 7)
     local dropdown

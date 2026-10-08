@@ -167,6 +167,8 @@ arrow:SetPoint("CENTER")
 ---------------------------------------------------------------------------
 -- UnitPosition returns (north, west). Screen: x right = east, y up = north.
 local pN, pW, cosA, sinA, k = 0, 0, 1, 0, 1
+-- View mode (/rnw view): the map centres on viewAt = { n, w } instead of the player, north up; dragging pans
+local viewAt, pan
 
 local function ToScreen(n, w)
     local sx = -(w - pW) * k
@@ -653,7 +655,7 @@ local function UpdateHover()
         local W, H = view:GetSize()
         if (x / (W / 2)) ^ 2 + (y / (H / 2)) ^ 2 < 1 then
             local function Near(px, py, size) return (x - px) ^ 2 + (y - py) ^ 2 <= (size / 2) ^ 2 end
-            if Near(0, 0, db.arrowSize) then
+            if arrow:IsShown() and Near(0, 0, db.arrowSize) then
                 target = "arrow"
             elseif corpse:IsShown() and Near(corpse.x, corpse.y, db.corpseSize) then
                 target = "corpse"
@@ -702,10 +704,18 @@ view:SetScript("OnUpdate", function(self, e)
         status:SetText(L.NO_POSITION)
         return
     end
+    if pan then
+        local cx, cy = GetCursorPosition()
+        local s = view:GetEffectiveScale() * db.zoom
+        viewAt.n, viewAt.w = pan.n - (cy - pan.y) / s, pan.w + (cx - pan.x) / s
+    end
+    if viewAt then n, w = viewAt.n, viewAt.w end
     pN, pW, k = n, w, db.zoom
 
     local facing = GetPlayerFacing() or 0
-    local angle = db.rotate and -facing or 0
+    local angle = db.rotate and not viewAt and -facing or 0
+    arrow:SetShown(not viewAt)
+    arrowShadow:SetShown(not viewAt)
     cosA, sinA = math.cos(angle), math.sin(angle)
     local as = db.arrowSize * (hovered == "arrow" and HOVER_SCALE or 1)
     arrow:SetSize(as, as)
@@ -714,7 +724,7 @@ view:SetScript("OnUpdate", function(self, e)
     arrowShadow:SetRotation(db.rotate and 0 or facing)
 
     if UpdateTiles(inst, angle) then
-        status:SetText("")
+        status:SetText(viewAt and L.VIEW_MODE or "")
     else
         status:SetText(L.NO_DATA)
     end
@@ -755,7 +765,7 @@ end
 -- Mouse wheel zooms locked and unlocked (option); clicks only reach the map when unlocked (locked: they pass through)
 local function ApplyLock()
     local unlocked = not db.locked
-    view:EnableMouse(unlocked)
+    view:EnableMouse(unlocked or viewAt ~= nil)      -- view mode: dragging pans, also when locked
     view:EnableMouseWheel(db.wheelZoom)
     grip:SetShown(unlocked)
     ShowBorder(unlocked and db.hover and view:IsMouseOver())
@@ -766,9 +776,15 @@ local function SetZoom(z)
 end
 
 view:SetScript("OnDragStart", function(self)
-    self:StartMoving()
+    if viewAt then
+        local x, y = GetCursorPosition()
+        pan = { x = x, y = y, n = viewAt.n, w = viewAt.w }
+    elseif not db.locked then
+        self:StartMoving()
+    end
 end)
 view:SetScript("OnDragStop", function(self)
+    if pan then pan = nil return end
     self:StopMovingOrSizing()
     if self.SetUserPlaced then self:SetUserPlaced(false) end
     SavePos()
@@ -1022,6 +1038,26 @@ end)
 ---------------------------------------------------------------------------
 -- Slash commands
 ---------------------------------------------------------------------------
+-- Centre (north, west) of a mapped zone whose name contains `name` (lower case), or nil and the list of
+-- mapped zones
+local function ZoneCentre(inst, name)
+    local zones = RunewayZones and RunewayZones[inst]
+    if not zones then return end
+    for z, zn in ipairs(zones.names) do
+        if zn:lower():find(name, 1, true) then
+            local sn, sw, cnt = 0, 0, 0
+            for key, kz in pairs(zones.tile) do
+                if kz == z then
+                    local c, r = key:match("^(%d+)_(%d+)")
+                    sn, sw, cnt = sn + (32 - tonumber(r)) * T - T / 2, sw + (32 - tonumber(c)) * T - T / 2, cnt + 1
+                end
+            end
+            if cnt > 0 then return sn / cnt, sw / cnt, zn end
+        end
+    end
+    return nil, nil, table.concat(zones.names, ", ")
+end
+
 -- Layer key from a lower-cased slash argument ("questareas" -> "questAreas")
 local function LayerKey(name)
     for key in pairs(defaults.layers) do
@@ -1098,6 +1134,26 @@ SlashCmdList.RUNEWAY = function(msg)
         local mapID = C_Map.GetBestMapForUnit("player")
         ShowCopy(("%s %s %s map=%s facing=%.3f"):format(
             tostring(pn), tostring(pw), tostring(inst), tostring(mapID), GetPlayerFacing() or -1))
+    elseif cmd == "view" then
+        local vn, vw = arg:match("^(%-?[%d%.]+)%s+(%-?[%d%.]+)$")
+        if arg == "" then
+            viewAt, pan = nil, nil
+            Print(L.MSG_VIEW_OFF)
+        elseif vn then
+            viewAt = { n = tonumber(vn), w = tonumber(vw) }
+            Print(L.MSG_VIEW:format(("%.0f %.0f"):format(viewAt.n, viewAt.w)))
+        else
+            local name
+            vn, vw, name = ZoneCentre(select(4, UnitPosition("player")), arg)
+            if vn then
+                viewAt = { n = vn, w = vw }
+                Print(L.MSG_VIEW:format(name))
+            else
+                Print(L.MSG_VIEW_UNKNOWN:format(name or "-"))
+            end
+        end
+        ApplyLock()
+        if viewAt and not view:IsShown() then Runeway_Toggle() end
     elseif cmd == "reset" then
         ResetSettings()
         Print(L.MSG_RESET)

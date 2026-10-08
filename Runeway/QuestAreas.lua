@@ -598,6 +598,8 @@ local px, py, qx, qy, qa = {}, {}, {}, {}, {}   -- reused buffers: screen points
 -- The outlines that are drawn: fn(area, questIDs, state) for every shown group or single quest area
 local function ForEachShown(fn)
     local merge = ns.db().questMerge     -- overlapping quests as one combined outline (option)
+    local inside = ns.InteriorChunks()   -- inside Undercity: only areas within the city
+    local function Inside(b) return ns.InChunks(inside, (b[1] + b[2]) / 2, (b[3] + b[4]) / 2) end
     for _, m in ipairs(maps) do
         local st = state[m]
         -- a group is drawn on its map if that map owns one of its members
@@ -605,12 +607,12 @@ local function ForEachShown(fn)
             for _, g in pairs(st.groups) do
                 local own = false
                 for _, qid in ipairs(g.members) do own = own or owner[qid] == m end
-                if own and #g.loops > 0 then fn(g, g.members, st) end
+                if own and #g.loops > 0 and Inside(g.box) then fn(g, g.members, st) end
             end
         end
         for qid, a in pairs(st.areas) do
             local g = merge and st.groups[st.inGroup[qid] or ""]
-            if owner[qid] == m and #a.loops > 0 and not (g and #g.loops > 0) then
+            if owner[qid] == m and #a.loops > 0 and not (g and #g.loops > 0) and Inside(a.box) then
                 a.qids = a.qids or { qid }
                 fn(a, a.qids, st)
             end

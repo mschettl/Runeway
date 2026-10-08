@@ -33,6 +33,7 @@ INDOOR = 0x2000            # WMO group flag: indoor
 LIQUID_UNIT = 25 / 6       # yd per WMO liquid tile
 STEP = 1.2                 # yd; neighbouring floor pixels closer in height than this are connected (stairs)
 MIN_GAP = 30               # px; smaller holes in the floor are closed
+INSIDE_MARGIN = 16         # px added around the floor plan for its chunks (quest filter)
 ENVELOPE = 96              # px around the floor plan that belong to the set (hatch, then fade out)
 
 
@@ -188,9 +189,20 @@ def build(set_id, cfg):
         pv[B.px(inner, P // 2)] = half(B.compose(dict(layers[P], fill=layers['fill'], blocked=layers['blocked'])))
     lua = os.path.join(out_dir, 'Tiles.lua')
     B.write_tiles_lua(lua, f'"{set_id}"', [cfg['name']], state)
+    # chunks (16 x 16 per tile, ~33 yd) the floor plan covers: quest areas and pins elsewhere belong to the surface
+    near = cv2.dilate(B.u8(walk | water), np.ones((2 * INSIDE_MARGIN + 1,) * 2, np.uint8))
+    inside = cv2.resize(near, (len(cols) * 16, len(rows) * 16), interpolation=cv2.INTER_AREA) > 0
     with open(lua, 'a', newline='\n') as fh:
         fh.write('-- Surface subzones (AreaTable IDs): there the addon keeps the map\'s own (surface) tiles\n')
         fh.write(f'RunewayZones["{set_id}"].surface = {{ {", ".join(map(str, cfg["surface"]))} }}\n')
+        fh.write('-- Chunks of the floor plan per tile (row by row from north, "1" = inside): quests elsewhere belong to the surface\n')
+        fh.write(f'RunewayZones["{set_id}"].inside = {{\n')
+        for j, r in enumerate(rows):
+            for i, c in enumerate(cols):
+                g = inside[j * 16:(j + 1) * 16, i * 16:(i + 1) * 16]
+                if g.any():
+                    fh.write(f'    ["{c}_{r}"] = "' + ''.join('1' if v else '0' for v in g.flatten()) + '",\n')
+        fh.write('}\n')
     B.write_pack_toc(cfg['map'])
     cv2.imwrite(os.path.join(B.BUILD, f'preview_{set_id}.png'), pv)
     size = sum(os.path.getsize(os.path.join(d, f)) for d, _, fs in os.walk(out_dir) for f in fs)

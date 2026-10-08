@@ -283,19 +283,42 @@ end
 
 -- Tile set at the player's position: the interior set of the player's uiMap if there is one, except in its
 -- surface subzones (Ruins of Lordaeron is uiMap Undercity too); else the map's own set
-local surfaceNames = {}
+local surfaceNames, setCache, setTime = {}, {}, {}
 local function TileSet(inst)
+    local now = GetTime()
+    if setTime[inst] and now - setTime[inst] < 0.2 then return setCache[inst] end   -- called several times a frame
+    setTime[inst] = now
     LoadPack(inst)
     local ui = C_Map.GetBestMapForUnit("player")
     local set = ui and inst .. "-" .. ui
     local zones = set and RunewayZones and RunewayZones[set]
-    if not zones then return inst end
-    local sub = GetSubZoneText()
-    for _, id in ipairs(zones.surface or {}) do
-        if surfaceNames[id] == nil then surfaceNames[id] = C_Map.GetAreaInfo(id) or false end
-        if sub == surfaceNames[id] then return inst end
+    if zones then
+        -- the subzone text may add an article ("Die Ruinen von Lordaeron"): match the area name inside it
+        local sub = GetSubZoneText():lower()
+        for _, id in ipairs(zones.surface or {}) do
+            if surfaceNames[id] == nil then surfaceNames[id] = (C_Map.GetAreaInfo(id) or ""):lower() end
+            if surfaceNames[id] ~= "" and sub:find(surfaceNames[id], 1, true) then set = nil end
+        end
     end
-    return set
+    setCache[inst] = zones and set or inst
+    return setCache[inst]
+end
+
+-- Inside an interior set: the chunks its floor plan covers. The interior's uiMap can also list quests of the
+-- surface around it (Undercity: Scarlet Crusade quests of Tirisfal); areas and pins outside are left out.
+function ns.InteriorChunks()
+    local inst = select(4, UnitPosition("player"))
+    local set = inst and TileSet(inst)
+    return set ~= inst and RunewayZones[set].inside or nil
+end
+
+function ns.InChunks(chunks, n, w)
+    if not chunks then return true end
+    local x, y = 32 - w / T, 32 - n / T
+    local c, r = math.floor(x), math.floor(y)
+    local g = chunks[c .. "_" .. r]
+    local i = math.floor((y - r) * 16) * 16 + math.floor((x - c) * 16) + 1
+    return g ~= nil and g:sub(i, i) == "1"
 end
 
 local function IsLoaded(t)
@@ -597,10 +620,11 @@ local function RefreshQuests()
     local maps = NearbyMaps()
     if not (maps and C_QuestLog and C_QuestLog.GetQuestsOnMap) then return end
     local seen = {}          -- a quest can show on two zone maps: the first (nearest) map wins
+    local inside = ns.InteriorChunks()
     for _, mapID in ipairs(maps) do
         for _, q in ipairs(C_QuestLog.GetQuestsOnMap(mapID) or {}) do
             local n, w = MapToWorld(mapID, q.x, q.y)
-            if n and not seen[q.questID] then
+            if n and not seen[q.questID] and ns.InChunks(inside, n, w) then
                 seen[q.questID] = true
                 local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
                     or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))

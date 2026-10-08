@@ -18,5 +18,6 @@ Locales\zhTW.lua
 Tiles.lua
 Core.lua
 QuestAreas.lua
+Profile.lua
 Options.lua
 Options.xml

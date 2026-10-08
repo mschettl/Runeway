@@ -91,6 +91,16 @@ local AUTO_HIDE = {
 local category, cat                 -- main category; category the settings below are added to
 local ours = {}                     -- [category] = true for the Runeway pages
 
+-- All proxy settings, so an import can refresh every row
+local vars = {}
+local function Proxy(categoryTbl, var, ...)
+    vars[#vars + 1] = var
+    return Settings.RegisterProxySetting(categoryTbl, var, ...)
+end
+function ns.NotifyAllSettings()
+    for _, v in ipairs(vars) do Settings.NotifyUpdate(v) end
+end
+
 -- Value at a dotted path in RunewayDB or in the defaults, e.g. "colors.fill.a"
 local function Get(tbl, path)
     for part in path:gmatch("[^.]+") do tbl = tbl[part] end
@@ -104,7 +114,7 @@ end
 
 -- Proxy setting bound to a db path; apply runs after every change
 local function Setting(path, varType, label, apply)
-    return Settings.RegisterProxySetting(cat, "RUNEWAY_" .. path:upper():gsub("%.", "_"), varType, label,
+    return Proxy(cat, "RUNEWAY_" .. path:upper():gsub("%.", "_"), varType, label,
         Get(ns.DEFAULTS, path), function() return Get(ns.db(), path) end,
         function(v) Set(path, v); if apply then apply(v) end end)
 end
@@ -195,14 +205,14 @@ local function Build()
     local function Apply() ns.ApplyColors() end
     for _, layer in ipairs(ns.LAYER_KEYS) do
         local label, c = LAYER_LABELS[layer], "colors." .. layer
-        local shown = Settings.RegisterProxySetting(cat, "RUNEWAY_LAYER_" .. layer:upper(), Settings.VarType.Boolean,
+        local shown = Proxy(cat, "RUNEWAY_LAYER_" .. layer:upper(), Settings.VarType.Boolean,
             label, ns.DEFAULTS.layers[layer], function() return ns.db().layers[layer] end,
             function(v) ns.db().layers[layer] = v; Apply() end)
-        local opacity = Settings.RegisterProxySetting(cat, "RUNEWAY_OPACITY_" .. layer:upper(), Settings.VarType.Number,
+        local opacity = Proxy(cat, "RUNEWAY_OPACITY_" .. layer:upper(), Settings.VarType.Number,
             L.LAYER_OPACITY:format(label), ns.DEFAULTS.colors[layer].a, function() return ns.db().colors[layer].a end,
             function(v) ns.db().colors[layer].a = v; Apply() end)
         local function Hex(col) return CreateColor(col.r, col.g, col.b):GenerateHexColor() end
-        local color = Settings.RegisterProxySetting(cat, "RUNEWAY_COLOR_" .. layer:upper(), Settings.VarType.String,
+        local color = Proxy(cat, "RUNEWAY_COLOR_" .. layer:upper(), Settings.VarType.String,
             L.LAYER_COLOUR:format(label), Hex(Get(ns.DEFAULTS, c)), function() return Hex(Get(ns.db(), c)) end,
             function(v)
                 local col = Get(ns.db(), c)
@@ -217,6 +227,14 @@ local function Build()
         row:AddSearchTags(label)
         layout:AddInitializer(row)
     end
+
+    -- Profile: export / import all settings as text
+    Page(L.HEADER_PROFILE)
+    local info = Settings.CreateElementInitializer("RunewayTextRowTemplate", { name = "", text = L.PROFILE_INTRO })
+    info.GetExtent = function() return 62 end
+    layout:AddInitializer(info)
+    layout:AddInitializer(CreateSettingsButtonInitializer(L.PROFILE_EXPORT_TITLE, L.PROFILE_EXPORT, function() ns.ShowExport() end, nil, true))
+    layout:AddInitializer(CreateSettingsButtonInitializer(L.PROFILE_IMPORT_TITLE, L.PROFILE_IMPORT, function() ns.ShowImport() end, nil, true))
 
     Settings.RegisterAddOnCategory(category)
 end

@@ -158,6 +158,11 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 ### Schnellbefehle
 - Auf der Hauptseite („Quick commands“): alle Slash-Befehle mit Beschreibung. Eigene Zeilenvorlage `RunewayCommandRowTemplate` (`Options.xml`, erbt `SettingsListElementTemplate`): Befehl links, Beschreibung rechts. Der frühere Bedienhinweis oben auf der entsperrten Karte ist entfernt.
 
+### Profil (Export / Import)
+- Unterpunkt „Profile“: Einleitung, Knöpfe „Export“ und „Import“; Dialog mit mehrzeiligem Textfeld (`Profile.lua`, `BasicFrameTemplateWithInset` + `InputScrollFrameTemplate`, Escape schließt).
+- Format: eine Zeile `RNW1;pfad=wert;…` mit allen Einstellungen aus den Standardwerten plus Position (`x`, `y`); Zahlen mit `%.17g` (exakte Rückwandlung). Nicht enthalten: Questbereich-Cache, interne Werte, Tastenbelegungen (gehören WoW).
+- Import nimmt nur bekannte Pfade mit passendem Typ (Zahl, true/false, Wort; `mode` nur key/mapkey/permanent) und führt nie Code aus. Danach `ApplyAll` und alle Regler aktualisiert (`ns.NotifyAllSettings`).
+
 ### Mouse-over: Tooltips und Hervorhebung
 - Funktioniert auch auf der gesperrten, klickdurchlässigen Karte: Die Cursorposition wird pro Update abgefragt (`view:IsMouseOver`, `GetCursorPosition`), keine Mausereignisse. Nur innerhalb des sichtbaren Ovals und nur, wenn kein anderer Frame darüber liegt (`GetMouseFoci`: WorldFrame, die Karte selbst oder UIParent).
 - Reihenfolge: Spielerpfeil, Leichnam, Questmarker, dann Questbereiche. Marker unter dem Cursor werden um 30 % vergrößert; Questbereiche werden breiter, heller und voll deckend gezeichnet.

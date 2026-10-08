@@ -1,4 +1,4 @@
-# Runeway – Stand Version 1.2 und Übergabe
+# Runeway – Stand Version 1.3 und Übergabe
 
 Diese Datei fasst den kompletten Stand nach Version 1.2 zusammen, damit eine neue Session nahtlos weitermachen kann. Sie ersetzt den Chatverlauf. Vorgaben und Ziele stehen in `Runeway_Prompt_v1.md`, Arbeitsregeln in `CLAUDE.md`.
 
@@ -18,6 +18,8 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 Im Spiel getestet und für Version 1 abgenommen.
 
 **Stand 1.1 (im Spiel getestet und abgenommen):** Punkt 3.4 ist umgesetzt. Dazu gehören die Einstellungsseite im Blizzard-Stil (`Options.lua`), die Aufruf-Modi samt eigener Weltkarten-Tastenbelegung, das automatische Ausblenden und die Fensterbedienung laut Vorgabe.
+
+**Stand 1.3 (im Spiel getestet):** Lokalisierung in allen elf WoW-Client-Sprachen (Abschnitt 3, „Lokalisierung“); Französisch im Spiel geprüft, die KI-Übersetzungen außer Deutsch sind noch nicht von Muttersprachlern geprüft.
 
 **Stand 1.2 (im Spiel getestet und abgenommen):** Etappe 1 des Pakets „weitere Zonen“ (Abschnitt 8), dazu Dimmung angrenzender Zonen, glatte Wege, Leichnam-Marker, Tooltips und Hervorhebung beim Überfahren, frei einstellbare Breite und Höhe, neue Einstellungsstruktur (Hauptseite mit Einleitung und Schnellbefehlen, Unterpunkte) und Lokalisierung Englisch/Deutsch.
 - **Zonen:** Tirisfal, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains in einem Mosaik (Kacheln 26–38 / 24–36). Alterac ist dabei, weil es zwischen den anderen liegt; ohne es entstünde ein ausgeblendetes Loch.
@@ -455,7 +457,7 @@ cd <repo> && zip -r build/Runeway-1.2.zip Runeway
 ```text
 Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch claude/dreamy-lovelace-efolxg.
 Lies zuerst CLAUDE.md, Runeway_Status_v1.md und Runeway_Prompt_v1.md.
-Version 1.1 ist abgeschlossen und in main gemergt (PR #2), 1.2 (Etappe 1, Kachel-Optimierung) auf dem Entwicklungsbranch.
+Version 1.3 ist abgeschlossen und in main gemergt (Etappe 1 mit fünf Zonen, Lokalisierung in elf Sprachen).
 Langfristziel und Architektur: Runeway_Status_v1.md, Abschnitt 8 „Roadmap“.
 Aufgabe dieser Session: Fundament (Block-Build, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID),
 danach weitere Etappen der Östlichen Königreiche, siehe Abschnitt 8.

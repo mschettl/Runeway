@@ -1,4 +1,5 @@
 <Bindings>
+    <!-- RUNEWAY_WORLDMAP runs TOGGLEWORLDMAP via override binding (Core.lua, ApplyBindings); the body is a no-op -->
     <Binding name="RUNEWAY_TOGGLE" header="RUNEWAY">Runeway_Toggle()</Binding>
-    <Binding name="RUNEWAY_WORLDMAP">-- runs TOGGLEWORLDMAP via override binding (Core.lua, ApplyBindings)</Binding>
+    <Binding name="RUNEWAY_WORLDMAP">return</Binding>
 </Bindings>

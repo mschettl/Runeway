@@ -106,7 +106,7 @@ C_QuestLog = { GetQuestsOnMap = function(m) return QUESTS_BY_MAP[m] or {} end,
                IsComplete = function(q) return q == 4244 end,
                GetTitleForQuestID = function(id) return "Test quest " .. id end }
 function CreateVector2D(x, y) return { x = x, y = y } end
-MAP_WEST = { [1420] = 2000, [1421] = 8000, [1422] = 40000 }   -- west edge of each zone map (yards)
+MAP_WEST = { [1420] = 2000, [1421] = 8000, [1422] = 40000, [1458] = 2000 }   -- west edge of each zone map (yards)
 C_Map.GetWorldPosFromMapPos = function(m, v) return 0, { x = 3000 - v.y * 4000, y = MAP_WEST[m] - v.x * 6000 } end
 function date() return "2026-10-07" end
 -- 3.4: visibility, bindings, settings

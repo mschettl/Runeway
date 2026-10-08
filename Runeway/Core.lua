@@ -545,14 +545,19 @@ ns.MapToWorld = MapToWorld
 
 -- Zone maps near the player: the player's map first, then the zones of the same continent whose map
 -- rectangle comes within view reach (+ margin), nearest first. Quest areas and pins come from all of them.
+-- Interior sets have their own level: inside (Undercity) only the interior's map counts; on the surface the
+-- maps with an interior set are left out (also when the player's map is one, as in the Ruins of Lordaeron).
 local REACH_MARGIN = 200                 -- yards beyond the map corner
 local UIMAP_CONTINENT, UIMAP_ZONE = 2, 3 -- Enum.UIMapType
 local zoneRect = {}                      -- [mapID] = { n0, n1, w0, w1 } in world yards, or false
 local function NearbyMaps()
     local m = C_Map.GetBestMapForUnit("player")
     if not m then return end
-    local list = { m }
-    local pn, pw = UnitPosition("player")
+    local pn, pw, _, inst = UnitPosition("player")
+    if inst and TileSet(inst) ~= inst then return { m } end
+    local function Interior(id) return inst and RunewayZones and RunewayZones[inst .. "-" .. id] end
+    local list = {}
+    if not Interior(m) then list[1] = m end
     if not (pn and C_Map.GetMapInfo and C_Map.GetMapChildrenInfo) then return list end
     local cont, info = m, C_Map.GetMapInfo(m)
     while info and info.mapType ~= UIMAP_CONTINENT and (info.parentMapID or 0) > 0 do
@@ -566,7 +571,7 @@ local function NearbyMaps()
     local found = {}
     for _, c in ipairs(C_Map.GetMapChildrenInfo(cont, UIMAP_ZONE) or {}) do
         local id = c.mapID
-        if id ~= m then
+        if id ~= m and not Interior(id) then
             local r = zoneRect[id]
             if r == nil then
                 local n0, w0 = MapToWorld(id, 0, 0)

@@ -174,10 +174,12 @@ L.execute('''
     local before = #TEXTURES
     upd(RunewayFrame, 0.05)
     print(("undercity: interior textures %d, surface textures %d"):format(newTextures(before)))
+    print("undercity: quest maps " .. table.concat(NS.NearbyMaps(), ","))
     SUBZONE = "Ruins of Lordaeron"
     before = #TEXTURES
     upd(RunewayFrame, 0.05)
     print(("ruins of lordaeron: interior textures %d, surface textures %d"):format(newTextures(before)))
+    print("ruins of lordaeron: quest maps " .. table.concat(NS.NearbyMaps(), ","))
     POS[1], POS[2], UI_MAP, SUBZONE = 1917.6, 84.9, 1420, ""
     SlashCmdList.RUNEWAY("reset")
     POS[1] = nil

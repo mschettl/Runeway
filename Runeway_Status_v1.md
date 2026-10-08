@@ -79,6 +79,7 @@ Seit 1.6 besteht das Release aus zwei Ordnern, die beide nach `Interface\AddOns`
 ### Innenraum-Kachelsätze (`Core.lua`, `TileSet`)
 - Neben dem Kachelsatz der Karte (`tiles/0`) kann ein Paket Innenraum-Sätze `tiles/<Karte>-<uiMap>/` enthalten, bisher `tiles/0-1458` = Undercity (uiMap 1458). Gleiche Weltkoordinaten und Kachelraster wie die Oberfläche, eigene `RunewayTiles["0-1458"]`/`RunewayZones["0-1458"]`.
 - Auswahl je Frame: Hat die uiMap des Spielers (`C_Map.GetBestMapForUnit`) einen Satz, wird er gezeigt, außer die Unterzone (`GetSubZoneText`) ist eine seiner Oberflächen-Unterzonen (`RunewayZones[set].surface`, AreaTable-IDs, Name über `C_Map.GetAreaInfo`). Grund: Auch die Ruinen von Lordaeron (Hof, Thronsaal, Aufzug) melden uiMap 1458 und Zone „Undercity“; nur die Unterzone „Ruins of Lordaeron“ (Area 153) unterscheidet sie. `UnitPosition` liefert keine Höhe.
+- Questbereiche und -marker (`NearbyMaps`): Im Innenraum-Satz nur die uiMap des Innenraums (Undercity), an der Oberfläche alle Zonen außer denen mit Innenraum-Satz (auch in den Ruinen, wo die eigene uiMap 1458 ist).
 - `/rnw pos` zeigt den aktiven Satz (`set=`).
 
 ### Datenpakete laden (`Core.lua`, `PackOf`/`LoadPack`)

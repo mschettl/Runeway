@@ -98,7 +98,7 @@ Werte-Formate (bleiben meist gleich): `%d px`, `%d %%`, `%.2f`, `%.2f x`.
 
 ## 4. Optionen – Ebenen
 
-Je Ebene drei Texte: Name (Häkchen), „… opacity“ (Regler, nur Suche/Tooltip) und „… colour“ (Farbzeile).
+Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… opacity“ und „… colour“ erscheinen als Tooltip von Regler und Farbfeld.
 
 | Schlüssel | Englisch | Deutsch |
 |---|---|---|

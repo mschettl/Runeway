@@ -176,8 +176,18 @@ L.execute('''
     check("show/hide button only on Runeway pages", hiddenElsewhere and tg:IsShown())
     check("main page: intro + 14 quick commands", kinds.element == 15 and INITS[1].data.text == NS.L.INTRO and INITS[3].data.desc ~= nil)
     check("settings rows: 1 header, 2 bindings, 7 layers",
-        kinds.header == 1 and kinds.binding == 2 and kinds.checkslider == 7 and kinds.color == 7)
+        kinds.header == 1 and kinds.binding == 2 and kinds.layerrow == 7)
     check("mode dropdown has 3 entries", #INITS[17].options == 3)
+    -- layer row: the colour swatch opens the picker and writes the layer colour
+    local row
+    for _, i in ipairs(INITS) do if i.kind == "layerrow" and i.data.name == NS.L.LAYER_ROADS then row = i end end
+    local f = setmetatable({ ColorSwatch = CreateFrame("Button"), cbrHandles = { SetOnValueChangedCallback = function() end } },
+        { __index = RunewayLayerRowMixin })
+    f.ColorSwatch.SetColor = function() end
+    RunewayLayerRowMixin.Init(f, row)
+    f.ColorSwatch:GetScript("OnClick")()
+    ColorPickerFrame.info.swatchFunc()
+    check("layer row: swatch sets the roads colour", math.abs(db.colors.roads.r - 0.1) < 0.01 and math.abs(db.colors.roads.b - 0.3) < 0.01)
     for var, st in pairs(SETTINGS) do
         if st:GetValue() == nil then check("setting reads a value: " .. var, false) end
     end

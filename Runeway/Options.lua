@@ -47,6 +47,42 @@ function RunewayTextRowMixin:Init(initializer)
     self.Body:SetText(initializer.data.text)
 end
 
+-- Layer row: checkbox (shown), colour swatch and opacity slider in one row (template in Options.xml).
+-- Builds on Blizzard's checkbox + slider row; the colour is its own proxy setting, so "Defaults" resets it.
+RunewayLayerRowMixin = CreateFromMixins(SettingsCheckboxSliderControlMixin)
+function RunewayLayerRowMixin:OnLoad()
+    SettingsCheckboxSliderControlMixin.OnLoad(self)
+    self.ColorSwatch = CreateFrame("Button", nil, self, "ColorSwatchTemplate")
+    self.ColorSwatch:SetPoint("LEFT", self.Checkbox, "RIGHT", 8, -2)
+    self.SliderWithSteppers:SetWidth(190)
+    self.SliderWithSteppers:ClearAllPoints()
+    self.SliderWithSteppers:SetPoint("LEFT", self.ColorSwatch, "RIGHT", 8, 2)
+end
+
+function RunewayLayerRowMixin:Init(initializer)
+    SettingsCheckboxSliderControlMixin.Init(self, initializer)
+    local setting, title = initializer.data.colorSetting, initializer.data.colorLabel
+    local swatch = self.ColorSwatch
+    local function Show() swatch:SetColor(CreateColorFromHexString(setting:GetValue())) end
+    local function Hex(r, g, b) return CreateColor(r, g, b):GenerateHexColor() end
+    Show()
+    swatch:SetScript("OnClick", function()
+        local r, g, b = CreateColorFromHexString(setting:GetValue()):GetRGB()
+        ColorPickerFrame:SetupColorPickerAndShow({
+            r = r, g = g, b = b, hasOpacity = false,
+            swatchFunc = function() setting:SetValue(Hex(ColorPickerFrame:GetColorRGB())) end,
+            cancelFunc = function() setting:SetValue(Hex(r, g, b)) end,
+        })
+    end)
+    swatch:SetScript("OnEnter", function()
+        GameTooltip:SetOwner(swatch, "ANCHOR_RIGHT")
+        GameTooltip:SetText(title, 1, 1, 1)
+        GameTooltip:Show()
+    end)
+    swatch:SetScript("OnLeave", GameTooltip_Hide)
+    self.cbrHandles:SetOnValueChangedCallback(setting:GetVariable(), Show)   -- picker, Defaults
+end
+
 local AUTO_HIDE = {
     { "combat", L.HIDE_COMBAT }, { "instance", L.HIDE_INSTANCE }, { "mounted", L.HIDE_MOUNTED },
     { "city", L.HIDE_CITY },
@@ -151,7 +187,7 @@ local function Build()
     Slider("questEdge", L.QUEST_EDGE, 0.5, 2.5, 0.05, function(v) return ("%.2f x"):format(v) end)
     Check("questMerge", L.QUEST_MERGE, L.QUEST_MERGE_TIP)
 
-    -- Layers: show + opacity in one row, colour in the row below
+    -- Layers: one row each with show, colour and opacity
     Page(L.HEADER_LAYERS)
     local function Apply() ns.ApplyColors() end
     for _, layer in ipairs(ns.LAYER_KEYS) do
@@ -162,8 +198,6 @@ local function Build()
         local opacity = Settings.RegisterProxySetting(cat, "RUNEWAY_OPACITY_" .. layer:upper(), Settings.VarType.Number,
             L.LAYER_OPACITY:format(label), ns.DEFAULTS.colors[layer].a, function() return ns.db().colors[layer].a end,
             function(v) ns.db().colors[layer].a = v; Apply() end)
-        layout:AddInitializer(CreateSettingsCheckboxSliderInitializer(shown, label, nil, opacity,
-            SliderOptions(0, 1, 0.01, Pct), L.LAYER_OPACITY:format(label)))
         local function Hex(col) return CreateColor(col.r, col.g, col.b):GenerateHexColor() end
         local color = Settings.RegisterProxySetting(cat, "RUNEWAY_COLOR_" .. layer:upper(), Settings.VarType.String,
             L.LAYER_COLOUR:format(label), Hex(Get(ns.DEFAULTS, c)), function() return Hex(Get(ns.db(), c)) end,
@@ -172,7 +206,13 @@ local function Build()
                 col.r, col.g, col.b = CreateColorFromHexString(v):GetRGB()
                 Apply()
             end)
-        Settings.CreateColorSwatch(cat, color)
+        local row = Settings.CreateSettingInitializer("RunewayLayerRowTemplate", {
+            name = label, cbSetting = shown, cbLabel = label, sliderSetting = opacity,
+            sliderOptions = SliderOptions(0, 1, 0.01, Pct), sliderLabel = L.LAYER_OPACITY:format(label),
+            colorSetting = color, colorLabel = L.LAYER_COLOUR:format(label),
+        })
+        row:AddSearchTags(label)
+        layout:AddInitializer(row)
     end
 
     Settings.RegisterAddOnCategory(category)

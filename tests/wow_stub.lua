@@ -142,6 +142,7 @@ Settings = {
     RegisterProxySetting = function(_, var, varType, name, default, get, set)
         assert(type(default) == varType, var .. ": default must be " .. varType)
         local st = { variable = var, default = default, GetValue = function() return get() end,
+                     GetVariable = function() return var end,
                      SetValue = function(_, v) set(v) end }
         SETTINGS[var] = st
         return st
@@ -154,6 +155,9 @@ Settings = {
         return { Add = function(_, v, label) d[#d + 1] = { value = v, label = label } end, GetData = function() return d end }
     end,
     RegisterAddOnCategory = function() end,
+    CreateSettingInitializer = function(template, data)
+        return { kind = "layerrow", template = template, data = data, AddSearchTags = function() end }
+    end,
     CreateElementInitializer = function(template, data) return { kind = "element", template = template, data = data } end,
     OpenToCategory = function(id) OPENED = id end,
 }
@@ -170,4 +174,5 @@ end
 function CreateSettingsListSectionHeaderInitializer(name) return { kind = "header", name = name } end
 function CreateSettingsButtonInitializer(name, text, click) return { kind = "button", click = click } end
 function CreateSettingsCheckboxSliderInitializer(cb, _, _, slider, options) return { kind = "checkslider", setting = cb, slider = slider, options = options } end
+SettingsCheckboxSliderControlMixin = { OnLoad = function() end, Init = function() end }
 function CreateKeybindingEntryInitializer(i) return { kind = "binding", action = GetBinding(i) } end

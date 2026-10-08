@@ -137,7 +137,7 @@ local function Row(kind) return function(_, setting, options) INITS[#INITS + 1] 
     options = type(options) == "function" and options() or options } end end
 Settings = {
     VarType = { Boolean = "boolean", Number = "number", String = "string" },
-    RegisterVerticalLayoutCategory = function() return { GetID = function() return 77 end }, Layout() end,
+    RegisterVerticalLayoutCategory = function() SETTINGS_MAIN = { GetID = function() return 77 end }; return SETTINGS_MAIN, Layout() end,
     RegisterVerticalLayoutSubcategory = function() return {}, Layout() end,
     RegisterProxySetting = function(_, var, varType, name, default, get, set)
         assert(type(default) == varType, var .. ": default must be " .. varType)
@@ -158,6 +158,9 @@ Settings = {
     OpenToCategory = function(id) OPENED = id end,
 }
 MinimalSliderWithSteppersMixin = { Label = { Right = 1 } }
+SettingsPanel = { Container = { SettingsList = { Header = obj("Header") } } }
+EventRegistry = { RegisterCallback = function(_, ev, fn, owner) EVENT_CALLBACKS[ev] = function(...) fn(owner, ...) end end }
+EVENT_CALLBACKS = {}
 SettingsListElementMixin = { Init = function() end }
 function CreateFromMixins(...)
     local t = {}

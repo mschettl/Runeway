@@ -26,7 +26,9 @@ Ob WoW Forever alle Sprachen ausliefert, ist im Client zu prüfen; der Code fäl
 
 | Schlüssel | Englisch | Deutsch |
 |---|---|---|
-| `INTRO` | Runeway shows a player-centred, rotating overlay map in the style of Diablo IV and Path of Exile: walkable areas, terrain and water lines, roads, and the quest areas of your current and adjacent zones. Open it with its own key, the map key or permanently. All settings are in the sub-entries on the left. | Runeway zeigt eine spielerzentrierte, mitdrehende Overlay-Karte im Stil von Diablo IV und Path of Exile: begehbare Bereiche, Gelände- und Wasserlinien, Wege sowie die Questbereiche deiner aktuellen und der angrenzenden Zonen. Öffnen lässt sie sich über eine eigene Taste, die Kartentaste oder dauerhaft. Alle Einstellungen findest du in den Unterpunkten links. |
+| `INTRO` | Runeway shows a player-centred, rotating overlay map: walkable areas, terrain and water lines, roads, and the quest areas of your current and adjacent zones. Open it with its own key, the map key or permanently. All settings are in the sub-entries on the left. | Runeway zeigt eine spielerzentrierte, mitdrehende Overlay-Karte: begehbare Bereiche, Gelände- und Wasserlinien, Wege sowie die Questbereiche deiner aktuellen und der angrenzenden Zonen. Öffnen lässt sie sich über eine eigene Taste, die Kartentaste oder dauerhaft. Alle Einstellungen findest du in den Unterpunkten links. |
+| `MAP_SHOW` | Show map | Karte einblenden |
+| `MAP_HIDE` | Hide map | Karte ausblenden |
 | `HEADER_COMMANDS` | Quick commands | Schnellbefehle |
 | `HEADER_OPEN` | Open with | Öffnen mit |
 | `HEADER_AUTOHIDE` | Hide automatically | Automatisch ausblenden |
@@ -80,8 +82,6 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `LOCKED_TIP` | Unlocked: drag to move, corner grip to resize. The mouse wheel zooms in both states. | Entsperrt: ziehen zum Verschieben, Ecke zum Vergrößern. Das Mausrad zoomt in beiden Zuständen. |
 | `HOVER` | Frame on mouse-over (unlocked) | Rahmen bei Mauskontakt (entsperrt) |
 | `SIZE` | Size | Größe |
-| `OVERLAY` | Overlay | Overlay |
-| `SHOW_HIDE` | Show / hide | Anzeigen / Verstecken |
 | `MAP_OPACITY` | Map opacity | Kartendeckkraft |
 | `ZOOM` | Zoom | Zoom |
 | `NEIGHBOUR_ZONES` | Adjacent zones opacity | Deckkraft angrenzender Zonen |

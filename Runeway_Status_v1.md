@@ -77,7 +77,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 ### Standardwerte (`RunewayDB`)
 | Schlüssel | Standard |
 |---|---|
-| `w` | 600 (quadratisch, Seitenlänge) |
+| `w` | 800 (quadratisch, Seitenlänge) |
 | `zoom` | 0.3 (0.08–5) |
 | `alpha` | 0.7 (nur Kartenebenen; Pfeil, Marker und Questränder immer voll) |
 | `rotate`, `locked`, `shown` | true, false, false |
@@ -147,6 +147,7 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 
 ### Aufbau der Einstellungen
 - **Hauptseite „Runeway“:** Einleitungstext (`L.INTRO`, Zeilenvorlage `RunewayTextRowTemplate` mit fester Höhe über `GetExtent`) und darunter „Quick commands“.
+- **Knopf „Karte ein-/ausblenden“:** im Kopf des Einstellungsfensters links neben „Standard“, nur auf den Runeway-Seiten (`Settings.CategoryChanged` über `EventRegistry`); Text wechselt zwischen „Show map“ und „Hide map“.
 - **Unterpunkte im Baum links** (Runeway aufklappbar, `RegisterVerticalLayoutSubcategory`): Open with, Hide automatically, Window, Display, Layers. Jeder Unterpunkt hat eigene Proxy-Settings, „Standard“ setzt nur diesen Unterpunkt zurück.
 
 ### Schnellbefehle

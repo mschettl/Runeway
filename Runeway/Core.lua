@@ -26,7 +26,7 @@ local STYLE = 6            -- bump when the default look changes (see migration 
 -- One calm colour for all lines (Diablo IV style); quest areas glow blue like the minimap blobs
 local LINE = { 0xD1 / 255, 0xDB / 255, 0xE3 / 255 }
 local defaults = {
-    x = nil, y = nil, w = 600,          -- square map (w = edge length)
+    x = nil, y = nil, w = 800,          -- square map (w = edge length)
     zoom = 0.3, alpha = 0.7, rotate = true, locked = false, shown = false,
     mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
     autoHide = { combat = false, instance = false, mounted = false, city = false },

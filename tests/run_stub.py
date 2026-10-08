@@ -168,6 +168,12 @@ L.execute('''
     check("corpse marker while dead", corpseShown and not TEXTURE_OBJECTS[("Interface/Minimap/POIIcons"):gsub("/", string.char(92))]:IsShown())
     local za = NS.ZoneAlpha()
     check("zones: Tirisfal full, Silverpine dimmed", za[1] == 1 and math.abs(za[2] - db.zoneDim) < 0.02)
+    local tg
+    for _, f in ipairs(FRAMES) do if f:GetScript("OnClick") and rawget(f, "_w") == nil and f:GetScript("OnShow") then tg = f end end
+    EVENT_CALLBACKS["Settings.CategoryChanged"]({ GetID = function() return 1 end })
+    local hiddenElsewhere = not tg:IsShown()
+    EVENT_CALLBACKS["Settings.CategoryChanged"](SETTINGS_MAIN)
+    check("show/hide button only on Runeway pages", hiddenElsewhere and tg:IsShown())
     check("main page: intro + 14 quick commands", kinds.element == 15 and INITS[1].data.text == NS.L.INTRO and INITS[3].data.desc ~= nil)
     check("settings rows: 1 header, 2 bindings, 7 layers",
         kinds.header == 1 and kinds.binding == 2 and kinds.checkslider == 7 and kinds.color == 7)
@@ -184,7 +190,7 @@ L.execute('''
     SETTINGS.RUNEWAY_AUTOHIDE_COMBAT:SetValue(true)
     check("opacity and auto-hide write the db", db.colors.roads.a == 0.5 and db.autoHide.combat == true)
     for _, st in pairs(SETTINGS) do st:SetValue(st.default) end
-    check("defaults restored", db.edge == 3 and db.w == 600 and db.mode == "key" and db.colors.roads.a == 0.65
+    check("defaults restored", db.edge == 3 and db.w == 800 and db.mode == "key" and db.colors.roads.a == 0.65
         and math.abs(db.colors.fill.r) < 0.01 and db.zoom == 0.3 and db.questMerge == true and db.corpseSize == 25)
     view:GetScript("OnUpdate")(view, 0.05)
 ''')

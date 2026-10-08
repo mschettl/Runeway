@@ -53,6 +53,7 @@ local AUTO_HIDE = {
 }
 
 local category, cat                 -- main category; category the settings below are added to
+local ours = {}                     -- [category] = true for the Runeway pages
 
 -- Value at a dotted path in RunewayDB or in the defaults, e.g. "colors.fill.a"
 local function Get(tbl, path)
@@ -104,7 +105,7 @@ local function Build()
     local main
     category, main = Settings.RegisterVerticalLayoutCategory("Runeway")
     local intro = Settings.CreateElementInitializer("RunewayTextRowTemplate", { name = "", text = L.INTRO })
-    intro.GetExtent = function() return 90 end
+    intro.GetExtent = function() return 62 end
     main:AddInitializer(intro)
     main:AddInitializer(CreateSettingsListSectionHeaderInitializer(L.HEADER_COMMANDS))
     for _, c in ipairs(COMMANDS) do
@@ -112,8 +113,10 @@ local function Build()
     end
 
     local layout
+    ours[category] = true
     local function Page(name)
         cat, layout = Settings.RegisterVerticalLayoutSubcategory(category, name)
+        ours[cat] = true
     end
 
     Page(L.HEADER_OPEN)
@@ -136,7 +139,6 @@ local function Build()
     Check("locked", L.LOCKED, L.LOCKED_TIP, function() ns.ApplyAll() end)
     Check("hover", L.HOVER, nil, function() ns.ApplyAll() end)
     Slider("w", L.SIZE, ns.SIZE_MIN, ns.SIZE_MAX, 10, function(v) return ("%d px"):format(v) end, function() ns.ApplyAll() end)
-    layout:AddInitializer(CreateSettingsButtonInitializer(L.OVERLAY, L.SHOW_HIDE, function() Runeway_Toggle() end, nil, false))
 
     Page(L.HEADER_DISPLAY)
     Slider("alpha", L.MAP_OPACITY, 0.05, 1, 0.01, Pct, function() ns.ApplyAll() end)
@@ -176,12 +178,34 @@ local function Build()
     Settings.RegisterAddOnCategory(category)
 end
 
+-- Show / hide button in the header of the settings panel, next to "Defaults", on the Runeway pages only
+local toggle
+local function UpdateToggle()
+    if toggle then toggle:SetText(ns.view:IsShown() and L.MAP_HIDE or L.MAP_SHOW) end
+end
+local function CreateToggle()
+    local header = SettingsPanel and SettingsPanel.Container and SettingsPanel.Container.SettingsList
+        and SettingsPanel.Container.SettingsList.Header
+    if not header then return end
+    toggle = CreateFrame("Button", nil, header, "UIPanelButtonTemplate")
+    toggle:SetSize(140, 22)
+    toggle:SetPoint("TOPRIGHT", -138, -16)          -- left of the Defaults button (96 px at -36)
+    toggle:SetScript("OnClick", function()
+        Runeway_Toggle()
+        UpdateToggle()
+    end)
+    toggle:SetScript("OnShow", UpdateToggle)
+    toggle:Hide()
+    EventRegistry:RegisterCallback("Settings.CategoryChanged", function(_, c) toggle:SetShown(ours[c] or false) end, toggle)
+end
+
 -- After login: the key binding list (GetNumBindings) includes our Bindings.xml entries then
 local loader = CreateFrame("Frame")
 loader:RegisterEvent("PLAYER_LOGIN")
 loader:SetScript("OnEvent", function(self)
     self:SetScript("OnEvent", nil)
     Build()
+    CreateToggle()
 end)
 
 function ns.OpenOptions()

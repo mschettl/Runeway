@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: Runeway
 ## Notes: Player-centred contour overlay map in the style of Path of Exile
-## Version: 1.3
+## Version: 1.4
 ## SavedVariables: RunewayDB
 
 Locales\enUS.lua

@@ -22,6 +22,8 @@ Nicht übersetzt werden: der Addon-Name „Runeway“, Slash-Befehle und ihre Ar
 
 Ob WoW Forever alle Sprachen ausliefert, ist im Client zu prüfen; der Code fällt für unbekannte Sprachen auf Englisch zurück.
 
+Stand: Englisch und Deutsch abgestimmt (Tabellen unten). Die übrigen neun Sprachen sind KI-Übersetzungen in `Runeway/Locales/<code>.lua`, noch ohne Prüfung durch Muttersprachler.
+
 ## 1. Optionen – Abschnitte
 
 | Schlüssel | Englisch | Deutsch |

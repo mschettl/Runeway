@@ -1,4 +1,4 @@
-# Runeway – Stand Version 1.2 und Übergabe
+# Runeway – Stand Version 1.3 und Übergabe
 
 Diese Datei fasst den kompletten Stand nach Version 1.2 zusammen, damit eine neue Session nahtlos weitermachen kann. Sie ersetzt den Chatverlauf. Vorgaben und Ziele stehen in `Runeway_Prompt_v1.md`, Arbeitsregeln in `CLAUDE.md`.
 
@@ -18,6 +18,8 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 Im Spiel getestet und für Version 1 abgenommen.
 
 **Stand 1.1 (im Spiel getestet und abgenommen):** Punkt 3.4 ist umgesetzt. Dazu gehören die Einstellungsseite im Blizzard-Stil (`Options.lua`), die Aufruf-Modi samt eigener Weltkarten-Tastenbelegung, das automatische Ausblenden und die Fensterbedienung laut Vorgabe.
+
+**Stand 1.3 (im Spiel getestet):** Lokalisierung in allen elf WoW-Client-Sprachen (Abschnitt 3, „Lokalisierung“); Französisch im Spiel geprüft, die KI-Übersetzungen außer Deutsch sind noch nicht von Muttersprachlern geprüft.
 
 **Stand 1.2 (im Spiel getestet und abgenommen):** Etappe 1 des Pakets „weitere Zonen“ (Abschnitt 8), dazu Dimmung angrenzender Zonen, glatte Wege, Leichnam-Marker, Tooltips und Hervorhebung beim Überfahren, frei einstellbare Breite und Höhe, neue Einstellungsstruktur (Hauptseite mit Einleitung und Schnellbefehlen, Unterpunkte) und Lokalisierung Englisch/Deutsch.
 - **Zonen:** Tirisfal, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains in einem Mosaik (Kacheln 26–38 / 24–36). Alterac ist dabei, weil es zwischen den anderen liegt; ohne es entstünde ein ausgeblendetes Loch.
@@ -167,6 +169,8 @@ Zusätzlich gibt es den Button „Overlay“ auf der Weltkarte.
 - **Quelle:** `Runeway_Strings.md` enthält alle sichtbaren Texte mit Schlüssel, Englisch und Deutsch (von Mario abgestimmt). `python scripts/make_locales.py` erzeugt daraus `Runeway/Locales/enUS.lua` und `deDE.lua` – nicht von Hand ändern, sondern die Liste pflegen und neu erzeugen.
 - **Laufzeit:** `enUS.lua` legt `ns.L` mit allen englischen Texten an; jede weitere Sprachdatei prüft `GetLocale()` und überschreibt nur ihre Schlüssel. Fehlt ein Schlüssel, bleibt der englische Text. Code verwendet nur `L.KEY`.
 - **Weitere Sprachen:** je eine Datei `Runeway/Locales/<locale>.lua` (Aufbau wie `deDE.lua`), in der `.toc` nach `enUS.lua` eintragen. Nicht übersetzt: Befehle, Ebenen-Namen in Befehlen, Entwickler-Ausgaben.
+- **Sprachen:** enUS (Quelle), deDE (von Mario abgestimmt, aus `Runeway_Strings.md` erzeugt) sowie frFR, esES, esMX, itIT, ptBR, ruRU, koKR, zhCN, zhTW (KI-Übersetzung, von Muttersprachlern noch nicht geprüft; Dateien von Hand gepflegt). Die Befehlshilfe (`USAGE`, `USAGE_COLOR`) bleibt in allen Sprachen englisch.
+- **Neue oder geänderte Texte:** in `Runeway_Strings.md` (Englisch, Deutsch) ändern, `make_locales.py` laufen lassen, dann die neun anderen Dateien ergänzen; `check_locales.py` meldet fehlende Schlüssel je Sprache.
 - **Prüfung:** `python tests/check_locales.py` – keine unbekannten Schlüssel, gleiche Platzhalter wie Englisch, Liste der noch englischen Texte je Sprache.
 
 ### Wichtige Laufzeit-Mechanik
@@ -386,7 +390,6 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 - **Prüfen:** ob `C_QuestLog.GetQuestsOnMap(Nachbarzone)` in Forever die Quests der Nachbarzone liefert, solange der Spieler nicht dort ist (Abschnitt 6: Bereiche kommen vom Server, nach dem Login auch ohne geöffnete Karte). Betroffen sind `QuestAreas.lua` (~Zeile 396) und die Questmarker in `Core.lua` (~Zeile 371).
 
 ### Später
-- **Weitere Sprachen:** frFR, esES, esMX, itIT, ptBR, ruRU, koKR, zhCN, zhTW als eigene Dateien in `Runeway/Locales/` (Aufbau wie `deDE.lua`), geprüft mit `tests/check_locales.py`; Englisch und Deutsch sind fertig.
 - **Weitere Städte:**
   - WMO als OBJ exportieren (wow.export, „Split WMO Groups“, ohne Texturen) und auf `data` legen.
   - Turm- oder Mauer-M2 in `M2_BLOCKERS` eintragen.
@@ -406,6 +409,7 @@ Das schreibt `Runeway/tiles/0/…`, `Runeway/Tiles.lua` und Vorschauen nach `bui
 
 ```bash
 python tests/check_locales.py                 # Sprachdateien: Schlüssel und Platzhalter wie enUS
+RUNEWAY_LOCALE=ruRU python tests/run_stub.py  # derselbe Test mit anderer Client-Sprache (Standard enUS)
 python tests/run_stub.py                      # lädt das Addon (Lua 5.1) gegen einen WoW-API-Stub, prüft Kacheln/Questbereiche/Zoom-Laden
 python tests/render_quest_outlines.py <SavedVariables/Runeway.lua>   # Questumrisse aus Probe-Daten mit dem Addon-Code
 python scripts/simulate.py                    # Darstellung aus den Kacheln
@@ -453,7 +457,7 @@ cd <repo> && zip -r build/Runeway-1.2.zip Runeway
 ```text
 Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch claude/dreamy-lovelace-efolxg.
 Lies zuerst CLAUDE.md, Runeway_Status_v1.md und Runeway_Prompt_v1.md.
-Version 1.1 ist abgeschlossen und in main gemergt (PR #2), 1.2 (Etappe 1, Kachel-Optimierung) auf dem Entwicklungsbranch.
+Version 1.3 ist abgeschlossen und in main gemergt (Etappe 1 mit fünf Zonen, Lokalisierung in elf Sprachen).
 Langfristziel und Architektur: Runeway_Status_v1.md, Abschnitt 8 „Roadmap“.
 Aufgabe dieser Session: Fundament (Block-Build, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID),
 danach weitere Etappen der Östlichen Königreiche, siehe Abschnitt 8.

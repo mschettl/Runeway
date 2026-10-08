@@ -11,6 +11,7 @@ from lupa import lua51
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 DIR = os.path.join(ROOT, 'Runeway', 'Locales')
 PH = re.compile(r'%[-0-9.]*[sdf%]')
+ENGLISH = {'USAGE', 'USAGE_COLOR'}     # command help: stays English in every language
 
 
 def load(locale, files):
@@ -33,7 +34,7 @@ for f in sorted(glob.glob(os.path.join(DIR, '*.lua'))):
     t = load(loc, [en_file, f])
     unknown = keys - set(en)
     bad = [k for k in keys & set(en) if sorted(PH.findall(t[k])) != sorted(PH.findall(en[k]))]
-    missing = sorted(set(en) - keys)
+    missing = sorted(set(en) - keys - ENGLISH)
     errors += len(unknown) + len(bad)
     print(f'{loc}: {len(keys)}/{len(en)} texts' + (f', unknown {sorted(unknown)}' if unknown else '')
           + (f', placeholders differ {sorted(bad)}' if bad else '') + (f', English fallback {missing}' if missing else ''))

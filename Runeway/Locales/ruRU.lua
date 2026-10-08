@@ -94,5 +94,5 @@ L.PROFILE_EXPORT_HINT = "Скопируйте текст с помощью Ctrl+
 L.PROFILE_IMPORT_HINT = "Вставьте текст профиля с помощью Ctrl+V и нажмите «Импорт». Все текущие настройки будут заменены."
 L.PROFILE_IMPORTED = "Профиль импортирован (настроек: %d)."
 L.PROFILE_INVALID = "Это недействительный профиль Runeway."
-L.LOADED = "v%s загружен. Настройки: /rnw config"
+L.LOADED = "v%s загружен."
 L.VERSION = "Версия %s"

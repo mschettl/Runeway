@@ -182,7 +182,7 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 - **Prüfung:** `python tests/check_locales.py` – keine unbekannten Schlüssel, gleiche Platzhalter wie Englisch, Liste der noch englischen Texte je Sprache.
 
 ### Anmeldemeldung
-- Einmal pro Login bzw. `/reload` (`PLAYER_ENTERING_WORLD`): „Runeway: v<Version> geladen. Einstellungen: /rnw config“; die Version kommt aus der `.toc` (`C_AddOns.GetAddOnMetadata`).
+- Einmal pro Login bzw. `/reload` (`PLAYER_ENTERING_WORLD`): „Runeway: v<Version> geladen.“; die Version kommt aus der `.toc` (`C_AddOns.GetAddOnMetadata`).
 
 ### Wichtige Laufzeit-Mechanik
 - **Weltkoordinaten:** `UnitPosition` liefert (Nord, West). Eine ADT-Kachel ist 1600/3 Yards groß. Kachelmitte: `nord = (32 - zeile) * T - T/2`, `west = (32 - spalte) * T - T/2`.

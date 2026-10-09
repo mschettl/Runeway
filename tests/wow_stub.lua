@@ -200,7 +200,7 @@ Enum.FlightPathFaction = { Neutral = 0, Horde = 1, Alliance = 2 }
 function UnitFactionGroup() return "Horde" end
 UNDISCOVERED_FACTION_FLIGHTPOINT, FACTION_HORDE = "Undiscovered %s flight point", "Horde"
 -- atlases: the undiscovered flight point atlas is missing here (fallback texture)
-C_Texture = { GetAtlasInfo = function(a) if a == "" or a == "Taxi_Frame_Gray" then return nil end return {} end }
+C_Texture = { GetAtlasInfo = function(a) if a == "" or a == "Taxi_Frame_Green" then return nil end return {} end }
 -- taxi map of a flight master: the nodes the character knows (classic TaxiFrame API)
 TAXI_KNOWN = { "Brill", "Undercity" }
 function NumTaxiNodes() return #TAXI_KNOWN + 1 end

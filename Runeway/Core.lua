@@ -669,8 +669,8 @@ ns.NearbyMaps = NearbyMaps
 
 -- Discovered flight points: isUndiscovered of GetTaxiNodesForMap is always false in this client, so the
 -- nodes a flight master lists as known (taxi map, type ~= "NONE") are kept per character by name
-local UNDISCOVERED_ATLAS = "Taxi_Frame_Gray"   -- flight map node icons (Mario's choice from /rnw taxi icons)
-local KNOWN_ATLAS = "Taxi_Frame_Green"         -- else the node's world map atlas
+local UNDISCOVERED_ATLAS = "Taxi_Frame_Green"  -- flight map node icons (Mario's choice from /rnw taxi icons)
+local KNOWN_ATLAS = "Taxi_Frame_Gray"          -- else the node's world map atlas
 local function KnownTaxiNodes()
     db.taxiKnown = db.taxiKnown or {}
     local key = (UnitName("player") or "?") .. "-" .. (GetRealmName and GetRealmName() or "")
@@ -886,8 +886,8 @@ local function UpdateQuestPins()
     end
 end
 
--- Flight masters, below the quest pins: discovered = green flight map node (else the node's world map atlas),
--- not yet discovered = grey flight map node (else the green taxi icon)
+-- Flight masters, below the quest pins: discovered = grey flight map node (else the node's world map atlas),
+-- not yet discovered = green flight map node (else the green taxi icon)
 local function TaxiAtlas(t)
     if AtlasExists(t.atlas) then return t.atlas end
     return not t.undiscovered and t.nodeAtlas or ""

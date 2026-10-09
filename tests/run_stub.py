@@ -534,7 +534,7 @@ L.execute('''
     for _, p in ipairs(NS.TaxiPins) do
         if p.shown and p.taxi.undiscovered then green = (rawget(p.icon, "_tex") or ""):find("Green") ~= nil end
     end
-    check("flight masters: own faction shown, discovered with the green node", table.concat(atl, ",") == "Taxi_Frame_Green,Taxi_Frame_Green")
+    check("flight masters: own faction shown, discovered with the grey node", table.concat(atl, ",") == "Taxi_Frame_Gray,Taxi_Frame_Gray")
     check("flight masters: missing undiscovered atlas falls back to the green icon", green)
     check("flight masters: /rnw taxi lists them", pcall(SlashCmdList.RUNEWAY, "taxi"))
     check("flight masters: /rnw taxi icons shows the candidates", pcall(SlashCmdList.RUNEWAY, "taxi icons"))

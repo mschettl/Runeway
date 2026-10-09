@@ -149,6 +149,7 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `LOADED` | Chat beim Login | v%s loaded. | v%s geladen. |
 | `NO_POSITION` | Statuszeile der Karte | No position (instance?) | Keine Position (Instanz?) |
 | `NO_DATA` | Statuszeile der Karte | No contours for this area yet | Für dieses Gebiet gibt es noch keine Karte |
+| `NO_MAP_DATA` | Chat, wenn es für die aktuelle Karte keine Daten gibt (z. B. Kalimdor, Instanzen); die Karte bleibt dann ausgeblendet | No map data for this area yet. The map stays hidden here. | Für dieses Gebiet gibt es noch keine Kartendaten. Die Karte bleibt hier ausgeblendet. |
 | `PACK_FAILED` | Chat, wenn das Datenpaket der aktuellen Karte nicht lädt (Name des Pakets aus seinem Titel in der Client-Sprache, ohne „Runeway - “); die Karte bleibt dann ausgeblendet | Data pack %s not found. Map data could not be loaded. | Datenpaket %s nicht gefunden. Kartendaten konnten nicht geladen werden. |
 | `PACK_TIP_ADDON` | Tooltip des Paket-Links im Chat (Ordnername des Pakets) | Data pack: %s | Datenpaket: %s |
 | `PACK_TIP_STATUS` | Tooltip des Paket-Links (Grund in der Client-Sprache von Blizzard) | Status: %s | Status: %s |

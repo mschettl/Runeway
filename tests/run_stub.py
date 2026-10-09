@@ -156,6 +156,14 @@ L.execute('''
     EVENT_CALLBACKS.SetItemRef("addon:Runeway:pack:Runeway_Test", "[Test]", "LeftButton")
     print("second click shown:", tostring(ItemRefTooltip:IsShown()))
     EVENT_CALLBACKS.SetItemRef("item:6948", "[Hearthstone]", "LeftButton")   -- other links are not ours
+    -- a map without any data pack (Kalimdor): hidden with one chat note, a toggle repeats the note
+    POS[4] = 1000
+    poll()
+    poll()
+    print("map without any pack shown:", tostring(RunewayFrame:IsShown()))
+    SlashCmdList.RUNEWAY("toggle")
+    poll()
+    print("after toggle shown:", tostring(RunewayFrame:IsShown()))
     POS[4] = 0
     poll()
     print("back on map 0 shown:", tostring(RunewayFrame:IsShown()))

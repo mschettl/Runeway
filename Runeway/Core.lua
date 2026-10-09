@@ -1202,6 +1202,18 @@ local function AutoHideReason()
 end
 
 -- A toggle while auto-hidden (or in permanent mode) overrides until the auto-hide state changes
+-- No data pack for the player's map (Kalimdor for now, instances without a position): the map stays hidden, with
+-- one chat note per map
+local noDataSaid
+local function NoMapData()
+    local inst = select(4, UnitPosition("player"))
+    return not (inst and PackOf(inst)), inst
+end
+local function SayNoData(inst)
+    if noDataSaid ~= (inst or false) then Print(L.NO_MAP_DATA) end
+    noDataSaid = inst or false
+end
+
 local override, lastReason
 local function UpdateVisibility()
     local reason = AutoHideReason()
@@ -1215,12 +1227,24 @@ local function UpdateVisibility()
         want = (db.mode == "permanent" or db.shown) and not reason
     end
     want = want and not MissingPack()
+    local none, inst = NoMapData()
+    if not none then
+        noDataSaid = nil
+    elseif want then
+        SayNoData(inst)
+        want = false
+    end
     if view:IsShown() ~= want then view:SetShown(want) end
 end
 
 function Runeway_Toggle()
     local pack = MissingPack()
     if pack then return PackFailed(pack) end
+    local none, inst = NoMapData()
+    if none then
+        noDataSaid = nil                             -- asked for the map: say it again
+        return SayNoData(inst)
+    end
     if lastReason or db.mode == "permanent" then
         override = not view:IsShown()
     else

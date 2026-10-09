@@ -203,6 +203,20 @@ L.execute('''
     tiles("ruins courtyard")
     POS[1], POS[2] = 1690, 240
     tiles("rose walk")
+    -- interiors keep their own zoom: /rnw zoom inside changes zoomInside only, the surface keeps its zoom
+    local db = RunewayDB
+    local z0, zi0 = db.zoom, db.zoomInside
+    POS[1], POS[2] = 1561.6, 240.7
+    SUBZONE = "Trade Quarter"
+    later()
+    SlashCmdList.RUNEWAY("zoom 100")
+    local inside = db.zoomInside == 1.5 and db.zoom == z0
+    POS[1], POS[2], SUBZONE = 1772.1, 239.2, "The Ruins of Lordaeron"
+    later()
+    SlashCmdList.RUNEWAY("zoom 0")
+    local surface = db.zoom == 0.1 and db.zoomInside == 1.5
+    db.zoom, db.zoomInside = z0, zi0
+    print(("zoom: interior and surface separate %s"):format(inside and surface and "ok" or "FAIL"))
     POS[1], POS[2], UI_MAP, SUBZONE = 1917.6, 84.9, 1420, ""
     later()
     SlashCmdList.RUNEWAY("reset")

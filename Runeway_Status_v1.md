@@ -106,6 +106,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 |---|---|
 | `w`, `h` | 800, 600 (Breite, Höhe; je 200–1400) |
 | `zoom` | 0.66 (0.1–1.5, in Optionen und `/rnw zoom` als 0–100 %; 0.66 = 40 %) |
+| `zoomInside` | 0.8 (= 50 %; eigener Zoom in Innenkarten/Tile-Sets wie Unterstadt, wie Blizzards Minimap drinnen; Mausrad und `/rnw zoom` ändern den Zoom der aktuellen Ebene, `ZoomKey()`) |
 | `alpha` | 0.7 (nur Kartenebenen; Pfeil, Marker und Questränder immer voll) |
 | `rotate`, `locked`, `shown` | true, false, false |
 | `colors.fill` | #000000, a 0.10 |
@@ -180,7 +181,7 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 - **Knopf „Karte ein-/ausblenden“:** im Kopf des Einstellungsfensters links neben „Standard“, nur auf den Runeway-Seiten (`Settings.CategoryChanged` über `EventRegistry`); Text wechselt zwischen „Show map“ und „Hide map“.
 - **Ebenen:** eine Zeile je Ebene mit Häkchen, Farbfeld und Deckkraft-Regler (`RunewayLayerRowTemplate`, baut auf Blizzards Häkchen-plus-Regler-Zeile auf; die Farbe ist ein eigenes Proxy-Setting, „Standard“ setzt sie mit zurück).
 - **Unterpunkte im Baum links** (Runeway aufklappbar, `RegisterVerticalLayoutSubcategory`): Open with, Hide automatically, Window, Display, Layers. Jeder Unterpunkt hat eigene Proxy-Settings, „Standard“ setzt nur diesen Unterpunkt zurück.
-- **Display:** Kartendeckkraft, Zoom, Deckkraft angrenzender Zonen, Weicher Rand, dann Marker-Zeilen wie die Ebenen (Schalter + Größe, `CreateSettingsCheckboxSliderInitializer`): Spielerpfeil (`showArrow`), Leichnam-Marker (`showCorpse`), Flugmeister (`showTaxi`), Questmarker (`showQuests`, aus: weder Questmarker noch Questbereiche); danach Rand des Questgebiets, Überlappende Questbereiche zusammenfassen und Klassische Questsymbole (`questClassic`), alle drei über `SetParentInitializer` am Questmarker-Schalter (ausgegraut, wenn aus; dafür `row.data.setting = cb`, sonst meldet die Checkbox-Slider-Zeile keine Änderung).
+- **Display:** Kartendeckkraft, Zoom, Zoom (Innenbereiche), Deckkraft angrenzender Zonen, Weicher Rand, dann Marker-Zeilen wie die Ebenen (Schalter + Größe, `CreateSettingsCheckboxSliderInitializer`): Spielerpfeil (`showArrow`), Leichnam (`showCorpse`), Flugmeister (`showTaxi`), Questsymbole (`showQuests`, aus: weder Questsymbole noch Questbereiche); danach Rand des Questgebiets, Überlappende Questbereiche zusammenfassen und Klassische Questsymbole (`questClassic`), alle drei über `SetParentInitializer` am Questmarker-Schalter (ausgegraut, wenn aus; dafür `row.data.setting = cb`, sonst meldet die Checkbox-Slider-Zeile keine Änderung).
 
 ### Schnellbefehle
 - Auf der Hauptseite („Quick commands“): alle Slash-Befehle mit Beschreibung. Eigene Zeilenvorlage `RunewayCommandRowTemplate` (`Options.xml`, erbt `SettingsListElementTemplate`): Befehl links, Beschreibung rechts. Der frühere Bedienhinweis oben auf der entsperrten Karte ist entfernt.

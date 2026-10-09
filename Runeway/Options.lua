@@ -186,7 +186,10 @@ local function Build()
     Page(L.HEADER_DISPLAY)
     Slider("alpha", L.MAP_OPACITY, 0.05, 1, 0.01, Pct, function() ns.ApplyAll() end)
     Slider("zoom", L.ZOOM, ns.ZOOM_MIN, ns.ZOOM_MAX, (ns.ZOOM_MAX - ns.ZOOM_MIN) / 100,
-        function(v) return ("%d %%"):format(ns.ZoomPct(v) + 0.5) end, function(v) ns.SetZoom(v) end)
+        function(v) return ("%d %%"):format(ns.ZoomPct(v) + 0.5) end, function(v) ns.SetZoom(v, "zoom") end)
+    Slider("zoomInside", L.ZOOM_INSIDE, ns.ZOOM_MIN, ns.ZOOM_MAX, (ns.ZOOM_MAX - ns.ZOOM_MIN) / 100,
+        function(v) return ("%d %%"):format(ns.ZoomPct(v) + 0.5) end, function(v) ns.SetZoom(v, "zoomInside") end,
+        L.ZOOM_INSIDE_TIP)
     Slider("zoneDim", L.NEIGHBOUR_ZONES, 0, 1, 0.01, Pct, nil, L.NEIGHBOUR_ZONES_TIP)
     Slider("edge", L.SOFT_EDGE, 1, 5, 1, function(v) return ("%d"):format(v) end, function() ns.ApplyAll() end)
     -- markers: one row each with show and size, like the layer rows

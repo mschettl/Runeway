@@ -83,7 +83,10 @@ function ns.ImportProfile(text)
     end
     if n == 0 then return nil end
     ns.ApplyAll()
-    if ns.SetZoom then ns.SetZoom(ns.db().zoom) end
+    if ns.SetZoom then
+        ns.SetZoom(ns.db().zoom, "zoom")
+        ns.SetZoom(ns.db().zoomInside, "zoomInside")
+    end
     if ns.NotifyAllSettings then ns.NotifyAllSettings() end
     return n
 end

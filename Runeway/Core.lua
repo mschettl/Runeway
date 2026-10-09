@@ -27,7 +27,7 @@ local STYLE = 6            -- bump when the default colours change: resets the s
 local LINE = { 0xD1 / 255, 0xDB / 255, 0xE3 / 255 }
 local defaults = {
     x = nil, y = nil, w = 800, h = 600, -- map width and height
-    zoom = 0.66, alpha = 0.7, rotate = true, locked = false, shown = false,
+    zoom = 0.66, zoomInside = 0.8, alpha = 0.7, rotate = true, locked = false, shown = false,
     mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
     autoHide = { combat = false, instance = false, mounted = false, city = false },
     hover = true,            -- unlocked: subtle frame while the mouse is over the map
@@ -618,6 +618,14 @@ local function MapToWorld(mapID, x, y)
 end
 ns.MapToWorld = MapToWorld
 
+-- Interiors (tile sets such as Undercity) keep their own zoom, like Blizzard's minimap indoors: the mouse wheel,
+-- /rnw zoom and the view use the zoom of the level the player is on
+local function ZoomKey()
+    local inst = select(4, UnitPosition("player"))
+    return inst and TileSet(inst) ~= inst and "zoomInside" or "zoom"
+end
+local function Zoom() return db[ZoomKey()] end
+
 -- Zone maps near the player: the player's map first, then the zones of the same continent whose map
 -- rectangle comes within view reach (+ margin), nearest first. Quest areas and pins come from all of them.
 -- Interior sets have their own level: inside (Undercity) only the interior's map counts; on the surface the
@@ -642,7 +650,7 @@ local function NearbyMaps()
     if not (info and info.mapType == UIMAP_CONTINENT) then return list end
     MapToWorld(m, 0, 0)                  -- settles the axis order on the player's map first
     local W, H = view:GetSize()
-    local reach = math.sqrt(W * W + H * H) / 2 / db.zoom + REACH_MARGIN
+    local reach = math.sqrt(W * W + H * H) / 2 / Zoom() + REACH_MARGIN
     local found = {}
     for _, c in ipairs(C_Map.GetMapChildrenInfo(cont, UIMAP_ZONE) or {}) do
         local id = c.mapID
@@ -1033,11 +1041,11 @@ view:SetScript("OnUpdate", function(self, e)
     end
     if pan then
         local cx, cy = GetCursorPosition()
-        local s = view:GetEffectiveScale() * db.zoom
+        local s = view:GetEffectiveScale() * Zoom()
         viewAt.n, viewAt.w = pan.n - (cy - pan.y) / s, pan.w + (cx - pan.x) / s
     end
     if viewAt then n, w = viewAt.n, viewAt.w end
-    pN, pW, k = n, w, db.zoom
+    pN, pW, k = n, w, Zoom()
 
     local facing = GetPlayerFacing() or 0
     local angle = db.rotate and not viewAt and -facing or 0
@@ -1099,8 +1107,9 @@ local function ApplyLock()
     ShowBorder(unlocked and db.hover and view:IsMouseOver())
 end
 
-local function SetZoom(z)
-    db.zoom = math.max(ZOOM_MIN, math.min(ZOOM_MAX, z))
+local function SetZoom(z, key)                 -- key: "zoom" / "zoomInside", default the current level
+    key = key or ZoomKey()
+    db[key] = math.max(ZOOM_MIN, math.min(ZOOM_MAX, z))
 end
 -- zoom factor <-> percent of the range (options and /rnw zoom)
 local function ZoomPct(z) return (z - ZOOM_MIN) / (ZOOM_MAX - ZOOM_MIN) * 100 end
@@ -1127,8 +1136,8 @@ view:SetScript("OnMouseWheel", function(_, delta)
         ApplySize()
         Notify("w", "h")
     else
-        SetZoom(db.zoom * (delta > 0 and 1.15 or 1 / 1.15))
-        Notify("zoom")
+        SetZoom(Zoom() * (delta > 0 and 1.15 or 1 / 1.15))
+        Notify(ZoomKey())
     end
 end)
 view:SetScript("OnShow", RefreshQuests)
@@ -1320,7 +1329,8 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         if (db.style or 0) < STYLE then db.colors = nil end   -- default look changed: colours back to defaults
         db.style = STYLE
         ApplyDefaults(db, defaults)
-        SetZoom(db.zoom)               -- zoom range changed in 1.6
+        SetZoom(db.zoom, "zoom")       -- zoom range changed in 1.6
+        SetZoom(db.zoomInside, "zoomInside")
         canvas:SetAlpha(db.alpha)      -- map layers only; player arrow, quest marks and areas stay opaque
         ApplyEdge()
         ApplySize()
@@ -1479,8 +1489,8 @@ SlashCmdList.RUNEWAY = function(msg)
         Print(L.MSG_OPACITY:format(db.alpha * 100))
     elseif cmd == "zoom" and n then
         SetZoom(ZOOM_MIN + math.max(0, math.min(100, n)) / 100 * (ZOOM_MAX - ZOOM_MIN))
-        Notify("zoom")
-        Print(L.MSG_ZOOM:format(math.floor(ZoomPct(db.zoom) + 0.5)))
+        Notify(ZoomKey())
+        Print(L.MSG_ZOOM:format(math.floor(ZoomPct(Zoom()) + 0.5)))
     elseif cmd == "size" then
         local w, h = arg:match("^(%d+)%s*(%d*)$")
         if w then

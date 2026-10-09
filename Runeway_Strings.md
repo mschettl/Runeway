@@ -91,16 +91,18 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `WIDTH` | Width | Breite |
 | `MAP_OPACITY` | Map opacity | Kartendeckkraft |
 | `ZOOM` | Zoom | Zoom |
+| `ZOOM_INSIDE` | Zoom (interiors) | Zoom (Innenbereiche) |
+| `ZOOM_INSIDE_TIP` | Zoom inside cities, caves and other interior maps. The mouse wheel changes the zoom of the area you are in. | Zoom in Städten, Höhlen und anderen Innenkarten. Das Mausrad ändert den Zoom des Bereichs, in dem du gerade bist. |
 | `NEIGHBOUR_ZONES` | Adjacent zones opacity | Deckkraft angrenzender Zonen |
 | `NEIGHBOUR_ZONES_TIP` | Opacity of the adjacent zones, relative to the zone you are in. | Deckkraft der angrenzenden Zonen, bezogen auf die Zone, in der du bist. |
 | `SOFT_EDGE` | Soft edge | Weicher Rand |
 | `PLAYER_ARROW` | Player arrow | Spielerpfeil |
-| `QUEST_MARKS` | Quest marks | Questmarker |
-| `CORPSE_MARKER` | Corpse marker | Leichnam-Marker |
+| `QUEST_MARKS` | Quest icons | Questsymbole |
+| `CORPSE_MARKER` | Corpse | Leichnam |
 | `FLIGHT_MASTERS` | Flight masters | Flugmeister |
 | `MARKER_SIZE` | %s size | %s – Größe |
 | `QUEST_CLASSIC` | Classic quest icons | Klassische Questsymbole |
-| `QUEST_CLASSIC_TIP` | Quest marks in the classic look: symbol on a round badge. Off: the modern icons with their own ring. | Questmarker im klassischen Aussehen: Symbol auf rundem Hintergrund. Aus: die modernen Symbole mit eigenem Ring. |
+| `QUEST_CLASSIC_TIP` | Quest icons in the classic look: symbol on a round badge. Off: the modern icons with their own ring. | Questsymbole im klassischen Aussehen: Symbol auf rundem Hintergrund. Aus: die modernen Symbole mit eigenem Ring. |
 | `QUEST_EDGE` | Quest area edge | Rand des Questgebiets |
 | `QUEST_MERGE` | Combine overlapping quest areas | Überlappende Questbereiche zusammenfassen |
 | `QUEST_MERGE_TIP` | Quests whose areas overlap get one shared outline. Off: every quest keeps its own outline. | Quests mit überlappenden Bereichen erhalten einen gemeinsamen Umriss. Deaktiviert: jede Quest behält ihren eigenen Umriss. |
@@ -173,7 +175,7 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `USAGE_COLOR` | Chat, Hilfe | /rnw color fill\|hatch\|shade\|terrain\|water\|roads\|questareas R G B [A]   (0-1) | (Befehl bleibt, nur ggf. „(0-1)“) |
 | `USAGE` | Chat, Hilfe | /rnw [toggle] \| config \| lock \| unlock \| alpha 5-100 \| zoom 0-100 \| size W [H] \| rotate \| edge 1-5 \| mode key\|mapkey\|permanent \| layer NAME \| color NAME R G B [A] \| keys \| pos \| view [ZONE \| N W] \| reset | (Befehle bleiben englisch) |
 
-Der Leichnam-Marker selbst zeigt keinen Text; das Symbol stammt aus dem Spiel.
+Das Leichnam-Symbol selbst zeigt keinen Text; das Symbol stammt aus dem Spiel.
 
 ## 6. Entwickler-Ausgaben (bleiben Englisch)
 

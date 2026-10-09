@@ -458,12 +458,12 @@ RUNEWAY_LOCALE=ruRU python tests/run_stub.py  # derselbe Test mit anderer Client
 python tests/run_stub.py                      # lädt das Addon (Lua 5.1) gegen einen WoW-API-Stub: Kacheln, Questbereiche, Optionen, Profil, Mouse-over; meldet versehentliche globale Variablen
 python tests/render_quest_outlines.py <SavedVariables/Runeway.lua>   # Questumrisse aus Probe-Daten mit dem Addon-Code
 python scripts/simulate.py                    # Darstellung aus den Kacheln
-cd <repo> && zip -r build/Runeway-<version>.zip Runeway Runeway_EasternKingdoms
+git archive -o build/Runeway-<version>.zip <commit> Runeway Runeway_EasternKingdoms   # immer aus einem Commit, nie aus dem Arbeitsordner
 ```
 
 **Testwerkzeug `/rnw probe`:** Nur in Entwicklungsbuilds; dazu `tools/Probe.lua` in den Addon-Ordner kopieren und in der `.toc` eintragen. Es tastet die Questbereiche der aktuellen Zone ab und speichert sie in `RunewayDB.probe`. Die Auswertung macht `scripts/probe_view.py`.
 
-**Installation:** Alte Ordner `Interface\AddOns\Runeway` und `Runeway_*` löschen, das ZIP dort entpacken (beide Ordner) und WoW komplett neu starten. Neue Dateien (Kacheln, Einträge in der `.toc`, `Bindings.xml`) lädt WoW erst nach einem Neustart; reine Lua-Änderungen an bestehenden Dateien reichen mit `/reload`.
+**Installation:** Alte Ordner `Interface\AddOns\Runeway` und `Runeway_*` immer vorher löschen (0.6.1: ein über einen alten Stand entpacktes ZIP zeigte keine Questbereiche), das ZIP dort entpacken (beide Ordner) und WoW komplett neu starten. Neue Dateien (Kacheln, Einträge in der `.toc`, `Bindings.xml`) lädt WoW erst nach einem Neustart; reine Lua-Änderungen an bestehenden Dateien reichen mit `/reload`.
 
 **Im Spiel geprüft (0.6):** beide Ordner installiert; Paket lädt beim Betreten; deaktiviertes Paket, Kalimdor und Dungeons → Karte ausgeblendet, Chat-Meldung mit Paket und Gebiet (Login, Reload, Dungeon rein/raus mehrfach geprüft); keine Lua-Fehler.
 

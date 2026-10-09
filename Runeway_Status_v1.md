@@ -180,7 +180,7 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 - **Knopf „Karte ein-/ausblenden“:** im Kopf des Einstellungsfensters links neben „Standard“, nur auf den Runeway-Seiten (`Settings.CategoryChanged` über `EventRegistry`); Text wechselt zwischen „Show map“ und „Hide map“.
 - **Ebenen:** eine Zeile je Ebene mit Häkchen, Farbfeld und Deckkraft-Regler (`RunewayLayerRowTemplate`, baut auf Blizzards Häkchen-plus-Regler-Zeile auf; die Farbe ist ein eigenes Proxy-Setting, „Standard“ setzt sie mit zurück).
 - **Unterpunkte im Baum links** (Runeway aufklappbar, `RegisterVerticalLayoutSubcategory`): Open with, Hide automatically, Window, Display, Layers. Jeder Unterpunkt hat eigene Proxy-Settings, „Standard“ setzt nur diesen Unterpunkt zurück.
-- **Display:** Kartendeckkraft, Zoom, Deckkraft angrenzender Zonen, Weicher Rand, dann Marker-Zeilen wie die Ebenen (Schalter + Größe, `CreateSettingsCheckboxSliderInitializer`): Spielerpfeil (`showArrow`), Leichnam-Marker (`showCorpse`), Flugmeister (`showTaxi`), Questmarker (`showQuests`, aus: weder Questmarker noch Questbereiche); danach Rand des Questgebiets und Überlappende Questbereiche zusammenfassen, beide über `SetParentInitializer` am Questmarker-Schalter (ausgegraut, wenn aus; dafür `row.data.setting = cb`, sonst meldet die Checkbox-Slider-Zeile keine Änderung).
+- **Display:** Kartendeckkraft, Zoom, Deckkraft angrenzender Zonen, Weicher Rand, dann Marker-Zeilen wie die Ebenen (Schalter + Größe, `CreateSettingsCheckboxSliderInitializer`): Spielerpfeil (`showArrow`), Leichnam-Marker (`showCorpse`), Flugmeister (`showTaxi`), Questmarker (`showQuests`, aus: weder Questmarker noch Questbereiche), darunter Klassische Questsymbole (`questClassic`); danach Rand des Questgebiets und Überlappende Questbereiche zusammenfassen, beide über `SetParentInitializer` am Questmarker-Schalter (ausgegraut, wenn aus; dafür `row.data.setting = cb`, sonst meldet die Checkbox-Slider-Zeile keine Änderung).
 
 ### Schnellbefehle
 - Auf der Hauptseite („Quick commands“): alle Slash-Befehle mit Beschreibung. Eigene Zeilenvorlage `RunewayCommandRowTemplate` (`Options.xml`, erbt `SettingsListElementTemplate`): Befehl links, Beschreibung rechts. Der frühere Bedienhinweis oben auf der entsperrten Karte ist entfernt.
@@ -294,7 +294,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
    - Cache-Version 3 (`cut` neu); alte Einträge werden einmal verworfen.
 8. **Questmarker (`Core.lua`):**
    - Nur Quests ohne Umriss bekommen einen Marker (punktuelle Ziele).
-   - Seit 1.6 (Mario, aus `interface/minimap/objecticonsatlas.blp`): `quest-campaign-available` („!“, läuft) und `quest-campaign-turnin` („?“, Abgabe), mit eigenem Ring, ohne Hintergrund. Fehlt der Atlas: wie bisher `UI-QuestPoi-QuestNumber` (Kreis mit Goldrand) plus `UI-QuestIcon-TurnIn-Normal` bzw. `Quest-In-Progress-Icon-yellow`. Vorschau weiterer Kandidaten: `/rnw quest icons`.
+   - Seit 1.6 (Mario, aus `interface/minimap/objecticonsatlas.blp`): `quest-campaign-available` („!“, läuft) und `quest-campaign-turnin` („?“, Abgabe), mit eigenem Ring, ohne Hintergrund. Option „Classic quest icons“ (`questClassic`, Standard aus, unter der Questmarker-Zeile, folgt deren Schalter) oder fehlender Atlas: wie bisher `UI-QuestPoi-QuestNumber` (Kreis mit Goldrand) plus `UI-QuestIcon-TurnIn-Normal` bzw. `Quest-In-Progress-Icon-yellow`. Vorschau weiterer Kandidaten: `/rnw quest icons`.
 
 ---
 

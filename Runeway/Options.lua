@@ -205,6 +205,7 @@ local function Build()
     Marker("showTaxi", "taxiSize", L.FLIGHT_MASTERS, function() ns.RefreshQuests() end)
     local quests = Marker("showQuests", "pinSize", L.QUEST_MARKS)
     local function QuestsShown() return ns.db().showQuests end
+    Check("questClassic", L.QUEST_CLASSIC, L.QUEST_CLASSIC_TIP):SetParentInitializer(quests, QuestsShown)
     Slider("questEdge", L.QUEST_EDGE, 0.5, 2.5, 0.05, function(v) return ("%.2f x"):format(v) end)
         :SetParentInitializer(quests, QuestsShown)
     Check("questMerge", L.QUEST_MERGE, L.QUEST_MERGE_TIP):SetParentInitializer(quests, QuestsShown)

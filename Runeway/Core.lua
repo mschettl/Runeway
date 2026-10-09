@@ -33,7 +33,7 @@ local defaults = {
     hover = true,            -- unlocked: subtle frame while the mouse is over the map
     wheelZoom = true,        -- mouse wheel over the map zooms (off: the wheel goes to the game camera)
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
-    arrowSize = 25, pinSize = 20, corpseSize = 25, taxiSize = 20, showTaxi = true, showArrow = true, showCorpse = true, showQuests = true, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
+    arrowSize = 25, pinSize = 20, corpseSize = 25, taxiSize = 20, showTaxi = true, showArrow = true, showCorpse = true, showQuests = true, questClassic = false, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
     questMerge = true,       -- overlapping quest areas as one combined outline
     zoneDim = 0.3,           -- opacity factor of the adjacent zones (the player is not in)
     colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,
@@ -880,11 +880,12 @@ local function UpdateQuestPins()
                 p.back:SetSize(size, size)
                 p.icon:SetSize(size, size)
             end
-            if p.done ~= q.done then
-                p.done = q.done
-                -- the minimap's campaign quest icons have their own ring (Mario's choice); else icon on the badge
+            if p.done ~= q.done or p.classic ~= db.questClassic then
+                p.done, p.classic = q.done, db.questClassic
+                -- the minimap's campaign quest icons have their own ring (Mario's choice); classic (option) or
+                -- without them: icon on the badge
                 local own = q.done and QUEST_TURNIN or QUEST_OPEN
-                p.badge = not AtlasExists(own)
+                p.badge = db.questClassic or not AtlasExists(own)
                 if p.badge then
                     SetAtlasOr(p.icon, q.done and "UI-QuestIcon-TurnIn-Normal" or "Quest-In-Progress-Icon-yellow",
                         "Interface\\GossipFrame\\ActiveQuestIcon")

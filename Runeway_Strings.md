@@ -99,6 +99,8 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `CORPSE_MARKER` | Corpse marker | Leichnam-Marker |
 | `FLIGHT_MASTERS` | Flight masters | Flugmeister |
 | `MARKER_SIZE` | %s size | %s – Größe |
+| `QUEST_CLASSIC` | Classic quest icons | Klassische Questsymbole |
+| `QUEST_CLASSIC_TIP` | Quest marks in the classic look: symbol on a round badge. Off: the modern icons with their own ring. | Questmarker im klassischen Aussehen: Symbol auf rundem Hintergrund. Aus: die modernen Symbole mit eigenem Ring. |
 | `QUEST_EDGE` | Quest area edge | Rand des Questgebiets |
 | `QUEST_MERGE` | Combine overlapping quest areas | Überlappende Questbereiche zusammenfassen |
 | `QUEST_MERGE_TIP` | Quests whose areas overlap get one shared outline. Off: every quest keeps its own outline. | Quests mit überlappenden Bereichen erhalten einen gemeinsamen Umriss. Deaktiviert: jede Quest behält ihren eigenen Umriss. |

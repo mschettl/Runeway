@@ -603,6 +603,19 @@ L.execute('''
         end
     end
     check("quest pins: campaign icons without the badge", campaign)
+    SETTINGS.RUNEWAY_QUESTCLASSIC:SetValue(true)
+    view:GetScript("OnUpdate")(view, 0.05)
+    local classic = false
+    for _, p in ipairs(NS.QuestPins) do
+        if p.shown then
+            local a = rawget(p.icon, "_atlas") or ""
+            classic = a:find("^quest%-campaign%-") == nil and rawget(p.back, "_shown") == true
+        end
+    end
+    SETTINGS.RUNEWAY_QUESTCLASSIC:SetValue(false)
+    local child
+    for _, i in ipairs(INITS) do if i.setting == SETTINGS.RUNEWAY_QUESTCLASSIC then child = i end end
+    check("quest pins: classic icons on the badge (option, follows quest marks)", classic and child.parent ~= nil)
     SETTINGS.RUNEWAY_SHOWARROW:SetValue(false)
     view:GetScript("OnUpdate")(view, 0.05)
     local arrowTex2 = TEXTURE_OBJECTS[("Interface/AddOns/Runeway/media/arrow.tga"):gsub("/", string.char(92))]

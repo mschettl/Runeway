@@ -6,7 +6,7 @@ local L = ns.L                      -- texts in the client language (Locales/)
 local T = 1600 / 3                 -- edge length of an ADT tile in yards (533.33)
 local ADDONS = "Interface\\AddOns\\"
 local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
-local ZOOM_MIN, ZOOM_MAX = 0.08, 5
+local ZOOM_MIN, ZOOM_MAX = 0.1, 1.5   -- shown as 0-100 % (ZoomPct)
 local SIZE_MIN, SIZE_MAX = 200, 1400
 -- Soft edge strength 1-5: width of the fade as a share of the radius (media/fade<N>.tga, scripts/make_masks.py)
 local FADE_WIDTH = { 0.12, 0.25, 0.38, 0.55, 0.75 }
@@ -27,7 +27,7 @@ local STYLE = 6            -- bump when the default colours change: resets the s
 local LINE = { 0xD1 / 255, 0xDB / 255, 0xE3 / 255 }
 local defaults = {
     x = nil, y = nil, w = 800, h = 600, -- map width and height
-    zoom = 0.3, alpha = 0.7, rotate = true, locked = false, shown = false,
+    zoom = 0.5, alpha = 0.7, rotate = true, locked = false, shown = false,
     mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
     autoHide = { combat = false, instance = false, mounted = false, city = false },
     hover = true,            -- unlocked: subtle frame while the mouse is over the map
@@ -1078,6 +1078,9 @@ end
 local function SetZoom(z)
     db.zoom = math.max(ZOOM_MIN, math.min(ZOOM_MAX, z))
 end
+-- zoom factor <-> percent of the range (options and /rnw zoom)
+local function ZoomPct(z) return (z - ZOOM_MIN) / (ZOOM_MAX - ZOOM_MIN) * 100 end
+ns.ZoomPct = ZoomPct
 
 view:SetScript("OnDragStart", function(self)
     if viewAt then
@@ -1293,6 +1296,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         if (db.style or 0) < STYLE then db.colors = nil end   -- default look changed: colours back to defaults
         db.style = STYLE
         ApplyDefaults(db, defaults)
+        SetZoom(db.zoom)               -- zoom range changed in 1.6
         canvas:SetAlpha(db.alpha)      -- map layers only; player arrow, quest marks and areas stay opaque
         ApplyEdge()
         ApplySize()
@@ -1450,9 +1454,9 @@ SlashCmdList.RUNEWAY = function(msg)
         canvas:SetAlpha(db.alpha)
         Print(L.MSG_OPACITY:format(db.alpha * 100))
     elseif cmd == "zoom" and n then
-        SetZoom(n)
+        SetZoom(ZOOM_MIN + math.max(0, math.min(100, n)) / 100 * (ZOOM_MAX - ZOOM_MIN))
         Notify("zoom")
-        Print(L.MSG_ZOOM:format(db.zoom))
+        Print(L.MSG_ZOOM:format(math.floor(ZoomPct(db.zoom) + 0.5)))
     elseif cmd == "size" then
         local w, h = arg:match("^(%d+)%s*(%d*)$")
         if w then

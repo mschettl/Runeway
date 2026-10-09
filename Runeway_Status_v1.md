@@ -105,7 +105,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | Schlüssel | Standard |
 |---|---|
 | `w`, `h` | 800, 600 (Breite, Höhe; je 200–1400) |
-| `zoom` | 0.3 (0.08–5) |
+| `zoom` | 0.5 (0.1–1.5, in Optionen und `/rnw zoom` als 0–100 %; 0.5 = 29 %) |
 | `alpha` | 0.7 (nur Kartenebenen; Pfeil, Marker und Questränder immer voll) |
 | `rotate`, `locked`, `shown` | true, false, false |
 | `colors.fill` | #000000, a 0.10 |
@@ -133,7 +133,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `/rnw config` | Einstellungsseite öffnen |
 | `/rnw lock` / `unlock` | gesperrt = klickdurchlässig |
 | `/rnw alpha 5-100` | Deckkraft der Kartenebenen |
-| `/rnw zoom 0.08-5` | Zoom setzen |
+| `/rnw zoom 0-100` | Zoom in % setzen (0 % = Faktor 0.1, 100 % = 1.5) |
 | `/rnw size W [H]` | Breite und Höhe 200–1400 px (ohne H: beide gleich) |
 | `/rnw rotate` | mitdrehen oder Norden oben |
 | `/rnw edge 1-5` | Stärke des weichen Rands |

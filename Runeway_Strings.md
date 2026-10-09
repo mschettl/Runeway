@@ -49,7 +49,7 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `CMD_CONFIG` | /rnw config | Open these settings | Diese Einstellungen öffnen |
 | `CMD_LOCK` | /rnw lock \| unlock | Lock (clicks pass through) or unlock the map | Karte sperren (Klicks gehen durch) oder entsperren |
 | `CMD_ALPHA` | /rnw alpha 5-100 | Map opacity in percent | Kartendeckkraft in Prozent |
-| `CMD_ZOOM` | /rnw zoom 0.08-5 | Zoom | Zoom |
+| `CMD_ZOOM` | /rnw zoom 0-100 | Zoom | Zoom |
 | `CMD_SIZE` | /rnw size W [H] | Map width and height in pixels (200-1400) | Kartenbreite und -höhe in Pixeln (200-1400) |
 | `CMD_ROTATE` | /rnw rotate | Rotate with the player or north up | Mit dem Spieler drehen oder Norden oben |
 | `CMD_EDGE` | /rnw edge 1-5 | Soft edge strength | Stärke des weichen Rands |
@@ -155,7 +155,7 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `MSG_LOCKED` | Chat `/rnw lock` | locked (clicks pass through) | gesperrt (Klicks gehen durch) |
 | `MSG_UNLOCKED` | Chat `/rnw unlock` | unlocked | entsperrt |
 | `MSG_OPACITY` | Chat `/rnw alpha` | Opacity %d %% | Deckkraft %d %% |
-| `MSG_ZOOM` | Chat `/rnw zoom` | Zoom %.2f | Zoom %.2f |
+| `MSG_ZOOM` | Chat `/rnw zoom` | Zoom %d %% | Zoom %d %% |
 | `MSG_SIZE` | Chat `/rnw size` | Size %d x %d | Größe %d x %d |
 | `MSG_ROTATE_ON` | Chat `/rnw rotate` | map rotates with the player | Karte dreht mit dem Spieler |
 | `MSG_ROTATE_OFF` | Chat `/rnw rotate` | north up | Norden oben |
@@ -169,7 +169,7 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `MSG_VIEW_OFF` | Chat `/rnw view` | back to the player | zurück zum Spieler |
 | `MSG_VIEW_UNKNOWN` | Chat `/rnw view` | unknown area. Mapped areas: %s | Unbekanntes Gebiet. Kartierte Gebiete: %s |
 | `USAGE_COLOR` | Chat, Hilfe | /rnw color fill\|hatch\|shade\|terrain\|water\|roads\|questareas R G B [A]   (0-1) | (Befehl bleibt, nur ggf. „(0-1)“) |
-| `USAGE` | Chat, Hilfe | /rnw [toggle] \| config \| lock \| unlock \| alpha 5-100 \| zoom 0.08-5 \| size W [H] \| rotate \| edge 1-5 \| mode key\|mapkey\|permanent \| layer NAME \| color NAME R G B [A] \| keys \| pos \| view [ZONE \| N W] \| reset | (Befehle bleiben englisch) |
+| `USAGE` | Chat, Hilfe | /rnw [toggle] \| config \| lock \| unlock \| alpha 5-100 \| zoom 0-100 \| size W [H] \| rotate \| edge 1-5 \| mode key\|mapkey\|permanent \| layer NAME \| color NAME R G B [A] \| keys \| pos \| view [ZONE \| N W] \| reset | (Befehle bleiben englisch) |
 
 Der Leichnam-Marker selbst zeigt keinen Text; das Symbol stammt aus dem Spiel.
 

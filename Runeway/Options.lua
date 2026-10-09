@@ -26,7 +26,7 @@ local COMMANDS = {
     { "/rnw config", L.CMD_CONFIG },
     { "/rnw lock  |  unlock", L.CMD_LOCK },
     { "/rnw alpha 5-100", L.CMD_ALPHA },
-    { "/rnw zoom 0.08-5", L.CMD_ZOOM },
+    { "/rnw zoom 0-100", L.CMD_ZOOM },
     { "/rnw size W [H]", L.CMD_SIZE },
     { "/rnw rotate", L.CMD_ROTATE },
     { "/rnw edge 1-5", L.CMD_EDGE },
@@ -185,7 +185,8 @@ local function Build()
 
     Page(L.HEADER_DISPLAY)
     Slider("alpha", L.MAP_OPACITY, 0.05, 1, 0.01, Pct, function() ns.ApplyAll() end)
-    Slider("zoom", L.ZOOM, ns.ZOOM_MIN, ns.ZOOM_MAX, 0.01, function(v) return ("%.2f"):format(v) end, function(v) ns.SetZoom(v) end)
+    Slider("zoom", L.ZOOM, ns.ZOOM_MIN, ns.ZOOM_MAX, (ns.ZOOM_MAX - ns.ZOOM_MIN) / 100,
+        function(v) return ("%d %%"):format(ns.ZoomPct(v) + 0.5) end, function(v) ns.SetZoom(v) end)
     Slider("zoneDim", L.NEIGHBOUR_ZONES, 0, 1, 0.01, Pct, nil, L.NEIGHBOUR_ZONES_TIP)
     Slider("edge", L.SOFT_EDGE, 1, 5, 1, function(v) return ("%d"):format(v) end, function() ns.ApplyAll() end)
     -- markers: one row each with show and size, like the layer rows

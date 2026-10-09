@@ -85,7 +85,7 @@ L.execute('''
     SlashCmdList.RUNEWAY("color water 0.2 0.4 1")
     -- zoom level change with slow texture loading: every visible tile layer must keep a shown texture
     LOAD_FRAMES = 3
-    SlashCmdList.RUNEWAY("zoom 0.5")
+    SlashCmdList.RUNEWAY("zoom 28.5714285714")   -- 0.5
     local function check(label)
         upd(RunewayFrame, 0.05)
         local visible, loading = 0, 0
@@ -100,7 +100,7 @@ L.execute('''
     end
     for i = 1, 5 do check("frame " .. i) end
     LOAD_FRAMES = 0
-    SlashCmdList.RUNEWAY("zoom 0.2")
+    SlashCmdList.RUNEWAY("zoom 7.14285714286")   -- 0.2
     SlashCmdList.RUNEWAY("size 500")
     upd(RunewayFrame, 0.05)
     print("textures after zoom out:", #TEXTURES, TEXTURES[#TEXTURES])
@@ -638,7 +638,7 @@ L.execute('''
     check("opacity and auto-hide write the db", db.colors.roads.a == 0.5 and db.autoHide.combat == true)
     for _, st in pairs(SETTINGS) do st:SetValue(st.default) end
     check("defaults restored", db.edge == 3 and db.w == 800 and db.h == 600 and db.mode == "key" and db.colors.roads.a == 0.65
-        and math.abs(db.colors.fill.r) < 0.01 and db.zoom == 0.3 and db.questMerge == true and db.corpseSize == 25)
+        and math.abs(db.colors.fill.r) < 0.01 and db.zoom == 0.5 and db.questMerge == true and db.corpseSize == 25)
     view:GetScript("OnUpdate")(view, 0.05)
 ''')
 

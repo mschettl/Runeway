@@ -66,15 +66,15 @@ for f in (*LOCALES, 'Runeway/Core.lua', 'Runeway/QuestAreas.lua', 'Runeway/Profi
     L.execute('NS = NS or {}; local f = assert(loadstring(..., "@' + f + '")); f("Runeway", NS)', src)
 
 L.execute('''
-    function fire(event, arg)
+    function fire(event, ...)
         for _, f in ipairs(FRAMES) do
             local h = f:GetScript("OnEvent")
-            if h then h(f, event, arg) end
+            if h then h(f, event, ...) end
         end
     end
     fire("ADDON_LOADED", "Runeway")
     fire("PLAYER_LOGIN")
-    fire("PLAYER_ENTERING_WORLD")
+    fire("PLAYER_ENTERING_WORLD", true, false)
     print("data packs loaded at login:", table.concat(LOADED_ADDONS, ", "), RunewayTiles and RunewayTiles[0] and "ok" or "FAIL")
     SlashCmdList.RUNEWAY("toggle")
     local upd = RunewayFrame:GetScript("OnUpdate")
@@ -156,36 +156,64 @@ L.execute('''
     EVENT_CALLBACKS.SetItemRef("addon:Runeway:pack:Runeway_Test", "[Test]", "LeftButton")
     print("second click shown:", tostring(ItemRefTooltip:IsShown()))
     EVENT_CALLBACKS.SetItemRef("item:6948", "[Hearthstone]", "LeftButton")   -- other links are not ours
-    -- a map without any data pack (Kalimdor): hidden with one chat note (after a second), a toggle repeats it
-    local function settle() poll() for _ = 1, 110 do debugprofilestop() end poll() end
+    -- maps without any data pack: hidden, one chat note once the game's info belongs to the new place.
+    -- The three kinds of loading screen (PLAYER_ENTERING_WORLD isInitialLogin / isReloadingUi) are played through;
+    -- the notes are collected and compared at the end.
+    local notes, print0 = {}, print
+    print = function(msg, ...)
+        if type(msg) == "string" and msg:find("Kalimdor") then   -- the area: the last name in brackets
+            local last
+            for n in msg:gmatch("%[([^%]]+)%]") do last = n end
+            notes[#notes + 1] = last
+        end
+        return print0(msg, ...)
+    end
+    local function wait(s) for _ = 1, s * 100 do debugprofilestop() end poll() end
     UI_MAP0 = UI_MAP
     NS.WORLD_MAPS[1000] = true                                       -- map 1000 plays Kalimdor here
-    POS[4], ZONE, CONTINENT, UI_MAP = 1000, "", "Kalimdor", 1413   -- logging in: no zone text for a moment,
-    settle()
-    ZONE = "Kalimdor"                                                -- then the continent's name
+    -- 1. login in the Barrens: zone text empty, then the continent's name, then the zone
+    fire("LOADING_SCREEN_ENABLED")
+    POS[4], ZONE, CONTINENT, UI_MAP = 1000, "", "Kalimdor", 1413
     poll()
+    fire("LOADING_SCREEN_DISABLED")
+    fire("PLAYER_ENTERING_WORLD", true, false)
+    wait(2)
+    ZONE = "Kalimdor"
+    wait(2)
     ZONE = "The Barrens"
     poll()
     print("map without any pack shown:", tostring(RunewayFrame:IsShown()))
-    SlashCmdList.RUNEWAY("toggle")
+    SlashCmdList.RUNEWAY("toggle")                                    -- asked for the map: the note at once
     poll()
     print("after toggle shown:", tostring(RunewayFrame:IsShown()))
-    -- a dungeon of that continent: its own map, no way up to the continent; the last continent names the pack
+    -- 2. reload there: the note again, at once after the loading screen
+    NS.ResetNoData()
+    fire("PLAYER_ENTERING_WORLD", false, true)
+    wait(1)
+    -- 3. into a dungeon of that continent (zone change): its own map; the last continent names the pack
+    fire("LOADING_SCREEN_ENABLED")
     POS[4], ZONE, CONTINENT, STATE.instance, UI_MAP = 389, "Orgrimmar", nil, true, 9999
-    settle()
-    -- leaving it: the position changes first, zone and instance info only after the loading screen (seconds);
-    -- the note waits for them and names Orgrimmar
+    wait(3)                                                           -- nothing during the loading screen
+    fire("LOADING_SCREEN_DISABLED")
+    fire("PLAYER_ENTERING_WORLD", false, false)
+    wait(2)
+    -- 4. out again: the position changes during the loading screen; afterwards the instance ID follows first,
+    -- name and type still the dungeon's for a while
+    fire("LOADING_SCREEN_ENABLED")
     POS[4] = 1000
+    wait(3)
+    fire("LOADING_SCREEN_DISABLED")
+    fire("PLAYER_ENTERING_WORLD", false, false)
     poll()
-    for _ = 1, 300 do debugprofilestop() end
-    poll()
-    INFO_LAG = true                     -- the ID follows the position, name and type still the dungeon's
-    for _ = 1, 300 do debugprofilestop() end
-    poll()
+    INFO_LAG = true
+    wait(2)
     INFO_LAG = nil
-    STATE.instance, STATE.lagging, ZONE, CONTINENT, UI_MAP = false, true, "Orgrimmar", "Kalimdor", 1454
+    STATE.instance, ZONE, CONTINENT, UI_MAP = false, "Orgrimmar", "Kalimdor", 1454
     poll()
-    STATE.lagging = nil
+    print = print0
+    print(("no map data: login, toggle, reload, dungeon in and out name the right area %s (%s)"):format(
+        table.concat(notes, ",") == "The Barrens,The Barrens,The Barrens,Ragefire Chasm,Orgrimmar" and "ok" or "FAIL",
+        table.concat(notes, ",")))
     STATE.instance, UI_MAP = false, UI_MAP0
     POS[4], ZONE, CONTINENT = 0, nil, nil
     poll()

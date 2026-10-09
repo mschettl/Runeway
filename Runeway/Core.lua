@@ -1257,12 +1257,18 @@ local function ContinentName()
     UpdateContinent()
     return lastContinent or GetRealZoneText()
 end
--- After a map change the note waits until the loading screen is over (PLAYER_ENTERING_WORLD + 1 s) and the
--- instance info belongs to the new position: on leaving a dungeon the position arrives first, zone and instance
--- info follow later. At most SAY_MAX seconds; now = at once (toggle).
+-- After a map change the note waits until the game's info belongs to the new place. The last loading screen tells
+-- which case it is (PLAYER_ENTERING_WORLD: isInitialLogin, isReloadingUi):
+--   login:  the zone text is empty or the continent's name for a moment -> wait for a real zone name
+--   reload: everything is current at once
+--   zone change (dungeon in or out, portal, ship): instance info follows the position late -> wait 1 s and for
+--           the instance ID of the new position
+-- Never during a loading screen (the position changes while it is shown). At most SAY_MAX seconds;
+-- now = at once (toggle).
 local SAY_MAX = 15
 local sayFor, sayAt
-local worldAt = 0                                     -- GetTime() of the last PLAYER_ENTERING_WORLD
+local worldAt, worldKind, loading = 0, "login", false
+ns.ResetNoData = function() noDataSaid, sayFor = nil, nil end   -- for tests: a reload starts without notes
 local function SayNoData(inst, now)
     local key = inst or false
     if noDataSaid == key then return end
@@ -1270,10 +1276,13 @@ local function SayNoData(inst, now)
         sayFor, sayAt = key, GetTime() + SAY_MAX
         return
     end
-    -- after logging in the zone text is empty or the continent's name for a moment
-    local zone = GetZoneText()
-    local settled = GetTime() >= worldAt + 1 and select(8, GetInstanceInfo()) == inst and zone ~= ""
-        and zone ~= ContinentName()
+    local settled = not loading and GetTime() >= worldAt + (worldKind == "reload" and 0.5 or 1)
+    if settled and worldKind == "login" then
+        local zone = GetZoneText()
+        settled = zone ~= "" and zone ~= ContinentName()
+    elseif settled and worldKind == "zone" then
+        settled = select(8, GetInstanceInfo()) == inst
+    end
     if now or settled or GetTime() >= sayAt then
         PackFailed(nil, ContinentName())
         noDataSaid, sayFor = key, nil
@@ -1428,6 +1437,8 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         if not fade then Print(L.NO_MASKS) end
         self:UnregisterEvent("ADDON_LOADED")
         self:RegisterEvent("PLAYER_ENTERING_WORLD")
+        self:RegisterEvent("LOADING_SCREEN_ENABLED")
+        self:RegisterEvent("LOADING_SCREEN_DISABLED")
         self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
         self:RegisterEvent("QUEST_LOG_UPDATE")
         self:RegisterEvent("TAXIMAP_OPENED")              -- talking to a flight master discovers its node
@@ -1440,8 +1451,12 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     elseif event == "UPDATE_BINDINGS" then
         -- key bindings (re)loaded or changed by the player: take the map key over again
         if not binding then ApplyBindings() end
+    elseif event == "LOADING_SCREEN_ENABLED" or event == "LOADING_SCREEN_DISABLED" then
+        loading = event == "LOADING_SCREEN_ENABLED"
     elseif event == "PLAYER_ENTERING_WORLD" then
-        worldAt = GetTime()
+        local reloading = ...
+        worldAt, worldKind = GetTime(), arg1 and "login" or reloading and "reload" or "zone"
+        loading = false                       -- also if LOADING_SCREEN_DISABLED does not come
         if not announced then                 -- once per login / reload: name and version in the chat
             announced = true
             Print(L.LOADED:format(ns.Version()))

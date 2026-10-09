@@ -113,7 +113,10 @@ C_QuestLog = { GetQuestsOnMap = function(m) return QUESTS_BY_MAP[m] or {} end,
                GetTitleForQuestID = function(id) return "Test quest " .. id end }
 function CreateVector2D(x, y) return { x = x, y = y } end
 MAP_WEST = { [1420] = 2000, [1421] = 8000, [1422] = 40000, [1458] = 2000 }   -- west edge of each zone map (yards)
-C_Map.GetWorldPosFromMapPos = function(m, v) return 0, { x = 3000 - v.y * 4000, y = MAP_WEST[m] - v.x * 6000 } end
+C_Map.GetWorldPosFromMapPos = function(m, v)   -- maps without an entry (other continents, dungeons): no position
+    if not MAP_WEST[m] then return nil end
+    return 0, { x = 3000 - v.y * 4000, y = MAP_WEST[m] - v.x * 6000 }
+end
 function date() return "2026-10-07" end
 -- 3.4: visibility, bindings, settings
 function GetTime() return clock end

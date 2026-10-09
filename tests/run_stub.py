@@ -159,6 +159,7 @@ L.execute('''
     -- a map without any data pack (Kalimdor): hidden with one chat note (after a second), a toggle repeats it
     local function settle() poll() for _ = 1, 110 do debugprofilestop() end poll() end
     UI_MAP0 = UI_MAP
+    NS.WORLD_MAPS[1000] = true                                       -- map 1000 plays Kalimdor here
     POS[4], ZONE, CONTINENT, UI_MAP = 1000, "", "Kalimdor", 1413   -- logging in: no zone text for a moment,
     settle()
     ZONE = "Kalimdor"                                                -- then the continent's name
@@ -178,6 +179,10 @@ L.execute('''
     poll()
     for _ = 1, 300 do debugprofilestop() end
     poll()
+    INFO_LAG = true                     -- the ID follows the position, name and type still the dungeon's
+    for _ = 1, 300 do debugprofilestop() end
+    poll()
+    INFO_LAG = nil
     STATE.instance, STATE.lagging, ZONE, CONTINENT, UI_MAP = false, true, "Orgrimmar", "Kalimdor", 1454
     poll()
     STATE.lagging = nil

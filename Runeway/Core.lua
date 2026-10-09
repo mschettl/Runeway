@@ -226,17 +226,22 @@ end
 local PACK_LINK = "|cff66ccff|Haddon:Runeway:pack:%s|h[%s]|h|r"
 local function Blue(text) return ("|cff66ccff[%s]|r"):format(text or "?") end
 local noteState                                       -- values when the last note was written (/rnw pos)
+local WORLD_MAPS = { [0] = true, [1] = true, [530] = true, [571] = true }   -- continents: never a dungeon
+ns.WORLD_MAPS = WORLD_MAPS                            -- for tests
 local function PackFailed(pack, name)
-    -- in a dungeon its name; instance name and type from the same call (IsInInstance lags after leaving)
+    -- in a dungeon its name: only when the position is on that instance's own map (after leaving a dungeon the
+    -- instance info still names it for a while, the position is already back on the continent)
     local iname, itype, _, _, _, _, _, iid = GetInstanceInfo()
-    local area = itype and itype ~= "none" and iname or GetZoneText()
+    local inst = select(4, UnitPosition("player"))
+    local dungeon = itype and itype ~= "none" and iid == inst and not WORLD_MAPS[inst]
+    local area = dungeon and iname or GetZoneText()
     if area == "" or area == name then                  -- zone text not there yet: the name of the player's map
         local m = C_Map.GetBestMapForUnit("player")
         local info = m and C_Map.GetMapInfo(m)
         area = info and info.name or ""
     end
     noteState = ("%s/%s/%s inInstance=%s zone=%s pos=%s"):format(tostring(iname), tostring(itype), tostring(iid),
-        tostring(IsInInstance()), tostring(GetZoneText()), tostring(select(4, UnitPosition("player"))))
+        tostring(IsInInstance()), tostring(GetZoneText()), tostring(inst))
     Print(L.PACK_FAILED:format(pack and PACK_LINK:format(pack, packTitle[pack]) or Blue(name), Blue(area ~= "" and area or name)))
 end
 

@@ -458,7 +458,7 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway Runeway_EasternKingdoms
 
 **Installation:** Alte Ordner `Interface\AddOns\Runeway` und `Runeway_*` löschen, das ZIP dort entpacken (beide Ordner) und WoW komplett neu starten. Neue Dateien (Kacheln, Einträge in der `.toc`, `Bindings.xml`) lädt WoW erst nach einem Neustart; reine Lua-Änderungen an bestehenden Dateien reichen mit `/reload`.
 
-**Im Spiel prüfen (1.6):** beide Ordner installiert, WoW neu starten; in der Addon-Liste erscheint „Runeway - Eastern Kingdoms“ (bei Bedarf geladen); Login in den Östlichen Königreichen zeigt die Karte sofort; `/rnw view <Gebiet>` funktioniert; Paket in der Addon-Liste deaktivieren → Chat-Meldung, Karte bleibt ausgeblendet (auch beim Umschalten), keine Lua-Fehler; Kalimdor bzw. Instanz → „No contours …“.
+**Im Spiel geprüft (1.6):** beide Ordner installiert; Paket lädt beim Betreten; deaktiviertes Paket, Kalimdor und Dungeons → Karte ausgeblendet, Chat-Meldung mit Paket und Gebiet (Login, Reload, Dungeon rein/raus mehrfach geprüft); keine Lua-Fehler.
 
 **Regressionsliste (vor jedem Release im Spiel prüfen, Stand 1.4 alles bestanden; 1.5: Punkte 1–2 für Etappen 2–4 über den Ansichtsmodus geprüft):**
 1. **Karte:** Look wie im Diablo-Screenshot; Zoom nahtlos ohne Flackern oder Kachelkanten; Schraffur deckungsgleich mit den Geländelinien; Ruinen von Lordaeron erkennbar.
@@ -478,10 +478,11 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway Runeway_EasternKingdoms
 ## 10. Start-Prompt für die nächste Session
 
 ```text
-Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch dev.
+Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch dev (Push mit git push -u origin dev).
 Lies zuerst CLAUDE.md, Runeway_Status_v1.md und Runeway_Prompt_v1.md.
-Version 1.5 ist in main gemergt. Version 1.6 (Datenpakete: Kacheln als LoadOnDemand-Addon Runeway_EasternKingdoms, Laden beim Betreten) ist auf dem Entwicklungsbranch umgesetzt, aber im Spiel noch nicht geprüft (Abschnitt 9, „Im Spiel prüfen (1.6)“).
+Version 1.6 ist im Spiel getestet und in main gemergt (PR #10): Datenpaket Runeway_EasternKingdoms, Meldung bei fehlenden Kartendaten, Unterstadt/Ruinen als Innen-Kachelsätze mit eigenem Zoom, Flugmeister, Questsymbole, Kartenform und weicher Rand.
 Langfristziel, Architektur und Versionsplan: Runeway_Status_v1.md, Abschnitte 1 und 8.
-Aufgabe dieser Session: Ergebnisse des Spieltests von 1.6 einarbeiten, dann Kalimdor (Roadmap Schritt 4, Version 1.7).
-Rohdaten liegen auf dem Branch data (git fetch origin data, siehe Abschnitt 2). Kommunikation Deutsch, Code Englisch.
+Aufgabe dieser Session: Kalimdor (Roadmap Schritt 4, Version 1.7) als Datenpaket Runeway_Kalimdor; Dungeons und Raids kommen später ins Paket ihres Kontinents (KNOWN_PACKS in Core.lua mitpflegen).
+Rohdaten liegen auf dem Branch data (git fetch origin data, siehe Abschnitt 2). Tests: python tests/run_stub.py, andere Sprache mit RUNEWAY_LOCALE=deDE.
+Kommunikation Deutsch, Code Englisch. PR und Merge nur auf Marios Anweisung (Squash-Merge).
 ```

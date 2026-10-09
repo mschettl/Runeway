@@ -193,16 +193,16 @@ L.execute('''
     POS[1], POS[2] = 1540, 241
     tiles("elevator shaft")
     POS[1], POS[2] = 1515, 241
-    tiles("below the shaft, subzone lagging")
+    tiles("bottom of the elevator, subzone still Ruins")
     SUBZONE = "Trade Quarter"
-    tiles("below the shaft, subzone updated")
+    tiles("bottom of the elevator, subzone updated")
     SUBZONE = "The Ruins of Lordaeron"
     POS[1], POS[2] = 1640, 240
     tiles("throne room")
     POS[1], POS[2] = 1772.1, 239.2
     tiles("ruins courtyard")
-    for _ = 1, 6 do later() end
-    tiles("ruins courtyard, 1.8 s later")
+    POS[1], POS[2] = 1690, 240
+    tiles("rose walk")
     POS[1], POS[2], UI_MAP, SUBZONE = 1917.6, 84.9, 1420, ""
     later()
     SlashCmdList.RUNEWAY("reset")

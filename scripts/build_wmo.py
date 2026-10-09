@@ -27,8 +27,10 @@ EXPORT = os.path.join(MAPS, '..')
 UC = 'world/wmo/autogen-names/undercity/20736'
 SETS = {
     # Undercity below Tirisfal; the Ruins of Lordaeron report uiMap 1458 too, so their subzone is excluded
+    # Ruins subzone only counts as surface on its outdoor area (courtyard, rose walk): below it, e.g. at the
+    # bottom of the elevators, the subzone also reads Ruins and the player is in Undercity
     '0-1458': dict(map=0, ui=1458, wmo=UC, skip=('Ruins of Lordaeron',), not_subzones=(153,), name='Undercity',
-                   margin=16, res=16),
+                   margin=16, res=16, surface_area=('Ruins of Lordaeron',)),
     # throne room, mausoleum and elevator shafts of the Ruins: only inside their footprint (not the courtyard)
     '0-1458-ruins': dict(map=0, ui=1458, wmo=UC, only=('Ruins of Lordaeron',), subzones=(153,),
                          name='Ruins of Lordaeron', margin=2, res=64, all_networks=True),
@@ -51,13 +53,14 @@ def placement(wmo):
     raise SystemExit(f'no placement of {name} found')
 
 
-def load_groups(wmo, skip=(), only=None):
-    """Floor triangles (n, 3, 3) and liquid squares (n, 4, 3) of the indoor groups, model space (x, y, z up)."""
+def load_groups(wmo, skip=(), only=None, outdoor=False):
+    """Floor triangles (n, 3, 3) and liquid squares (n, 4, 3) of the indoor (or outdoor) groups, model space
+    (x, y, z up)."""
     d = json.load(open(os.path.join(EXPORT, wmo + '.json'), encoding='utf8'))
     floors, liquid = [], []
     for g in d['groups']:
         desc = g.get('groupDescription')
-        if not g['flags'] & INDOOR or desc in skip or (only and desc not in only):
+        if bool(g['flags'] & INDOOR) == outdoor or desc in skip or (only and desc not in only):
             continue
         path = os.path.join(EXPORT, f"{wmo}_{g['groupName']}.obj")
         if os.path.exists(path):
@@ -198,24 +201,35 @@ def build(set_id, cfg):
     # footprint: cells (res x res per tile) the floor plan covers. Quest areas and pins elsewhere belong to the
     # surface; a set with `subzones` is shown only inside it.
     m, res = cfg['margin'], cfg['res']
-    near = cv2.dilate(B.u8(walk | water), np.ones((2 * m + 1, 2 * m + 1), np.uint8))
-    inside = cv2.resize(near, (len(cols) * res, len(rows) * res), interpolation=cv2.INTER_AREA) > 0
+    grow = lambda a, r: cv2.dilate(B.u8(a), np.ones((2 * r + 1, 2 * r + 1), np.uint8))
     ids = lambda k: '{ ' + ', '.join(map(str, cfg[k])) + ' }'
+
+    def grid(fh, key, mask, res):
+        cells = cv2.resize(mask, (len(cols) * res, len(rows) * res), interpolation=cv2.INTER_AREA) > 0
+        fh.write(f'RunewayZones["{set_id}"].{key} = {{\n    res = {res},\n')
+        for j, r in enumerate(rows):
+            for i, c in enumerate(cols):
+                g = cells[j * res:(j + 1) * res, i * res:(i + 1) * res]
+                if g.any():
+                    fh.write(f'    ["{c}_{r}"] = "' + ''.join('1' if v else '0' for v in g.flatten()) + '",\n')
+        fh.write('}\n')
+
     with open(lua, 'a', newline='\n') as fh:
-        fh.write('-- Shown on this uiMap; subzones (AreaTable IDs): only there and inside the footprint; notSubzones: never there\n')
+        fh.write('-- Shown on this uiMap; subzones (AreaTable IDs): only there and inside the footprint; notSubzones: never\n')
+        fh.write('-- there (with a surfaceArea: only there on the surface area or outside the footprint)\n')
         fh.write(f'RunewayZones["{set_id}"].ui = {cfg["ui"]}\n')
         if 'subzones' in cfg:
             fh.write(f'RunewayZones["{set_id}"].subzones = {ids("subzones")}\n')
         if 'not_subzones' in cfg:
             fh.write(f'RunewayZones["{set_id}"].notSubzones = {ids("not_subzones")}\n')
-        fh.write(f'-- Footprint: {res} x {res} cells per tile (row by row from north, "1" = inside)\n')
-        fh.write(f'RunewayZones["{set_id}"].inside = {{\n    res = {res},\n')
-        for j, r in enumerate(rows):
-            for i, c in enumerate(cols):
-                g = inside[j * res:(j + 1) * res, i * res:(i + 1) * res]
-                if g.any():
-                    fh.write(f'    ["{c}_{r}"] = "' + ''.join('1' if v else '0' for v in g.flatten()) + '",\n')
-        fh.write('}\n')
+        fh.write(f'-- Footprint and surface area: cells per tile side (res), rows from north, "1" = inside\n')
+        grid(fh, 'inside', grow(walk | water, m), res)
+        if 'surface_area' in cfg:                           # outdoor groups: every floor face, 2 px margin
+            of, _ = load_groups(cfg['wmo'], only=cfg['surface_area'], outdoor=True)
+            area = np.zeros((H, W), np.uint8)
+            for poly in to_px(xf(of.reshape(-1, 3)).reshape(-1, 3, 3)):
+                cv2.fillConvexPoly(area, poly, 1, cv2.LINE_8, shift=2)
+            grid(fh, 'surfaceArea', grow(area, 2), 64)
     B.write_pack_toc(cfg['map'])
     cv2.imwrite(os.path.join(B.BUILD, f'preview_{set_id}.png'), pv)
     size = sum(os.path.getsize(os.path.join(d, f)) for d, _, fs in os.walk(out_dir) for f in fs)

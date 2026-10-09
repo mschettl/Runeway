@@ -332,34 +332,28 @@ end
 -- Tile set at the player's position: the first interior set of the player's uiMap whose rules hold
 -- (subzones: in one of them and inside the set's footprint; notSubzones: in none of them), else the map's own.
 -- Undercity and the Ruins of Lordaeron above it both report uiMap 1458: in the Ruins subzone the throne room,
--- mausoleum and elevators have their own set, the courtyard shows the surface.
--- Leaving an interior set for the surface waits SURFACE_DELAY s: the subzone text lags behind the player (at
--- the bottom of the Undercity elevators it still reads "Ruins of Lordaeron" for a moment outside their footprint).
--- A switch to another interior set in that time happens at once.
-local SURFACE_DELAY = 1.5
-local setCache, setTime, surfaceSince = {}, {}, {}
+-- mausoleum and elevators have their own set, the courtyard shows the surface, elsewhere it is Undercity.
+local setCache, setTime = {}, {}
 local function TileSet(inst)
     local now = GetTime()
     if setTime[inst] and now - setTime[inst] < 0.2 then return setCache[inst] end   -- called several times a frame
     setTime[inst] = now
     LoadPack(inst)
     local ui = C_Map.GetBestMapForUnit("player")
+    local n, w = UnitPosition("player")
     local result = inst
-    for _, set in ipairs(ui and SetsFor(inst, ui) or {}) do
+    for _, set in ipairs(ui and n and SetsFor(inst, ui) or {}) do
         local z = RunewayZones[set]
-        local ok = not (z.notSubzones and InSubzone(z.notSubzones))
+        local ok = true
+        if z.notSubzones and InSubzone(z.notSubzones) then
+            -- with a surface area the excluded subzone only counts there: no height is available, but the Ruins
+            -- surface is only reachable on its courtyard; below it (bottom of the elevators) it is Undercity
+            ok = z.surfaceArea ~= nil and not ns.InChunks(z.surfaceArea, n, w) and ns.InChunks(z.inside, n, w)
+        end
         if ok and z.subzones then
-            local n, w = UnitPosition("player")
-            ok = InSubzone(z.subzones) and n ~= nil and ns.InChunks(z.inside, n, w)
+            ok = InSubzone(z.subzones) and ns.InChunks(z.inside, n, w)
         end
         if ok then result = set break end
-    end
-    local prev = setCache[inst]
-    if result == inst and prev and prev ~= inst then
-        surfaceSince[inst] = surfaceSince[inst] or now
-        if now - surfaceSince[inst] < SURFACE_DELAY then result = prev end
-    else
-        surfaceSince[inst] = nil
     end
     setCache[inst] = result
     return result

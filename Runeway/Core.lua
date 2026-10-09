@@ -129,20 +129,33 @@ top:SetFrameLevel(canvas:GetFrameLevel() + 5)
 local status = top:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 status:SetPoint("BOTTOM", 0, 6)
 
--- Frame while the mouse is over the unlocked map: 1 px lines along the edges
-local border = {}
-for i, pts in ipairs({ { "TOPLEFT", "TOPRIGHT" }, { "BOTTOMLEFT", "BOTTOMRIGHT" }, { "TOPLEFT", "BOTTOMLEFT" }, { "TOPRIGHT", "BOTTOMRIGHT" } }) do
-    local t = top:CreateTexture(nil, "BORDER")
-    t:SetColorTexture(1, 1, 1, 0.3)
-    t:SetPoint(pts[1])
-    t:SetPoint(pts[2])
-    if i <= 2 then t:SetHeight(1) else t:SetWidth(1) end
-    t:Hide()
-    border[i] = t
-end
+-- Frame while the mouse is over the unlocked map: a soft oval line along the map's faded rim (the map is an
+-- oval; a rectangle looked foreign). Segments with the soft edge texture of the quest outlines.
+local RING_SEGMENTS, RING_WIDTH, RING_ALPHA = 128, 3, 0.35
+local ring = {}
 local function UpdateBorder()
     local on = not db.locked and view:IsMouseOver()
-    for _, t in ipairs(border) do t:SetShown(on) end
+    local W, H = view:GetSize()
+    local rx, ry = W / 2 - RING_WIDTH, H / 2 - RING_WIDTH
+    for i = 1, RING_SEGMENTS do
+        local l = ring[i]
+        if on then
+            if not l then
+                l = top:CreateLine(nil, "BORDER")
+                l:SetTexture(MEDIA .. "edge.tga")
+                l:SetThickness(RING_WIDTH)
+                l:SetVertexColor(1, 1, 1, RING_ALPHA)   -- not SetAlpha: it overwrites the vertex alpha
+                NoSnap(l)
+                ring[i] = l
+            end
+            local a0, a1 = (i - 1) / RING_SEGMENTS * 2 * math.pi, i / RING_SEGMENTS * 2 * math.pi
+            l:SetStartPoint("CENTER", view, rx * math.cos(a0), ry * math.sin(a0))
+            l:SetEndPoint("CENTER", view, rx * math.cos(a1), ry * math.sin(a1))
+            l:Show()
+        elseif l then
+            l:Hide()
+        end
+    end
 end
 
 -- Resize grip, bottom right (unlocked only); changes the size only, the zoom stays
@@ -1128,6 +1141,7 @@ local function ApplySize()
     db.w = math.floor(math.max(SIZE_MIN, math.min(SIZE_MAX, db.w)) + 0.5)
     db.h = math.floor(math.max(SIZE_MIN, math.min(SIZE_MAX, db.h)) + 0.5)
     view:SetSize(db.w, db.h)
+    UpdateBorder()                       -- the ring follows while sizing
 end
 
 -- Mouse wheel zooms locked and unlocked (option); clicks only reach the map when unlocked (locked: they pass through)

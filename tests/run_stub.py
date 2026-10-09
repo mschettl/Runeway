@@ -745,6 +745,47 @@ L.execute('''
     for _ = 1, 30 do sampler(20); apart = apart or split() end
     check("complete: no blobs, the others stay combined", not apart and combined("4242,4243")
         and not NS.HasQuestArea(4245))
+    -- the smaller combined outline still has its tooltip (it had none in the game test)
+    local function hovered()
+        local found, b = {}, A[4242].box
+        for i = 0, 20 do
+            for j = 0, 20 do
+                for _, q in ipairs(NS.QuestAreasAt(b[1] + (b[2] - b[1]) * i / 20, b[3] + (b[4] - b[3]) * j / 20)) do
+                    found[q] = true
+                end
+            end
+        end
+        NS.QuestAreasAt(nil)
+        return found
+    end
+    local h = hovered()
+    check("complete: the smaller outline lists its quests on hover", h[4242] and h[4243] and not h[4245])
+    -- the members' own outlines no longer match the combined one (resampled meanwhile): still a tooltip
+    local b0 = { unpack(A[4242].box) }
+    local own = { A[4242], A[4243] }
+    for _, e in ipairs(NS.QuestAreasRepublish()) do
+        if table.concat(e[2], ",") == "4242,4243" then for _, l in ipairs(e[1].loops) do l.qids = nil end end
+    end
+    local d = (b0[2] - b0[1]) * 5
+    for _, a in ipairs(own) do
+        for _, l in ipairs(a.loops) do for m = 1, #l, 2 do l[m] = l[m] + d end end
+        a.box[1], a.box[2] = a.box[1] + d, a.box[2] + d
+    end
+    local found = {}
+    for i = 0, 20 do
+        for j = 0, 20 do
+            for _, q in ipairs(NS.QuestAreasAt(b0[1] + (b0[2] - b0[1]) * i / 20, b0[3] + (b0[4] - b0[3]) * j / 20)) do
+                found[q] = true
+            end
+        end
+    end
+    NS.QuestAreasAt(nil)
+    for _, a in ipairs(own) do
+        for _, l in ipairs(a.loops) do for m = 1, #l, 2 do l[m] = l[m] - d end end
+        a.box[1], a.box[2] = a.box[1] - d, a.box[2] - d
+    end
+    for _, e in ipairs(NS.QuestAreasRepublish()) do for _, l in ipairs(e[1].loops) do l.qids = nil end end
+    check("hover: a combined outline older than its members still has a tooltip", found[4242] and found[4243])
     -- the completed quest still reports blobs, but its blob is not drawn any more
     addQuest()
     done45, BLOBS[4245] = true, nil

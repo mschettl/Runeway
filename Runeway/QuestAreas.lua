@@ -827,6 +827,9 @@ end
 
 -- Quests of a combined outline that lie in one of its loops: a member counts when a point of its own outline
 -- is inside the loop (its blob is part of the union). Cached on the loop, which is rebuilt with each sampling.
+-- A combined outline can be older than its members' own outlines (it stays until its successor is sampled), so a
+-- member also counts when a point of the loop lies in its own area; if still none matches, the loop lists all
+-- quests of the outline: a drawn outline always has a tooltip.
 local function LoopQuests(loop, qids, st)
     if loop.qids then return loop.qids end
     local list = {}
@@ -839,8 +842,12 @@ local function LoopQuests(loop, qids, st)
             end
             if hit then break end
         end
+        for m = 1, own and not hit and #own.loops > 0 and #loop or 0, 2 do
+            if Inside(own, loop[m], loop[m + 1]) then hit = true break end
+        end
         if hit then list[#list + 1] = qid end
     end
+    if #list == 0 then return qids end
     loop.qids = list
     return list
 end

@@ -108,8 +108,7 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `QUEST_CLASSIC_TIP` | Quest icons in the classic look: symbol on a round badge. Off: the modern icons with their own ring. | Questsymbole im klassischen Aussehen: Symbol auf rundem Hintergrund. Aus: die modernen Symbole mit eigenem Ring. |
 | `QUEST_EDGE` | Quest area edge | Rand des Questbereichs |
 | `QUEST_EDGE_TIP` | Width of the quest area outlines. | Breite der Umrisslinien der Questbereiche. |
-| `QUEST_MERGE_LONG` | Merge overlapping quest areas | Überlagerte Questbereiche bündeln |
-| `QUEST_MERGE` | Merge overlapping areas | Überlagerte Bereiche bündeln |
+| `QUEST_MERGE` | Merge overlapping quest areas | Überlagerte Questbereiche bündeln |
 | `QUEST_MERGE_TIP` | Quests whose areas overlap get one shared outline. Off: every quest keeps its own outline. | Quests mit überlagernden Bereichen erhalten einen gemeinsamen Umriss. Deaktiviert: jede Quest behält ihren eigenen Umriss. |
 
 Werte-Formate (bleiben meist gleich): `%d px`, `%d %%`, `%.2f`, `%.2f x`.

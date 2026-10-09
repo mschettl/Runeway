@@ -742,13 +742,6 @@ L.execute('''
     RunewayProfileDialog.edit:SetText(text)
     RunewayProfileDialog.action:GetScript("OnClick")()
     check("profile: import dialog applies the text", not RunewayProfileDialog:IsShown())
-    -- checkbox row: shorter text in the row, the full name stays the setting's name (tooltip title)
-    local merge
-    for _, i in ipairs(INITS) do if i.setting == SETTINGS.RUNEWAY_QUESTMERGE then merge = i end end
-    local cf = setmetatable({ Text = CreateFrame("Frame"), Tooltip = CreateFrame("Frame") }, { __index = RunewayCheckboxMixin })
-    RunewayCheckboxMixin.Init(cf, merge)
-    check("option row: short label, full name in the tooltip", rawget(cf.Text, "_text") == NS.L.QUEST_MERGE
-        and merge.data.name == NS.L.QUEST_MERGE_LONG and merge.template == "RunewayCheckboxTemplate")
     -- layer row: the colour swatch opens the picker and writes the layer colour
     local row
     for _, i in ipairs(INITS) do if i.kind == "layerrow" and i.data.name == NS.L.LAYER_ROADS then row = i end end

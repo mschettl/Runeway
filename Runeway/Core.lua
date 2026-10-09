@@ -33,7 +33,7 @@ local defaults = {
     wheelZoom = true,        -- mouse wheel over the map zooms (off: the wheel goes to the game camera)
     shape = 0.5,             -- map shape: 0 rectangle, 0.5 oval, 1 circle (10 % steps)
     edgeSoft = 0.5,          -- soft edge: 0 hard, 1 widest fade (10 % steps)
-    arrowSize = 20, pinSize = 20, corpseSize = 20, taxiSize = 20, showTaxi = true, showArrow = true, showCorpse = true, showQuests = true, questClassic = false, questEdge = 0.8,   -- quest edge = width factor of the quest area outline (0.5-1.5)
+    arrowSize = 20, pinSize = 20, corpseSize = 20, taxiSize = 20, showTaxi = true, showArrow = true, showCorpse = true, showQuests = true, questClassic = false, questEdge = 1.0,   -- quest edge = width factor of the quest area outline (0.5-1.5)
     questMerge = true,       -- overlapping quest areas as one combined outline
     zoneDim = 0.5,           -- opacity factor of the adjacent zones (the player is not in)
     colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,

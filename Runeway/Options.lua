@@ -69,7 +69,6 @@ local function Wide(base, control)
     end
     function m:Init(initializer)
         base.Init(self, initializer)
-        if initializer.data.short then self.Text:SetText(initializer.data.short) end   -- tooltip keeps the full name
         self.Text:SetPoint("RIGHT", self, "CENTER", -85 + WIDE, 0)
         self.Tooltip:SetPoint("BOTTOMRIGHT", self, "BOTTOM", -80 + WIDE, 0)
     end
@@ -139,12 +138,9 @@ local function Add(initializer)
     return initializer
 end
 
--- short: shorter text in the row than the setting's name (the tooltip title)
-local function Check(path, label, tooltip, apply, short)
-    local init = Settings.CreateControlInitializer("RunewayCheckboxTemplate",
-        Setting(path, Settings.VarType.Boolean, label, apply), nil, tooltip)
-    init.data.short = short
-    return Add(init)
+local function Check(path, label, tooltip, apply)
+    return Add(Settings.CreateControlInitializer("RunewayCheckboxTemplate",
+        Setting(path, Settings.VarType.Boolean, label, apply), nil, tooltip))
 end
 
 local function SliderOptions(min, max, step, fmt)
@@ -245,7 +241,7 @@ local function Build()
     Slider("questEdge", L.QUEST_EDGE, 0.5, 1.5, 0.01, function(v) return Pct(v - 0.5) end, nil,   -- 0.5x = 0 %, 1.5x = 100 %
         L.QUEST_EDGE_TIP)
         :SetParentInitializer(quests, QuestsShown)
-    Check("questMerge", L.QUEST_MERGE_LONG, L.QUEST_MERGE_TIP, nil, L.QUEST_MERGE):SetParentInitializer(quests, QuestsShown)
+    Check("questMerge", L.QUEST_MERGE, L.QUEST_MERGE_TIP):SetParentInitializer(quests, QuestsShown)
     Check("questClassic", L.QUEST_CLASSIC, L.QUEST_CLASSIC_TIP):SetParentInitializer(quests, QuestsShown)
 
     -- Layers: one row each with show, colour and opacity

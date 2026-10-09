@@ -777,7 +777,7 @@ local hoverLoops, hoverQuests = {}, {}
 function ns.QuestAreasAt(n, w)
     wipe(hoverLoops)
     wipe(hoverQuests)
-    if n and ns.db().layers.questAreas then
+    if n and ns.db().layers.questAreas and ns.db().showQuests then
         local seen = {}
         ForEachShown(function(a, qids, st)
             if not Inside(a, n, w) then return end
@@ -878,7 +878,7 @@ end
 function ns.DrawQuestAreas()
     local n = 0
     fillN = 0
-    if ns.db().layers.questAreas and next(owner) then
+    if ns.db().layers.questAreas and ns.db().showQuests and next(owner) then
         local pN, pW, k = ns.Player()
         local W, H = ns.view:GetSize()
         local reach = math.sqrt(W * W + H * H) / 2 / k

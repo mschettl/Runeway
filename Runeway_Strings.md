@@ -98,7 +98,7 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `QUEST_MARKS` | Quest marks | Questmarker |
 | `CORPSE_MARKER` | Corpse marker | Leichnam-Marker |
 | `FLIGHT_MASTERS` | Flight masters | Flugmeister |
-| `SHOW_FLIGHT_MASTERS` | Show flight masters | Flugmeister anzeigen |
+| `MARKER_SIZE` | %s size | %s – Größe |
 | `QUEST_EDGE` | Quest area edge | Rand des Questgebiets |
 | `QUEST_MERGE` | Combine overlapping quest areas | Überlappende Questbereiche zusammenfassen |
 | `QUEST_MERGE_TIP` | Quests whose areas overlap get one shared outline. Off: every quest keeps its own outline. | Quests mit überlappenden Bereichen erhalten einen gemeinsamen Umriss. Deaktiviert: jede Quest behält ihren eigenen Umriss. |

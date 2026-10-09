@@ -560,6 +560,39 @@ L.execute('''
     NS.QuestAreasAt(nil)
     rawset(view, "IsMouseOver", nil)
     if not wasShown then view:Hide() end
+    -- display page: marker rows (show + size) in order; quest edge and merge follow the quest marker switch
+    local L = NS.L
+    local order, quest, edge, merge = {}, nil, nil, nil
+    for _, i in ipairs(INITS) do
+        if i.kind == "checkslider" then
+            order[#order + 1] = i.data.cbLabel
+            if i.data.cbLabel == L.QUEST_MARKS then quest = i end
+        end
+        if i.setting == SETTINGS.RUNEWAY_QUESTEDGE then edge = i end
+        if i.setting == SETTINGS.RUNEWAY_QUESTMERGE then merge = i end
+    end
+    check("option: marker rows in order", table.concat(order, ",") == table.concat({ L.PLAYER_ARROW, L.CORPSE_MARKER,
+        L.FLIGHT_MASTERS, L.QUEST_MARKS }, ","))
+    SETTINGS.RUNEWAY_SHOWQUESTS:SetValue(false)
+    local off = edge.parent == quest and merge.parent == quest and not edge.enabled() and not merge.enabled()
+    view:GetScript("OnUpdate")(view, 0.05)
+    local pinsShown = 0
+    for _, p in ipairs(NS.QuestPins or {}) do if p.shown then pinsShown = pinsShown + 1 end end
+    local A2 = NS.QuestAreaState()
+    local qa2
+    for _, a in pairs(A2) do if #a.loops > 0 then qa2 = a end end
+    local hits = #NS.QuestAreasAt((qa2.box[1] + qa2.box[2]) / 2, (qa2.box[3] + qa2.box[4]) / 2)
+    SETTINGS.RUNEWAY_SHOWQUESTS:SetValue(true)
+    NS.QuestAreasAt(nil)
+    check("option: quest marks off hides pins and areas, greys out edge and merge",
+        off and edge.enabled() and pinsShown == 0 and hits == 0)
+    SETTINGS.RUNEWAY_SHOWARROW:SetValue(false)
+    view:GetScript("OnUpdate")(view, 0.05)
+    local arrowTex2 = TEXTURE_OBJECTS[("Interface/AddOns/Runeway/media/arrow.tga"):gsub("/", string.char(92))]
+    local hidden = not rawget(arrowTex2, "_shown")
+    SETTINGS.RUNEWAY_SHOWARROW:SetValue(true)
+    view:GetScript("OnUpdate")(view, 0.05)
+    check("option: player arrow can be switched off", hidden and rawget(arrowTex2, "_shown"))
     -- option: mouse wheel zoom off -> the map does not take the wheel
     SETTINGS.RUNEWAY_WHEELZOOM:SetValue(false)
     local wheelOff = rawget(view, "_wheel") == false

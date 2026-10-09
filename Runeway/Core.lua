@@ -33,7 +33,7 @@ local defaults = {
     hover = true,            -- unlocked: subtle frame while the mouse is over the map
     wheelZoom = true,        -- mouse wheel over the map zooms (off: the wheel goes to the game camera)
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
-    arrowSize = 25, pinSize = 25, corpseSize = 25, taxiSize = 20, showTaxi = true, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
+    arrowSize = 25, pinSize = 25, corpseSize = 25, taxiSize = 20, showTaxi = true, showArrow = true, showCorpse = true, showQuests = true, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
     questMerge = true,       -- overlapping quest areas as one combined outline
     zoneDim = 0.3,           -- opacity factor of the adjacent zones (the player is not in)
     colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,
@@ -585,7 +585,7 @@ local quests = {}      -- { {n, w}, ... }
 local qpins = {}
 local taxis = {}       -- flight masters: { {n, w}, name =, atlas =, undiscovered =, faction = }
 local tpins = {}
-ns.TaxiPins, ns.Taxis = tpins, taxis    -- for tests
+ns.TaxiPins, ns.Taxis, ns.QuestPins = tpins, taxis, qpins    -- for tests
 
 local function WorldFromMap(mapID, x, y)
     if not (C_Map.GetWorldPosFromMapPos and CreateVector2D) then return end
@@ -777,7 +777,7 @@ local function FindCorpse()
 end
 
 local function UpdateCorpse()
-    if not UnitIsDeadOrGhost("player") then
+    if not (db.showCorpse and UnitIsDeadOrGhost("player")) then
         corpseN = nil
         corpse:Hide()
         return
@@ -846,7 +846,7 @@ end
 
 local function UpdateQuestPins()
     local n = 0
-    for _, q in ipairs(quests) do
+    for _, q in ipairs(db.showQuests and quests or {}) do     -- option off: no quest pins and no quest areas
         if not (ns.HasQuestArea and ns.HasQuestArea(q.questID)) then
             n = n + 1
             local p = qpins[n]
@@ -1017,8 +1017,8 @@ view:SetScript("OnUpdate", function(self, e)
 
     local facing = GetPlayerFacing() or 0
     local angle = db.rotate and not viewAt and -facing or 0
-    arrow:SetShown(not viewAt)
-    arrowShadow:SetShown(not viewAt)
+    arrow:SetShown(db.showArrow and not viewAt)
+    arrowShadow:SetShown(db.showArrow and not viewAt)
     cosA, sinA = math.cos(angle), math.sin(angle)
     local as = db.arrowSize * (hovered == "arrow" and HOVER_SCALE or 1)
     arrow:SetSize(as, as)

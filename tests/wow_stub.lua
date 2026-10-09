@@ -150,8 +150,13 @@ function ColorPickerFrame:GetColorRGB() return 0.1, 0.2, 0.3 end
 -- Settings API: proxy settings by variable name, rows as plain initializer tables
 SETTINGS, INITS = {}, {}
 local function Layout() return { AddInitializer = function(_, i) INITS[#INITS + 1] = i end } end
-local function Row(kind) return function(_, setting, options) INITS[#INITS + 1] = { kind = kind, setting = setting,
-    options = type(options) == "function" and options() or options } end end
+local function SetParent(i, parent, pred) i.parent, i.enabled = parent, pred end
+local function Row(kind) return function(_, setting, options)
+    local i = { kind = kind, setting = setting, options = type(options) == "function" and options() or options,
+                SetParentInitializer = SetParent }
+    INITS[#INITS + 1] = i
+    return i
+end end
 Settings = {
     VarType = { Boolean = "boolean", Number = "number", String = "string" },
     RegisterVerticalLayoutCategory = function() SETTINGS_MAIN = { GetID = function() return 77 end }; return SETTINGS_MAIN, Layout() end,
@@ -190,7 +195,10 @@ function CreateFromMixins(...)
 end
 function CreateSettingsListSectionHeaderInitializer(name) return { kind = "header", name = name } end
 function CreateSettingsButtonInitializer(name, text, click) return { kind = "button", click = click } end
-function CreateSettingsCheckboxSliderInitializer(cb, _, _, slider, options) return { kind = "checkslider", setting = cb, slider = slider, options = options } end
+function CreateSettingsCheckboxSliderInitializer(cb, label, _, slider, options)
+    return { kind = "checkslider", data = { cbSetting = cb, cbLabel = label, sliderSetting = slider, sliderOptions = options },
+             AddSearchTags = function() end, SetParentInitializer = SetParent }
+end
 SettingsCheckboxSliderControlMixin = { OnLoad = function() end, Init = function() end }
 function CreateKeybindingEntryInitializer(i) return { kind = "binding", action = GetBinding(i) } end
 

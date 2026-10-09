@@ -111,7 +111,7 @@ local function Setting(path, varType, label, apply)
 end
 
 local function Check(path, label, tooltip, apply)
-    Settings.CreateCheckbox(cat, Setting(path, Settings.VarType.Boolean, label, apply), tooltip)
+    return Settings.CreateCheckbox(cat, Setting(path, Settings.VarType.Boolean, label, apply), tooltip)
 end
 
 local function SliderOptions(min, max, step, fmt)
@@ -121,7 +121,7 @@ local function SliderOptions(min, max, step, fmt)
 end
 
 local function Slider(path, label, min, max, step, fmt, apply, tooltip)
-    Settings.CreateSlider(cat, Setting(path, Settings.VarType.Number, label, apply),
+    return Settings.CreateSlider(cat, Setting(path, Settings.VarType.Number, label, apply),
         SliderOptions(min, max, step, fmt), tooltip)
 end
 
@@ -188,13 +188,25 @@ local function Build()
     Slider("zoom", L.ZOOM, ns.ZOOM_MIN, ns.ZOOM_MAX, 0.01, function(v) return ("%.2f"):format(v) end, function(v) ns.SetZoom(v) end)
     Slider("zoneDim", L.NEIGHBOUR_ZONES, 0, 1, 0.01, Pct, nil, L.NEIGHBOUR_ZONES_TIP)
     Slider("edge", L.SOFT_EDGE, 1, 5, 1, function(v) return ("%d"):format(v) end, function() ns.ApplyAll() end)
-    Slider("arrowSize", L.PLAYER_ARROW, 12, 48, 1, function(v) return ("%d px"):format(v) end)
-    Slider("pinSize", L.QUEST_MARKS, 12, 48, 1, function(v) return ("%d px"):format(v) end)
-    Slider("corpseSize", L.CORPSE_MARKER, 12, 48, 1, function(v) return ("%d px"):format(v) end)
-    Slider("taxiSize", L.FLIGHT_MASTERS, 12, 48, 1, function(v) return ("%d px"):format(v) end)
-    Check("showTaxi", L.SHOW_FLIGHT_MASTERS, nil, function() ns.RefreshQuests() end)
+    -- markers: one row each with show and size, like the layer rows
+    local function Marker(show, size, label, apply)
+        local cb = Setting(show, Settings.VarType.Boolean, label, apply)
+        local sizeLabel = L.MARKER_SIZE:format(label)
+        local row = CreateSettingsCheckboxSliderInitializer(cb, label, nil,
+            Setting(size, Settings.VarType.Number, sizeLabel), SliderOptions(12, 48, 1, Px), sizeLabel)
+        row.data.setting = cb               -- so rows below can follow the checkbox (SetParentInitializer)
+        row:AddSearchTags(label)
+        layout:AddInitializer(row)
+        return row
+    end
+    Marker("showArrow", "arrowSize", L.PLAYER_ARROW)
+    Marker("showCorpse", "corpseSize", L.CORPSE_MARKER)
+    Marker("showTaxi", "taxiSize", L.FLIGHT_MASTERS, function() ns.RefreshQuests() end)
+    local quests = Marker("showQuests", "pinSize", L.QUEST_MARKS)
+    local function QuestsShown() return ns.db().showQuests end
     Slider("questEdge", L.QUEST_EDGE, 0.5, 2.5, 0.05, function(v) return ("%.2f x"):format(v) end)
-    Check("questMerge", L.QUEST_MERGE, L.QUEST_MERGE_TIP)
+        :SetParentInitializer(quests, QuestsShown)
+    Check("questMerge", L.QUEST_MERGE, L.QUEST_MERGE_TIP):SetParentInitializer(quests, QuestsShown)
 
     -- Layers: one row each with show, colour and opacity
     Page(L.HEADER_LAYERS)

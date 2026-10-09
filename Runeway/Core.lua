@@ -584,7 +584,7 @@ local quests = {}      -- { {n, w}, ... }
 local qpins = {}
 local taxis = {}       -- flight masters: { {n, w}, name =, atlas =, undiscovered =, faction = }
 local tpins = {}
-ns.TaxiPins = tpins    -- for tests
+ns.TaxiPins, ns.Taxis = tpins, taxis    -- for tests
 
 local function WorldFromMap(mapID, x, y)
     if not (C_Map.GetWorldPosFromMapPos and CreateVector2D) then return end
@@ -686,11 +686,23 @@ local function RefreshQuests()
             end
         end
     end
-    -- flight masters of the same maps, as on the world map (C_TaxiMap: discovered or not, own faction and neutral)
+    -- flight masters of the same maps, as on the world map (C_TaxiMap: discovered or not, own faction and neutral).
+    -- On the surface also those of the interior maps (Undercity's bat handler), as they are reached from there.
     wipe(taxis)
     if not (db.showTaxi and C_TaxiMap and C_TaxiMap.GetTaxiNodesForMap) then return end
     local faction, seenNode = UnitFactionGroup("player"), {}
     local FP = Enum and Enum.FlightPathFaction or {}
+    local inst = select(4, UnitPosition("player"))
+    if not inside and inst then
+        local list, has = {}, {}
+        for _, id in ipairs(maps) do list[#list + 1], has[id] = id, true end
+        for set, z in pairs(RunewayZones or {}) do
+            if type(set) == "string" and z.ui and MapOf(set) == inst and not has[z.ui] then
+                list[#list + 1], has[z.ui] = z.ui, true
+            end
+        end
+        maps = list
+    end
     for _, mapID in ipairs(maps) do
         if not C_TaxiMap.ShouldMapShowTaxiNodes or C_TaxiMap.ShouldMapShowTaxiNodes(mapID) then
             for _, t in ipairs(C_TaxiMap.GetTaxiNodesForMap(mapID) or {}) do
@@ -800,7 +812,9 @@ local function ShowTip(key, fill)
                 tipSmall = false
             end)
         end
+        local r, g, b = tipLine1:GetTextColor()   -- SetFontObject also resets the color to the font's
         tipLine1:SetFontObject(GameTooltipText)
+        tipLine1:SetTextColor(r, g, b)
         tipSmall = true
     end
     GameTooltip:Show()

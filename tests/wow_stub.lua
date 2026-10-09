@@ -137,7 +137,9 @@ function ClearOverrideBindings() wipe(BINDINGS) end
 function GetBindingAction(key, override) return override and BINDINGS[key] or (key == "M" and "TOGGLEWORLDMAP" or "") end
 GameTooltip = obj("GameTooltip")
 GameTooltipTextLeft1, GameTooltipText, GameTooltipHeaderText = obj("Line1"), { "normal font" }, { "header font" }
-function GameTooltipTextLeft1:SetFontObject(f) self._font = f end
+function GameTooltipTextLeft1:SetFontObject(f) self._font, self._color = f, { 1, 1, 1 } end   -- resets the color
+function GameTooltipTextLeft1:SetTextColor(r, g, b) self._color = { r, g, b } end
+function GameTooltipTextLeft1:GetTextColor() local c = rawget(self, "_color") or { 1, 1, 1 } return c[1], c[2], c[3] end
 ItemRefTooltip = obj("ItemRefTooltip")          -- tooltip of chat links: keeps its lines for the tests
 function ItemRefTooltip:ClearLines() self.lines = {} end
 function ItemRefTooltip:AddLine(text) self.lines[#self.lines + 1] = text end
@@ -200,6 +202,9 @@ UNDISCOVERED_FACTION_FLIGHTPOINT, FACTION_HORDE = "Undiscovered %s flight point"
 C_TaxiMap = {
     ShouldMapShowTaxiNodes = function() return true end,
     GetTaxiNodesForMap = function(m)
+        if m == 1458 then         -- Undercity's bat handler: on the interior map only
+            return { { nodeID = 14, name = "Undercity", atlasName = "Taxi_Undercity", faction = 1, isUndiscovered = false, position = { x = 0.5, y = 0.5 } } }
+        end
         if m ~= 1420 then return {} end
         return {
             { nodeID = 11, name = "Brill", atlasName = "TaxiNode_Neutral", faction = 0, isUndiscovered = false, position = { x = 0.41, y = 0.6 } },

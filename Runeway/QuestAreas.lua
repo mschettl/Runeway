@@ -675,20 +675,48 @@ local function Inside(a, n, w)
     return inside
 end
 
--- Mouse-over: quests whose area contains the world point (n, w); for a combined outline all its quests.
--- Only the loops under the cursor are highlighted. n = nil clears the hover.
+-- Quests of a combined outline that lie in one of its loops: a member counts when a point of its own outline
+-- is inside the loop (its blob is part of the union). Cached on the loop, which is rebuilt with each sampling.
+local function LoopQuests(loop, qids, st)
+    if loop.qids then return loop.qids end
+    local list = {}
+    for _, qid in ipairs(qids) do
+        local own = #qids > 1 and st.areas[qid]
+        local hit = not own
+        for _, l in ipairs(own and own.loops or {}) do
+            for m = 1, #l, 2 do
+                if InLoop(loop, l[m], l[m + 1]) then hit = true break end
+            end
+            if hit then break end
+        end
+        if hit then list[#list + 1] = qid end
+    end
+    loop.qids = list
+    return list
+end
+
+-- Mouse-over: quests whose area contains the world point (n, w); for a combined outline all quests of the
+-- hovered loop (its connected part), not those of its other loops. Only the loops under the cursor are
+-- highlighted. n = nil clears the hover.
 local hoverLoops, hoverQuests = {}, {}
 function ns.QuestAreasAt(n, w)
     wipe(hoverLoops)
     wipe(hoverQuests)
     if n and ns.db().layers.questAreas then
+        local seen = {}
         ForEachShown(function(a, qids, st)
             if not Inside(a, n, w) then return end
             for _, loop in ipairs(a.loops) do
-                if InLoop(loop, n, w) then hoverLoops[loop] = true end
+                if InLoop(loop, n, w) then
+                    hoverLoops[loop] = true
+                    for _, qid in ipairs(LoopQuests(loop, qids, st)) do
+                        if not seen[qid] then
+                            seen[qid] = true
+                            hoverQuests[#hoverQuests + 1] = qid
+                        end
+                    end
+                end
             end
-            -- a combined outline sums up its quests: the tooltip lists all of them, wherever it is hovered
-            for _, qid in ipairs(qids) do hoverQuests[#hoverQuests + 1] = qid end
         end)
     end
     return hoverQuests

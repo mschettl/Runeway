@@ -370,7 +370,10 @@ L.execute('''
         and db.w == 900 and db.h == 500)
     -- mouse-over: arrow in the centre is enlarged; inside a quest area the tooltip lists its quest(s)
     local tipLines = {}
-    GameTooltip.AddLine = function(_, text) tipLines[#tipLines + 1] = text end
+    GameTooltip.AddLine = function(_, text, r, g, b)
+        tipLines[#tipLines + 1] = text
+        if #tipLines == 1 then GameTooltipTextLeft1:SetTextColor(r or 1, g or 1, b or 1) end
+    end
     GameTooltip.IsOwned = function() return true end
     rawset(view, "IsMouseOver", function() return true end)
     local wasShown = view:IsShown()
@@ -396,7 +399,43 @@ L.execute('''
         end
     end
     check("hover: merged areas list all their quests", db.questMerge and both and not one)
-    check("hover: tooltip title in the normal font", GameTooltipTextLeft1._font == GameTooltipText)
+    local pn, pw = POS[1], POS[2]
+    POS[1], POS[2] = (b[1] + b[2]) / 2, (b[3] + b[4]) / 2   -- player in the area, cursor just beside the arrow
+    CURSOR[1], CURSOR[2] = 520, 400
+    wipe(tipLines)
+    view:GetScript("OnUpdate")(view, 0.05)
+    POS[1], POS[2], CURSOR[1], CURSOR[2] = pn, pw, 500, 400
+    local col = GameTooltipTextLeft1._color
+    check("hover: tooltip title in the normal font and quest title color", GameTooltipTextLeft1._font == GameTooltipText
+        and col[1] == 1 and col[2] == 0.82 and col[3] == 0)
+    -- a combined outline with two separate parts: each part lists only the quests inside it
+    local grp
+    for _, e in ipairs(NS.QuestAreasRepublish()) do if #e[2] == 2 then grp = e end end
+    local g, st = grp[1], grp[3]
+    local d = (b[2] - b[1]) * 3                        -- a far copy of 4242's outline as quest 9999
+    local far = {}
+    for _, l in ipairs(A[4242].loops) do
+        local fl = {}
+        for m = 1, #l, 2 do fl[m], fl[m + 1] = l[m] + d, l[m + 1] end
+        far[#far + 1] = fl
+    end
+    local box0, members0 = { unpack(g.box) }, g.members
+    st.areas[9999] = { loops = far, box = { b[1] + d, b[2] + d, b[3], b[4] } }
+    for _, fl in ipairs(far) do g.loops[#g.loops + 1] = fl end
+    g.members, grp[2] = { 4242, 4243, 9999 }, { 4242, 4243, 9999 }
+    g.box[2] = b[2] + d
+    local near, apart = {}, {}
+    for i = 0, 20 do
+        for j = 0, 20 do
+            local x, y = b[1] + (b[2] - b[1]) * i / 20, b[3] + (b[4] - b[3]) * j / 20
+            for _, q in ipairs(NS.QuestAreasAt(x, y)) do near[q] = true end
+            for _, q in ipairs(NS.QuestAreasAt(x + d, y)) do apart[q] = true end
+        end
+    end
+    for _ = 1, #far do table.remove(g.loops) end
+    st.areas[9999], g.members, grp[2], g.box = nil, members0, members0, box0
+    check("hover: combined outline lists only the quests of the hovered part",
+        near[4242] and near[4243] and not near[9999] and apart[9999] and not apart[4242] and not apart[4243])
     -- a neighbouring map lists a quest of the combined outline (4243 on 1421): if its outline there is the
     -- better one (not cut), the combined outline still takes it, and every quest is drawn once
     local _, _, S = NS.QuestAreaState()
@@ -424,6 +463,10 @@ L.execute('''
         if a and a:find("TaxiNode") and rawget(t, "_shown") then atl[#atl + 1] = a end
     end
     table.sort(atl)
+    local names = {}
+    for _, t in ipairs(NS.Taxis) do names[#names + 1] = t.name end
+    table.sort(names)
+    check("flight masters: surface also lists the interior's", table.concat(names, ",") == "Brill,Bulwark,Undercity")
     check("flight masters: own faction shown with Blizzard icons", table.concat(atl, ",") == "TaxiNode_Neutral,TaxiNode_Undiscovered")
     local tip = {}
     local tn, tw = NS.MapToWorld(1420, 0.4, 0.603)

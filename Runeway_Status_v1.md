@@ -38,7 +38,7 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 | Branch | Inhalt |
 |---|---|
 | `main` | Freigegebener Stand, je Version ein PR (zuletzt 1.5). |
-| `claude/dreamy-lovelace-efolxg` | Entwicklungsbranch (Addon, Build-Skripte, Tests, diese Datei). |
+| `claude/runeway-dev` | Entwicklungsbranch (Addon, Build-Skripte, Tests, diese Datei). |
 | `data` (orphan) | Rohdaten aus wow.export, nie auf `main`. ~1,6 GB. |
 
 **Inhalt von `data`** (Ordner `Wow export files/`):
@@ -478,7 +478,7 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway Runeway_EasternKingdoms
 ## 10. Start-Prompt für die nächste Session
 
 ```text
-Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch claude/dreamy-lovelace-efolxg.
+Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch claude/runeway-dev.
 Lies zuerst CLAUDE.md, Runeway_Status_v1.md und Runeway_Prompt_v1.md.
 Version 1.5 ist in main gemergt. Version 1.6 (Datenpakete: Kacheln als LoadOnDemand-Addon Runeway_EasternKingdoms, Laden beim Betreten) ist auf dem Entwicklungsbranch umgesetzt, aber im Spiel noch nicht geprüft (Abschnitt 9, „Im Spiel prüfen (1.6)“).
 Langfristziel, Architektur und Versionsplan: Runeway_Status_v1.md, Abschnitte 1 und 8.

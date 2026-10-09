@@ -168,11 +168,13 @@ L.execute('''
     -- a dungeon of that continent: its own map, no way up to the continent; the last continent names the pack
     POS[4], ZONE, CONTINENT, STATE.instance, UI_MAP = 389, "Orgrimmar", nil, true, 9999
     settle()
-    -- leaving it: the position changes first, zone and instance info a moment later; the note names Orgrimmar
+    -- leaving it: the position changes first, zone and instance info only after the loading screen (seconds);
+    -- the note waits for them and names Orgrimmar
     POS[4] = 1000
     poll()
+    for _ = 1, 300 do debugprofilestop() end
+    poll()
     STATE.instance, ZONE, CONTINENT, UI_MAP = false, "Orgrimmar", "Kalimdor", 1454
-    for _ = 1, 110 do debugprofilestop() end
     poll()
     STATE.instance, UI_MAP = false, UI_MAP0
     POS[4], ZONE, CONTINENT = 0, nil, nil

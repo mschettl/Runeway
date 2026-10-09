@@ -1242,17 +1242,19 @@ local function ContinentName()
     UpdateContinent()
     return lastContinent or GetRealZoneText()
 end
--- After a map change the note waits a second: on leaving a dungeon the new position arrives while zone and
--- instance info still name the dungeon. now = at once (toggle).
+-- After a map change the note waits until the instance info belongs to the new position: on leaving a dungeon
+-- the position arrives first, zone and instance info follow after the loading screen. At most SAY_MAX seconds;
+-- now = at once (toggle).
+local SAY_MAX = 15
 local sayFor, sayAt
 local function SayNoData(inst, now)
     local key = inst or false
     if noDataSaid == key then return end
     if not now and sayFor ~= key then
-        sayFor, sayAt = key, GetTime() + 1
+        sayFor, sayAt = key, GetTime() + SAY_MAX
         return
     end
-    if now or GetTime() >= sayAt then
+    if now or select(8, GetInstanceInfo()) == inst or GetTime() >= sayAt then
         PackFailed(nil, ContinentName())
         noDataSaid, sayFor = key, nil
     end

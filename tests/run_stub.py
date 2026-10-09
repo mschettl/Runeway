@@ -642,6 +642,212 @@ L.execute('''
     CURSOR[1], CURSOR[2] = 500, 400
     a1420.cut, a1421.cut = cut1420, cut1421
     NS.QuestAreasRepublish()
+    -- objective progress in combat: the member is queued for sampling, which waits for the end of combat; the
+    -- combined outline must stay (it split into single outlines when the publish timeout hit in combat)
+    local function sampler(n)
+        for _ = 1, n do
+            for _, f in ipairs(FRAMES) do
+                local h = f:GetScript("OnUpdate")
+                if h and f ~= RunewayFrame then h(f, 0.05) end
+            end
+        end
+    end
+    local function merged()
+        local together, alone = false, false
+        for _, e in ipairs(NS.QuestAreasRepublish()) do
+            local ids = table.concat(e[2], ",")
+            if ids == "4242,4243" then together = true elseif ids == "4242" or ids == "4243" then alone = true end
+        end
+        return together and not alone
+    end
+    sampler(400)
+    check("combat: overlapping quests combined before", merged())
+    local progress = 1
+    C_QuestLog.GetQuestObjectives = function(q) return q == 4243 and { { numFulfilled = progress } } or {} end
+    local lockdown = InCombatLockdown
+    InCombatLockdown = function() return true end
+    fire("QUEST_LOG_UPDATE")
+    sampler(100)
+    check("combat: objective progress keeps the combined outline", merged())
+    InCombatLockdown = lockdown
+    sampler(600)
+    local A, G = NS.QuestAreaState()
+    local ng = 0
+    for _ in pairs(G) do ng = ng + 1 end
+    check("combat: sampled after combat, new outline replaces the old", merged() and ng == 1
+        and A[4243].sig:find(":1$") ~= nil)
+    -- death: nothing is sampled while dead; afterwards the blob is not drawn for a while (empty samples): the
+    -- quest keeps its outline and is sampled again until the blob is back
+    STATE.dead = true
+    progress = 2
+    fire("QUEST_LOG_UPDATE")
+    sampler(400)
+    check("death: no sampling while dead, outline kept", #A[4243].loops > 0 and A[4243].sig:find(":1$") ~= nil)
+    -- as a ghost the client may report no blobs: the known areas stay (all areas vanished in the game test)
+    local blobCount = GetQuestPOIBlobCount
+    GetQuestPOIBlobCount = function() return 0 end
+    fire("QUEST_LOG_UPDATE")
+    sampler(100)
+    check("death: no blobs reported while dead, areas kept", A[4242] and A[4243] and merged()
+        and NS.HasQuestArea(4242) and NS.HasQuestArea(4243))
+    GetQuestPOIBlobCount = blobCount
+    local blob = BLOBS[4243]
+    BLOBS[4243] = nil
+    STATE.dead = false
+    fire("PLAYER_UNGHOST")
+    sampler(60)
+    local kept = #A[4243].loops > 0 and NS.HasQuestArea(4243)
+    BLOBS[4243] = blob
+    sampler(1200)
+    check("death: an empty sample keeps the outline", kept)
+    check("death: sampled again once the blob is drawn", #A[4243].loops > 0 and A[4243].sig:find(":2$") ~= nil
+        and merged())
+    -- an empty area already in the saved cache (0.6) is sampled again
+    A[4242].loops = {}
+    fire("QUEST_LOG_UPDATE")
+    sampler(1200)
+    check("cache: empty area of a quest with blobs sampled again", #A[4242].loops > 0 and merged())
+    -- a quest of a combined outline is completed: the others stay combined (they split in the game test). In the
+    -- client a completed quest either reports no blobs any more or its blob is no longer drawn.
+    local function split()
+        for _, e in ipairs(NS.QuestAreasRepublish()) do
+            local ids = table.concat(e[2], ",")
+            if ids == "4242" or ids == "4243" then return true end
+        end
+    end
+    local function combined(ids)
+        for _, e in ipairs(NS.QuestAreasRepublish()) do if table.concat(e[2], ",") == ids then return true end end
+    end
+    local isComplete, objectives = C_QuestLog.IsComplete, C_QuestLog.GetQuestObjectives
+    local done45 = false
+    C_QuestLog.IsComplete = function(q) return q == 4244 or (q == 4245 and done45) end
+    C_QuestLog.GetQuestObjectives = function(q)
+        if q == 4245 then return { { numFulfilled = done45 and 1 or 0, finished = done45 } } end
+        return objectives(q)
+    end
+    local list1420 = QUESTS_BY_MAP[1420]
+    list1420[#list1420 + 1] = { questID = 4245, x = 0.47, y = 0.6 }
+    local function addQuest()
+        done45 = false
+        BLOBS[4245] = { 0.47, 0.6, 0.12 }
+        fire("QUEST_LOG_UPDATE")
+        sampler(1500)
+        return combined("4242,4243,4245")
+    end
+    check("complete: three overlapping quests combined", addQuest())
+    -- the completed quest reports no blobs (in combat, so nothing is sampled meanwhile)
+    InCombatLockdown = function() return true end
+    done45, BLOBS[4245] = true, nil
+    fire("QUEST_LOG_UPDATE")
+    sampler(100)
+    local apart = split()
+    InCombatLockdown = lockdown
+    for _ = 1, 30 do sampler(20); apart = apart or split() end
+    check("complete: no blobs, the others stay combined", not apart and combined("4242,4243")
+        and not NS.HasQuestArea(4245))
+    -- the smaller combined outline still has its tooltip (it had none in the game test)
+    local function hovered()
+        local found, b = {}, A[4242].box
+        for i = 0, 20 do
+            for j = 0, 20 do
+                for _, q in ipairs(NS.QuestAreasAt(b[1] + (b[2] - b[1]) * i / 20, b[3] + (b[4] - b[3]) * j / 20)) do
+                    found[q] = true
+                end
+            end
+        end
+        NS.QuestAreasAt(nil)
+        return found
+    end
+    local h = hovered()
+    check("complete: the smaller outline lists its quests on hover", h[4242] and h[4243] and not h[4245])
+    -- the members' own outlines no longer match the combined one (resampled meanwhile): still a tooltip
+    local b0 = { unpack(A[4242].box) }
+    local own = { A[4242], A[4243] }
+    for _, e in ipairs(NS.QuestAreasRepublish()) do
+        if table.concat(e[2], ",") == "4242,4243" then for _, l in ipairs(e[1].loops) do l.qids = nil end end
+    end
+    local d = (b0[2] - b0[1]) * 5
+    for _, a in ipairs(own) do
+        for _, l in ipairs(a.loops) do for m = 1, #l, 2 do l[m] = l[m] + d end end
+        a.box[1], a.box[2] = a.box[1] + d, a.box[2] + d
+    end
+    local found = {}
+    for i = 0, 20 do
+        for j = 0, 20 do
+            for _, q in ipairs(NS.QuestAreasAt(b0[1] + (b0[2] - b0[1]) * i / 20, b0[3] + (b0[4] - b0[3]) * j / 20)) do
+                found[q] = true
+            end
+        end
+    end
+    NS.QuestAreasAt(nil)
+    for _, a in ipairs(own) do
+        for _, l in ipairs(a.loops) do for m = 1, #l, 2 do l[m] = l[m] - d end end
+        a.box[1], a.box[2] = a.box[1] - d, a.box[2] - d
+    end
+    for _, e in ipairs(NS.QuestAreasRepublish()) do for _, l in ipairs(e[1].loops) do l.qids = nil end end
+    check("hover: a combined outline older than its members still has a tooltip", found[4242] and found[4243])
+    -- the completed quest still reports blobs, but its blob is not drawn any more
+    addQuest()
+    done45, BLOBS[4245] = true, nil
+    local blobCount = GetQuestPOIBlobCount
+    GetQuestPOIBlobCount = function(q) return q == 4245 and 1 or blobCount(q) end
+    fire("QUEST_LOG_UPDATE")
+    apart = false
+    for _ = 1, 60 do sampler(20); apart = apart or split() end
+    check("complete: blob not drawn, the others stay combined at once", not apart and combined("4242,4243")
+        and not NS.HasQuestArea(4245))
+    GetQuestPOIBlobCount = blobCount
+    -- random sequence (progress, completion, quest back in the log, combat, death, zoom with the neighbouring map):
+    -- a quest drawn in a combined outline is never drawn alone while it is still in a set with others
+    math.randomseed(7)
+    local prog = { [4242] = 0, [4243] = 0, [4245] = 0 }
+    C_QuestLog.GetQuestObjectives = function(q)
+        if q == 4245 then return { { numFulfilled = prog[q], finished = done45 } } end
+        return prog[q] and { { numFulfilled = prog[q] } } or {}
+    end
+    addQuest()
+    local combat = function() return true end
+    local was, broken, events = {}, nil, { 0, 0, 0, 0, 0, 0 }
+    for step = 1, 300 do
+        local r = math.random(6)
+        events[r] = events[r] + 1
+        if r == 1 then
+            local q = ({ 4242, 4243, 4245 })[math.random(3)]
+            prog[q] = prog[q] + 1
+        elseif r == 2 then
+            done45, BLOBS[4245] = true, nil                       -- completed: no blobs any more
+        elseif r == 3 then
+            done45, BLOBS[4245] = false, { 0.47, 0.6, 0.12 }     -- (again) in progress
+        elseif r == 4 then
+            InCombatLockdown = InCombatLockdown == lockdown and combat or lockdown
+        elseif r == 5 then
+            STATE.dead = not STATE.dead
+            if not STATE.dead then fire("PLAYER_UNGHOST") end
+        else
+            db.zoom = db.zoom == zoom0 and 0.2 or zoom0
+        end
+        fire("QUEST_LOG_UPDATE")
+        sampler(math.random(60))
+        local sh, wt = NS.QuestAreasRepublish()
+        local inSet, now = {}, {}
+        for _, g in ipairs(wt) do for _, q in ipairs(g.members) do inSet[q] = true end end
+        for _, e in ipairs(sh) do
+            if #e[2] == 1 and was[e[2][1]] and inSet[e[2][1]] then
+                broken = broken or ("step " .. step .. ", quest " .. e[2][1])
+            end
+            for _, q in ipairs(e[2]) do now[q] = #e[2] > 1 end
+        end
+        was = now
+    end
+    InCombatLockdown, STATE.dead, db.zoom = lockdown, false, zoom0
+    fire("PLAYER_UNGHOST")
+    check(("random: combined outlines never split (%s events)"):format(table.concat(events, "/"))
+        .. (broken and (" - " .. broken) or ""), not broken)
+    table.remove(list1420)
+    C_QuestLog.IsComplete = isComplete
+    C_QuestLog.GetQuestObjectives = nil
+    fire("QUEST_LOG_UPDATE")
+    sampler(1200)
     NS.QuestAreasAt(nil)
     rawset(view, "IsMouseOver", nil)
     if not wasShown then view:Hide() end

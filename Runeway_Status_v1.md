@@ -385,7 +385,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
 | 3 616 | Western Plaguelands (**fertig**) | | | |
 
 - Ironforge und Undercity sind eigene Hauptzonen ohne Gelände-Chunks (reine WMO-Innenräume) → WMO-Pipeline.
-- Eversong Woods, Ghostlands und Isle of Quel'Danas liegen auf einer eigenen Karte und sind nicht im ADT-Export.
+- Eversong Woods, Ghostlands und Isle of Quel'Danas: kommen erst mit Burning Crusade (Karte 530) und gibt es in WoW Forever nicht (Mario) – entfällt.
 - Nicht gezählt: Chunks ohne Gebiet (ID 0) und „Shark-Infested Waters“ (Meer).
 - Neu erzeugen: AreaTable-Hauptzonen (`ParentAreaID` 0, `ContinentID` 0) gegen `build/area_index.npz` zählen, siehe `zone_of_area()`/`area_index()` in `build_raw.py`.
 

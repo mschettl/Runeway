@@ -124,7 +124,7 @@ function UnitIsDeadOrGhost() return STATE.dead end
 C_DeathInfo = { GetCorpseMapPosition = function(m)
     if m == 1420 then return { GetXY = function() return 0.42, 0.61 end } end end }
 function UnitAffectingCombat() return STATE.combat end
-function IsInInstance() return STATE.instance, STATE.instance and "party" or "none" end
+function IsInInstance() return STATE.instance or STATE.lagging, STATE.instance and "party" or "none" end   -- lagging: still true after leaving
 function GetInstanceInfo()       -- name, type, ..., instance (map) ID: follows the client's state, not POS
     if STATE.instance then return "Ragefire Chasm", "party", 1, "", 5, 0, false, 389 end
     return ZONE or "Tirisfal Glades", "none", 0, "", 0, 0, false, INFO_MAP or POS[4]

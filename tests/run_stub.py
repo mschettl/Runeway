@@ -174,8 +174,9 @@ L.execute('''
     poll()
     for _ = 1, 300 do debugprofilestop() end
     poll()
-    STATE.instance, ZONE, CONTINENT, UI_MAP = false, "Orgrimmar", "Kalimdor", 1454
+    STATE.instance, STATE.lagging, ZONE, CONTINENT, UI_MAP = false, true, "Orgrimmar", "Kalimdor", 1454
     poll()
+    STATE.lagging = nil
     STATE.instance, UI_MAP = false, UI_MAP0
     POS[4], ZONE, CONTINENT = 0, nil, nil
     poll()

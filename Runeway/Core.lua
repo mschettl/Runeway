@@ -226,7 +226,9 @@ end
 local PACK_LINK = "|cff66ccff|Haddon:Runeway:pack:%s|h[%s]|h|r"
 local function Blue(text) return ("|cff66ccff[%s]|r"):format(text or "?") end
 local function PackFailed(pack, name)
-    local area = IsInInstance() and GetInstanceInfo() or GetZoneText()   -- in a dungeon: its name
+    -- in a dungeon its name; instance name and type from the same call (IsInInstance lags after leaving)
+    local iname, itype = GetInstanceInfo()
+    local area = itype and itype ~= "none" and iname or GetZoneText()
     Print(L.PACK_FAILED:format(pack and PACK_LINK:format(pack, packTitle[pack]) or Blue(name), Blue(area ~= "" and area or name)))
 end
 
@@ -1604,8 +1606,10 @@ SlashCmdList.RUNEWAY = function(msg)
     elseif cmd == "pos" then
         local pn, pw, _, inst = UnitPosition("player")
         local mapID = C_Map.GetBestMapForUnit("player")
-        ShowCopy(("%s %s %s map=%s set=%s facing=%.3f"):format(tostring(pn), tostring(pw), tostring(inst),
-            tostring(mapID), tostring(inst and TileSet(inst)), GetPlayerFacing() or -1))
+        local iname, itype, _, _, _, _, _, iid = GetInstanceInfo()
+        ShowCopy(("%s %s %s map=%s set=%s facing=%.3f instance=%s/%s/%s inInstance=%s zone=%s"):format(tostring(pn),
+            tostring(pw), tostring(inst), tostring(mapID), tostring(inst and TileSet(inst)), GetPlayerFacing() or -1,
+            tostring(iname), tostring(itype), tostring(iid), tostring(IsInInstance()), tostring(GetZoneText())))
     elseif (cmd == "taxi" or cmd == "quest") and arg == "icons" then   -- candidate icons side by side
         IconPreview(cmd == "taxi" and TAXI_ICONS or QUEST_ICONS)
     elseif cmd == "taxi" then                      -- flight masters: what the map draws, nearest first

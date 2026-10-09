@@ -707,6 +707,57 @@ L.execute('''
     fire("QUEST_LOG_UPDATE")
     sampler(1200)
     check("cache: empty area of a quest with blobs sampled again", #A[4242].loops > 0 and merged())
+    -- a quest of a combined outline is completed: the others stay combined (they split in the game test). In the
+    -- client a completed quest either reports no blobs any more or its blob is no longer drawn.
+    local function split()
+        for _, e in ipairs(NS.QuestAreasRepublish()) do
+            local ids = table.concat(e[2], ",")
+            if ids == "4242" or ids == "4243" then return true end
+        end
+    end
+    local function combined(ids)
+        for _, e in ipairs(NS.QuestAreasRepublish()) do if table.concat(e[2], ",") == ids then return true end end
+    end
+    local isComplete, objectives = C_QuestLog.IsComplete, C_QuestLog.GetQuestObjectives
+    local done45 = false
+    C_QuestLog.IsComplete = function(q) return q == 4244 or (q == 4245 and done45) end
+    C_QuestLog.GetQuestObjectives = function(q)
+        if q == 4245 then return { { numFulfilled = done45 and 1 or 0, finished = done45 } } end
+        return objectives(q)
+    end
+    local list1420 = QUESTS_BY_MAP[1420]
+    list1420[#list1420 + 1] = { questID = 4245, x = 0.47, y = 0.6 }
+    local function addQuest()
+        done45 = false
+        BLOBS[4245] = { 0.47, 0.6, 0.12 }
+        fire("QUEST_LOG_UPDATE")
+        sampler(1500)
+        return combined("4242,4243,4245")
+    end
+    check("complete: three overlapping quests combined", addQuest())
+    -- the completed quest reports no blobs (in combat, so nothing is sampled meanwhile)
+    InCombatLockdown = function() return true end
+    done45, BLOBS[4245] = true, nil
+    fire("QUEST_LOG_UPDATE")
+    sampler(100)
+    local apart = split()
+    InCombatLockdown = lockdown
+    for _ = 1, 30 do sampler(20); apart = apart or split() end
+    check("complete: no blobs, the others stay combined", not apart and combined("4242,4243")
+        and not NS.HasQuestArea(4245))
+    -- the completed quest still reports blobs, but its blob is not drawn any more
+    addQuest()
+    done45, BLOBS[4245] = true, nil
+    local blobCount = GetQuestPOIBlobCount
+    GetQuestPOIBlobCount = function(q) return q == 4245 and 1 or blobCount(q) end
+    fire("QUEST_LOG_UPDATE")
+    apart = false
+    for _ = 1, 60 do sampler(20); apart = apart or split() end
+    check("complete: blob not drawn, the others stay combined at once", not apart and combined("4242,4243")
+        and not NS.HasQuestArea(4245))
+    GetQuestPOIBlobCount = blobCount
+    table.remove(list1420)
+    C_QuestLog.IsComplete = isComplete
     C_QuestLog.GetQuestObjectives = nil
     fire("QUEST_LOG_UPDATE")
     sampler(1200)

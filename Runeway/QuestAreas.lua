@@ -356,16 +356,26 @@ local function Publish()
             for _, qid in ipairs(g.members) do shownQuest[qid] = true end
             shown[#shown + 1] = { area, area.members, st }
         else
-            -- not sampled yet (a member changed, e.g. in combat where nothing is sampled): keep showing the older
-            -- combined outlines of its members instead of splitting the group into single outlines
+            -- not sampled yet (a member changed, e.g. in combat where nothing is sampled, or a member was completed
+            -- and has no outline any more): keep showing the older combined outlines of its members instead of
+            -- splitting the group into single outlines. Old members without an outline do not block it.
             local isMember = {}
             for _, qid in ipairs(g.members) do isMember[qid] = true end
             for _, old in pairs(st.groups) do
-                local ok = #old.loops > 0
-                for _, qid in ipairs(old.members) do ok = ok and isMember[qid] and not shownQuest[qid] end
-                if ok then
-                    for _, qid in ipairs(old.members) do shownQuest[qid] = true end
-                    shown[#shown + 1] = { old, old.members, st }
+                local ok, list = #old.loops > 0, {}
+                for _, qid in ipairs(old.members) do
+                    local a = st.areas[qid]
+                    if isMember[qid] then
+                        ok = ok and not shownQuest[qid]
+                        list[#list + 1] = qid
+                    elseif a and #a.loops > 0 then
+                        ok = false          -- still drawn, but in another set
+                    end
+                end
+                if ok and #list > 0 then
+                    for _, qid in ipairs(list) do shownQuest[qid] = true end
+                    for _, l in ipairs(old.loops) do l.qids = nil end   -- hover lists only the current members
+                    shown[#shown + 1] = { old, list, st }
                 end
             end
         end
@@ -415,8 +425,11 @@ local function Finish()
     else
         -- an empty result for a quest that has an area means the blob was not drawn (game test: after dying): keep the
         -- previous outline and sample again later; only after EMPTY_TRIES empty results the area counts as empty
-        local key, old = job.map .. ":" .. job.questID, st.areas[job.questID]
-        if #area.loops > 0 or not (GetQuestPOIBlobCount and GetQuestPOIBlobCount(job.questID) > 0) then
+        -- completed quests (turn-in) lose their area: an empty result is final for them
+        local key, old, qid = job.map .. ":" .. job.questID, st.areas[job.questID], job.questID
+        local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(qid))
+            or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(qid))
+        if #area.loops > 0 or done or not (GetQuestPOIBlobCount and GetQuestPOIBlobCount(qid) > 0) then
             emptyTries[key] = nil
         else
             emptyTries[key] = (emptyTries[key] or 0) + 1
@@ -574,7 +587,10 @@ local function RefreshMap(m, st, rank)
         local sig = Signature(q)
         local a = areas[q.questID]
         -- an empty area of a quest with blobs is sampled again (EMPTY_TRIES per session, see Finish)
-        local empty = a and #a.loops == 0 and blobs and blobs > 0 and (emptyTries[m .. ":" .. q.questID] or 0) < EMPTY_TRIES
+        local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
+            or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
+        local empty = a and #a.loops == 0 and blobs and blobs > 0 and not done
+            and (emptyTries[m .. ":" .. q.questID] or 0) < EMPTY_TRIES
         if blobs == 0 then
             areas[q.questID] = nil
         elseif not (a and a.sig == sig and not empty)
@@ -588,15 +604,17 @@ local function RefreshMap(m, st, rank)
     for qid in pairs(areas) do
         if not onMap[qid] then areas[qid] = nil end
     end
-    -- a group stays while all members have an area; when a member is sampled again (objective progress, also in
-    -- combat) the group is kept and drawn until its new combined outline replaces it (Finish), so it never splits
+    -- a group stays while at least two members have an outline; when a member is sampled again (objective progress,
+    -- also in combat) or completed, the group is kept and drawn until its new combined outline replaces it (Finish),
+    -- so it never splits
     for key, g in pairs(groups) do
+        local n = 0
         for _, qid in ipairs(g.members) do
-            if not areas[qid] then
-                for _, mm in ipairs(g.members) do if inGroup[mm] == key then inGroup[mm] = nil end end
-                groups[key] = nil
-                break
-            end
+            if areas[qid] and #areas[qid].loops > 0 then n = n + 1 end
+        end
+        if n < 2 then
+            for _, mm in ipairs(g.members) do if inGroup[mm] == key then inGroup[mm] = nil end end
+            groups[key] = nil
         end
     end
 end

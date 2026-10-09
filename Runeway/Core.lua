@@ -266,10 +266,23 @@ end
 
 -- Pack name and reason when the data pack of the player's map could not be loaded, else nil.
 -- Without its data the map stays hidden (no quest areas or player arrow on an empty map).
+-- Data packs that exist (map -> pack, continent uiMap for its name): a known pack that is not installed is
+-- reported like one that does not load; a map without a known pack has no data at all (NoMapData)
+local KNOWN_PACKS = { [0] = { "Runeway_EasternKingdoms", 1415 } }
 local function MissingPack()
     local inst = select(4, UnitPosition("player"))
     LoadPack(inst)
     local pack = inst and PackOf(inst)
+    local known = not pack and inst and KNOWN_PACKS[inst]
+    if known then
+        pack = known[1]
+        if not packTried[pack] then
+            local info = C_Map.GetMapInfo and C_Map.GetMapInfo(known[2])
+            packTitle[pack] = info and info.name or pack:gsub("^Runeway_", "")
+            packTried[pack] = ADDON_MISSING or "MISSING"
+            PackFailed(pack)
+        end
+    end
     local state = pack and packTried[pack]
     if type(state) == "string" then return pack, state end
 end
@@ -1207,10 +1220,11 @@ end
 local noDataSaid
 local function NoMapData()
     local inst = select(4, UnitPosition("player"))
-    return not (inst and PackOf(inst)), inst
+    return not (inst and (PackOf(inst) or KNOWN_PACKS[inst])), inst
 end
 local function SayNoData(inst)
-    if noDataSaid ~= (inst or false) then Print(L.NO_MAP_DATA) end
+    local zone = GetZoneText() or ""
+    if noDataSaid ~= (inst or false) then Print(L.NO_MAP_DATA:format(("|cff66ccff[%s]|r"):format(zone))) end
     noDataSaid = inst or false
 end
 

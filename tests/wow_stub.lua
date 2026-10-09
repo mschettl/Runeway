@@ -98,6 +98,7 @@ function IsShiftKeyDown() return false end
 function HideUIPanel() end
 UI_MAP, SUBZONE = 1420, ""
 function GetSubZoneText() return SUBZONE end
+function GetZoneText() return ZONE or "Tirisfal Glades" end
 C_Map = { GetBestMapForUnit = function() return UI_MAP end,
           GetAreaInfo = function(id) return id == 153 and "Ruins of Lordaeron" or nil end,
           GetPlayerMapPosition = function(m) if m == 1420 then return { GetXY = function() return 0.4, 0.6 end } end end,

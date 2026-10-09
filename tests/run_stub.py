@@ -157,14 +157,14 @@ L.execute('''
     print("second click shown:", tostring(ItemRefTooltip:IsShown()))
     EVENT_CALLBACKS.SetItemRef("item:6948", "[Hearthstone]", "LeftButton")   -- other links are not ours
     -- a map without any data pack (Kalimdor): hidden with one chat note, a toggle repeats the note
-    POS[4] = 1000
+    POS[4], ZONE = 1000, "The Barrens"
     poll()
     poll()
     print("map without any pack shown:", tostring(RunewayFrame:IsShown()))
     SlashCmdList.RUNEWAY("toggle")
     poll()
     print("after toggle shown:", tostring(RunewayFrame:IsShown()))
-    POS[4] = 0
+    POS[4], ZONE = 0, nil
     poll()
     print("back on map 0 shown:", tostring(RunewayFrame:IsShown()))
     upd(RunewayFrame, 0.05)

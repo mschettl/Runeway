@@ -199,6 +199,8 @@ Enum = Enum or {}
 Enum.FlightPathFaction = { Neutral = 0, Horde = 1, Alliance = 2 }
 function UnitFactionGroup() return "Horde" end
 UNDISCOVERED_FACTION_FLIGHTPOINT, FACTION_HORDE = "Undiscovered %s flight point", "Horde"
+-- atlases: the undiscovered flight point atlas is missing in this client (fallback texture)
+C_Texture = { GetAtlasInfo = function(a) if a == "" or a == "TaxiNode_Undiscovered" then return nil end return {} end }
 -- taxi map of a flight master: the nodes the character knows (classic TaxiFrame API)
 TAXI_KNOWN = { "Brill", "Undercity" }
 function NumTaxiNodes() return #TAXI_KNOWN + 1 end
@@ -207,7 +209,7 @@ function TaxiNodeGetType(i) return TAXI_KNOWN[i] and "REACHABLE" or "NONE" end
 function UnitName() return "Tester" end
 function GetRealmName() return "Realm" end
 C_TaxiMap = {
-    ShouldMapShowTaxiNodes = function() return true end,
+    ShouldMapShowTaxiNodes = function(m) return m ~= 1458 end,   -- world map: no flight points on the city map
     GetTaxiNodesForMap = function(m)
         if m == 1458 then         -- Undercity's bat handler: on the interior map only
             return { { nodeID = 14, name = "Undercity", atlasName = "Taxi_Undercity", faction = 1, isUndiscovered = false, position = { x = 0.5, y = 0.5 } } }

@@ -530,7 +530,13 @@ L.execute('''
     for _, t in ipairs(NS.Taxis) do names[#names + 1] = t.name end
     table.sort(names)
     check("flight masters: surface also lists the interior's", table.concat(names, ",") == "Brill,Bulwark,Undercity")
-    check("flight masters: own faction shown with Blizzard icons", table.concat(atl, ",") == "TaxiNode_Neutral,TaxiNode_Undiscovered")
+    local green = false
+    for _, p in ipairs(NS.TaxiPins) do
+        if p.shown and p.taxi.undiscovered then green = (rawget(p.icon, "_tex") or ""):find("Green") ~= nil end
+    end
+    check("flight masters: own faction shown with Blizzard icons", table.concat(atl, ",") == "TaxiNode_Neutral")
+    check("flight masters: missing undiscovered atlas falls back to the green icon", green)
+    check("flight masters: /rnw taxi lists them", pcall(SlashCmdList.RUNEWAY, "taxi"))
     local tip = {}
     local tn, tw = NS.MapToWorld(1420, 0.4, 0.603)
     local pn, pw = POS[1], POS[2]

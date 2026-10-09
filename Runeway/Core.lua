@@ -721,18 +721,17 @@ local function RefreshQuests()
         end
         maps = list
     end
+    -- not limited by ShouldMapShowTaxiNodes: it only says whether Blizzard's world map shows them on that map
     for _, mapID in ipairs(maps) do
-        if not C_TaxiMap.ShouldMapShowTaxiNodes or C_TaxiMap.ShouldMapShowTaxiNodes(mapID) then
-            for _, t in ipairs(C_TaxiMap.GetTaxiNodesForMap(mapID) or {}) do
-                local own = (t.faction ~= FP.Horde or faction == "Horde") and (t.faction ~= FP.Alliance or faction == "Alliance")
-                local n, w = MapToWorld(mapID, t.position.x, t.position.y)
-                -- "zzOLD..." = retired nodes still in the client data
-                if n and own and not seenNode[t.nodeID] and not t.name:find("^zz") and ns.InChunks(inside, n, w) then
-                    seenNode[t.nodeID] = true
-                    local undiscovered = t.isUndiscovered or not known[t.name]
-                    taxis[#taxis + 1] = { n, w, name = t.name, atlas = undiscovered and UNDISCOVERED_ATLAS or t.atlasName,
-                                          undiscovered = undiscovered, faction = t.faction }
-                end
+        for _, t in ipairs(C_TaxiMap.GetTaxiNodesForMap(mapID) or {}) do
+            local own = (t.faction ~= FP.Horde or faction == "Horde") and (t.faction ~= FP.Alliance or faction == "Alliance")
+            local n, w = MapToWorld(mapID, t.position.x, t.position.y)
+            -- "zzOLD..." = retired nodes still in the client data
+            if n and own and not seenNode[t.nodeID] and not t.name:find("^zz") and ns.InChunks(inside, n, w) then
+                seenNode[t.nodeID] = true
+                local undiscovered = t.isUndiscovered or not known[t.name]
+                taxis[#taxis + 1] = { n, w, name = t.name, atlas = undiscovered and UNDISCOVERED_ATLAS or t.atlasName,
+                                      undiscovered = undiscovered, faction = t.faction }
             end
         end
     end
@@ -741,9 +740,13 @@ ns.RefreshQuests = RefreshQuests
 
 -- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
 -- Same look as the world map pins: dark round badge with gold rim, "?" for turn-in, yellow "..." in progress.
+local function AtlasExists(atlas)
+    return not (C_Texture and C_Texture.GetAtlasInfo) or C_Texture.GetAtlasInfo(atlas) ~= nil
+end
+-- SetAtlas returns nothing and leaves the texture empty for an unknown atlas, so the atlas is checked first
 local function SetAtlasOr(t, atlas, file)
-    local ok, res = pcall(t.SetAtlas, t, atlas)
-    if not ok or res == false then t:SetTexture(file) end
+    local ok = AtlasExists(atlas) and pcall(t.SetAtlas, t, atlas)
+    if not ok then t:SetTexture(file) end
 end
 
 -- Mouse-over (also on the locked, click-through map: the cursor position is polled, no mouse events):
@@ -1439,6 +1442,19 @@ SlashCmdList.RUNEWAY = function(msg)
         local mapID = C_Map.GetBestMapForUnit("player")
         ShowCopy(("%s %s %s map=%s set=%s facing=%.3f"):format(tostring(pn), tostring(pw), tostring(inst),
             tostring(mapID), tostring(inst and TileSet(inst)), GetPlayerFacing() or -1))
+    elseif cmd == "taxi" then                      -- flight masters: what the map draws, nearest first
+        local list = {}
+        for _, t in ipairs(taxis) do list[#list + 1] = { t, math.sqrt((t[1] - pN) ^ 2 + (t[2] - pW) ^ 2) } end
+        table.sort(list, function(a, b) return a[2] < b[2] end)
+        local known = 0
+        for _ in pairs(KnownTaxiNodes()) do known = known + 1 end
+        Print(("taxi: maps=%s nodes=%d known=%d showTaxi=%s"):format(table.concat(NearbyMaps() or {}, ","), #taxis,
+            known, tostring(db.showTaxi)))
+        for i = 1, math.min(5, #list) do
+            local t = list[i][1]
+            Print(("  %s %.0f yd undiscovered=%s atlas=%s(%s)"):format(t.name, list[i][2], tostring(t.undiscovered),
+                tostring(t.atlas), AtlasExists(t.atlas or "") and "ok" or "missing"))
+        end
     elseif cmd == "view" then
         local vn, vw = arg:match("^(%-?[%d%.]+)%s+(%-?[%d%.]+)$")
         if arg == "" and viewAt then

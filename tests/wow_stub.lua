@@ -103,7 +103,7 @@ function GetRealZoneText() return ZONE or "Tirisfal Glades" end
 C_Map = { GetBestMapForUnit = function() return UI_MAP end,
           GetAreaInfo = function(id) return id == 153 and "Ruins of Lordaeron" or nil end,
           GetPlayerMapPosition = function(m) if m == 1420 then return { GetXY = function() return 0.4, 0.6 end } end end,
-          GetMapInfo = function(m) return m == 1415 and { mapType = 2, name = CONTINENT or "Eastern Kingdoms" } or { mapType = 3, parentMapID = 1415 } end,
+          GetMapInfo = function(m) return m == 1415 and { mapType = 2, name = CONTINENT or "Eastern Kingdoms" } or m == 9999 and { mapType = 4, name = "Ragefire Chasm" } or { mapType = 3, parentMapID = 1415 } end,
           GetMapChildrenInfo = function() return { { mapID = 1420 }, { mapID = 1421 }, { mapID = 1422 } } end }
 C_Minimap = { IsInsideQuestBlob = function() return true end }
 QUESTS_BY_MAP = { [1420] = { { questID = 4242, x = 0.4, y = 0.6 }, { questID = 4243, x = 0.55, y = 0.6 }, { questID = 4244, x = 0.45, y = 0.5 } },

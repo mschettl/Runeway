@@ -228,14 +228,14 @@ local function Blue(text) return ("|cff66ccff[%s]|r"):format(text or "?") end
 local noteState                                       -- values when the last note was written (/rnw pos)
 local WORLD_MAPS = { [0] = true, [1] = true, [530] = true, [571] = true }   -- continents: never a dungeon
 ns.WORLD_MAPS = WORLD_MAPS                            -- for tests
-local function PackFailed(pack, name)
+local function PackFailed(pack, name, late)       -- late: waited in vain, the player's map may name the area
     -- in a dungeon its name: only when the position is on that instance's own map (after leaving a dungeon the
     -- instance info still names it for a while, the position is already back on the continent)
     local iname, itype, _, _, _, _, _, iid = GetInstanceInfo()
     local inst = select(4, UnitPosition("player"))
     local dungeon = itype and itype ~= "none" and iid == inst and not WORLD_MAPS[inst]
     local area = dungeon and iname or GetZoneText()
-    if area == "" or area == name then                  -- zone text not there yet: the name of the player's map
+    if late and (area == "" or area == name) then       -- zone text not there yet: the name of the player's map
         local m = C_Map.GetBestMapForUnit("player")
         local info = m and C_Map.GetMapInfo(m)
         area = info and info.name or ""
@@ -1263,6 +1263,7 @@ end
 --   reload: everything is current at once
 --   zone change (dungeon in or out, portal, ship): instance info follows the position late -> wait 1 s and for
 --           the instance ID of the new position
+-- Login and zone change also wait for a real zone name (empty or the continent's name for a moment).
 -- Never during a loading screen (the position changes while it is shown). At most SAY_MAX seconds;
 -- now = at once (toggle).
 local SAY_MAX = 15
@@ -1277,14 +1278,14 @@ local function SayNoData(inst, now)
         return
     end
     local settled = not loading and GetTime() >= worldAt + (worldKind == "reload" and 0.5 or 1)
-    if settled and worldKind == "login" then
+    if settled and worldKind ~= "reload" then
+        -- after login and after leaving a dungeon the zone text is empty or the continent's name for a moment
         local zone = GetZoneText()
         settled = zone ~= "" and zone ~= ContinentName()
-    elseif settled and worldKind == "zone" then
-        settled = select(8, GetInstanceInfo()) == inst
+            and (worldKind == "login" or select(8, GetInstanceInfo()) == inst)
     end
     if now or settled or GetTime() >= sayAt then
-        PackFailed(nil, ContinentName())
+        PackFailed(nil, ContinentName(), not (now or settled))
         noDataSaid, sayFor = key, nil
     end
 end

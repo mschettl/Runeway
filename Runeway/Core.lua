@@ -33,7 +33,7 @@ local defaults = {
     hover = true,            -- unlocked: subtle frame while the mouse is over the map
     wheelZoom = true,        -- mouse wheel over the map zooms (off: the wheel goes to the game camera)
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
-    arrowSize = 25, pinSize = 25, corpseSize = 25, taxiSize = 25, showTaxi = true, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
+    arrowSize = 25, pinSize = 25, corpseSize = 25, taxiSize = 20, showTaxi = true, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
     questMerge = true,       -- overlapping quest areas as one combined outline
     zoneDim = 0.3,           -- opacity factor of the adjacent zones (the player is not in)
     colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,

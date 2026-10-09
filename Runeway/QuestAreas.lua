@@ -804,13 +804,7 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2, ew)
     local c = ns.db().colors.questAreas
     local ew0 = ew
     local ov0 = math.min(1, ew / 2)       -- 1 px overlap closes the joints; more would show in the fade
-    local fw = ns.FadeWidth()
-    local function fade(x, y)            -- soft edge of the map: same oval fade as the tile mask
-        local mx, my = x / W2, y / H2
-        local t = (1 - math.sqrt(mx * mx + my * my)) / fw
-        if t <= 0 then return 0 end
-        return t >= 1 and 1 or t * t * (3 - 2 * t)
-    end
+    local fade = ns.ShapeFn()            -- shape and soft edge of the map: same as the tile mask
     for _, loop in ipairs(a.loops) do
         -- mouse-over: this loop wider, brighter and fully opaque
         local cr, cg, cb, ca, ew, ov = c.r, c.g, c.b, c.a, ew0, ov0

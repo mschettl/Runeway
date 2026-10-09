@@ -8,8 +8,8 @@ local ADDONS = "Interface\\AddOns\\"
 local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
 local ZOOM_MIN, ZOOM_MAX = 0.1, 1.5   -- shown as 0-100 % (ZoomPct)
 local SIZE_MIN, SIZE_MAX = 200, 1400
--- Soft edge strength 1-5: width of the fade as a share of the radius (media/fade<N>.tga, scripts/make_masks.py)
-local FADE_WIDTH = { 0.12, 0.25, 0.38, 0.55, 0.75 }
+-- Soft edge 100 %: width of the fade as a share of the radius (scripts/make_masks.py)
+local FADE_MAX = 0.75
 
 -- Tile layers, drawn bottom to top. Tiles are white; colours are applied with SetVertexColor.
 -- fill = walkable area, hatch = not walkable (mountains, water), lines on top.
@@ -31,7 +31,8 @@ local defaults = {
     mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
     autoHide = { combat = false, instance = false, mounted = false, city = false },
     wheelZoom = true,        -- mouse wheel over the map zooms (off: the wheel goes to the game camera)
-    edge = 3,                -- soft edge strength, index into FADE_WIDTH
+    shape = 0.5,             -- map shape: 0 rectangle, 0.5 oval, 1 circle (10 % steps)
+    edgeSoft = 0.5,          -- soft edge: 0 hard, 1 widest fade (10 % steps)
     arrowSize = 25, pinSize = 20, corpseSize = 25, taxiSize = 20, showTaxi = true, showArrow = true, showCorpse = true, showQuests = true, questClassic = false, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
     questMerge = true,       -- overlapping quest areas as one combined outline
     zoneDim = 0.3,           -- opacity factor of the adjacent zones (the player is not in)
@@ -93,7 +94,6 @@ ns.db = function() return db end
 local fade
 if view.CreateMaskTexture then
     fade = view:CreateMaskTexture()
-    fade:SetAllPoints()
 else
     view:SetClipsChildren(true)
 end
@@ -110,13 +110,41 @@ local function Fade(tex)
     if fade and tex.AddMaskTexture then tex:AddMaskTexture(fade) end
 end
 ns.Fade = Fade
-ns.FadeWidth = function() return FADE_WIDTH[db.edge] or FADE_WIDTH[3] end
+
+-- Map shape and soft edge (10 % steps). The shape is a superellipse stretched to the window: exponent 20
+-- (rectangle) at 0 down to 2 (oval) at 50 %; from 50 % to 100 % the oval shrinks to the shorter side (circle).
+-- Masks media/mask/s<shape step 0-5>f<soft edge step 0-10>.tga (scripts/make_masks.py, same formula).
+-- ShapeFn gives the mask's alpha at a point of the view, for quest lines, hover and the corpse marker.
+local function Step(v) return math.floor(v * 10 + 0.5) end
+local function ShapeParams()
+    local W, H = view:GetSize()
+    local s = Step(db.shape) / 10
+    local m, f = math.min(W, H), math.max(0, s - 0.5) * 2
+    local n = 2 + (1 - 2 * math.min(s, 0.5)) ^ 2 * 18
+    return (W + (m - W) * f) / 2, (H + (m - H) * f) / 2, n, Step(db.edgeSoft) / 10 * FADE_MAX
+end
+local function ShapeD(x, y, a, b, n)               -- 1 on the outline, homogeneous: (x, y) / d lies on it
+    return ((math.abs(x) / a) ^ n + (math.abs(y) / b) ^ n) ^ (1 / n)
+end
+function ns.ShapeFn()
+    local a, b, n, fw = ShapeParams()
+    return function(x, y)
+        local d = ShapeD(x, y, a, b, n)
+        if fw <= 0 then return d <= 1 and 1 or 0 end
+        local t = (1 - d) / fw
+        if t <= 0 then return 0 elseif t >= 1 then return 1 end
+        return t * t * (3 - 2 * t)
+    end
+end
 
 local function ApplyEdge()
-    if fade then
-        fade:SetTexture(MEDIA .. "fade" .. (FADE_WIDTH[db.edge] and db.edge or 3) .. ".tga",
-            "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
-    end
+    if not fade then return end
+    fade:SetTexture(("%smask\\s%df%d.tga"):format(MEDIA, math.min(Step(db.shape), 5), Step(db.edgeSoft)),
+        "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")   -- outside the mask: hidden (oval shrunk to a circle)
+    local a, b = ShapeParams()
+    fade:ClearAllPoints()
+    fade:SetPoint("CENTER")
+    fade:SetSize(2 * a, 2 * b)
 end
 
 local canvas = CreateFrame("Frame", nil, view)
@@ -875,10 +903,9 @@ local function UpdateCorpse()
     if not corpseN then corpse:Hide() return end
     local x, y = ToScreen(corpseN, corpseW)
     local size = db.corpseSize * (hovered == "corpse" and HOVER_SCALE or 1)
-    local W, H = view:GetSize()
-    -- keep the whole icon inside the oval map
-    local rx, ry = math.max(1, W / 2 - db.corpseSize), math.max(1, H / 2 - db.corpseSize)
-    local d = math.sqrt((x / rx) ^ 2 + (y / ry) ^ 2)
+    -- keep the whole icon inside the map's shape
+    local a, b, n = ShapeParams()
+    local d = ShapeD(x, y, math.max(1, a - db.corpseSize), math.max(1, b - db.corpseSize), n)
     if d > 1 then x, y = x / d, y / d end
     corpse.x, corpse.y = x, y
     corpse:SetSize(size, size)
@@ -1034,8 +1061,7 @@ local function UpdateHover()
         local s = view:GetEffectiveScale()
         local vx, vy = view:GetCenter()
         local x, y = cx / s - vx, cy / s - vy
-        local W, H = view:GetSize()
-        if (x / (W / 2)) ^ 2 + (y / (H / 2)) ^ 2 < 1 then
+        if ns.ShapeFn()(x, y) > 0 then
             local function Near(px, py, size) return (x - px) ^ 2 + (y - py) ^ 2 <= (size / 2) ^ 2 end
             if arrow:IsShown() and Near(0, 0, db.arrowSize) then
                 target = "arrow"
@@ -1158,6 +1184,7 @@ local function ApplySize()
     db.w = math.floor(math.max(SIZE_MIN, math.min(SIZE_MAX, db.w)) + 0.5)
     db.h = math.floor(math.max(SIZE_MIN, math.min(SIZE_MAX, db.h)) + 0.5)
     view:SetSize(db.w, db.h)
+    ApplyEdge()                          -- the circle follows the shorter side
     UpdateBorder()                       -- the frame follows while sizing
 end
 
@@ -1463,6 +1490,10 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         db = RunewayDB
         if (db.style or 0) < STYLE then db.colors = nil end   -- default look changed: colours back to defaults
         db.style = STYLE
+        if db.edge then                -- 1.6: soft edge strength 1-5 -> percent (5 = 100 %)
+            db.edgeSoft = Step((({ 0.12, 0.25, 0.38, 0.55, 0.75 })[db.edge] or 0.38) / FADE_MAX) / 10
+            db.edge = nil
+        end
         ApplyDefaults(db, defaults)
         db.hover = nil                 -- option removed in 1.6
         SetZoom(db.zoom, "zoom")       -- zoom range changed in 1.6
@@ -1646,9 +1677,10 @@ SlashCmdList.RUNEWAY = function(msg)
         db.rotate = not db.rotate
         Print(db.rotate and L.MSG_ROTATE_ON or L.MSG_ROTATE_OFF)
     elseif cmd == "edge" and n then
-        db.edge = math.max(1, math.min(#FADE_WIDTH, math.floor(n + 0.5)))
+        db.edgeSoft = Step(math.max(0, math.min(100, n)) / 100) / 10
         ApplyEdge()
-        Print(L.MSG_EDGE:format(db.edge))
+        Notify("edgeSoft")
+        Print(L.MSG_EDGE:format(db.edgeSoft * 100))
     elseif cmd == "mode" and (arg == "key" or arg == "mapkey" or arg == "permanent") then
         db.mode = arg
         ApplyBindings()

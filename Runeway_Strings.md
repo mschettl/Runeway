@@ -52,7 +52,7 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `CMD_ZOOM` | /rnw zoom 0-100 | Zoom | Zoom |
 | `CMD_SIZE` | /rnw size W [H] | Map width and height in pixels (200-1400) | Kartenbreite und -höhe in Pixeln (200-1400) |
 | `CMD_ROTATE` | /rnw rotate | Rotate with the player or north up | Mit dem Spieler drehen oder Norden oben |
-| `CMD_EDGE` | /rnw edge 1-5 | Soft edge strength | Stärke des weichen Rands |
+| `CMD_EDGE` | /rnw edge 0-100 | Soft edge strength | Stärke des weichen Rands |
 | `CMD_MODE` | /rnw mode key \| mapkey \| permanent | How the overlay opens | Wie das Overlay geöffnet wird |
 | `CMD_LAYER` | /rnw layer NAME | Show or hide a layer: fill, hatch, shade, terrain, water, roads, questareas | Ebene ein- oder ausblenden: fill, hatch, shade, terrain, water, roads, questareas |
 | `CMD_COLOR` | /rnw color NAME R G B [A] | Layer colour and opacity, values 0-1 | Farbe und Deckkraft einer Ebene, Werte 0-1 |
@@ -94,7 +94,10 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `ZOOM_INSIDE_TIP` | Zoom inside cities, caves and other interior maps. The mouse wheel changes the zoom of the area you are in. | Zoom in Städten, Höhlen und anderen Innenkarten. Das Mausrad ändert den Zoom des Bereichs, in dem du gerade bist. |
 | `NEIGHBOUR_ZONES` | Adjacent zones opacity | Deckkraft angrenzender Zonen |
 | `NEIGHBOUR_ZONES_TIP` | Opacity of the adjacent zones, relative to the zone you are in. | Deckkraft der angrenzenden Zonen, bezogen auf die Zone, in der du bist. |
+| `MAP_SHAPE` | Map shape | Kartenform |
+| `MAP_SHAPE_TIP` | 0 %: the map fills the window, 50 %: oval, 100 %: circle. Follows the width and height of the window. | 0 %: Die Karte füllt das Fenster, 50 %: oval, 100 %: Kreis. Richtet sich nach Breite und Höhe des Fensters. |
 | `SOFT_EDGE` | Soft edge | Weicher Rand |
+| `SOFT_EDGE_TIP` | How softly the map fades out at its edge. 0 %: hard edge. | Wie weich die Karte an ihrem Rand ausläuft. 0 %: harte Kante. |
 | `PLAYER_ARROW` | Player arrow | Spielerpfeil |
 | `QUEST_MARKS` | Quest icons | Questsymbole |
 | `CORPSE_MARKER` | Corpse | Leichnam |
@@ -162,7 +165,7 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `MSG_SIZE` | Chat `/rnw size` | Size %d x %d | Größe %d x %d |
 | `MSG_ROTATE_ON` | Chat `/rnw rotate` | map rotates with the player | Karte dreht mit dem Spieler |
 | `MSG_ROTATE_OFF` | Chat `/rnw rotate` | north up | Norden oben |
-| `MSG_EDGE` | Chat `/rnw edge` | Soft edge %d | Weicher Rand %d |
+| `MSG_EDGE` | Chat `/rnw edge` | Soft edge %d %% | Weicher Rand %d %% |
 | `MSG_MODE` | Chat `/rnw mode` | mode %s | Modus %s |
 | `MSG_LAYER_SHOWN` | Chat `/rnw layer` | %s shown | %s eingeblendet |
 | `MSG_LAYER_HIDDEN` | Chat `/rnw layer` | %s hidden | %s ausgeblendet |
@@ -172,7 +175,7 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `MSG_VIEW_OFF` | Chat `/rnw view` | back to the player | zurück zum Spieler |
 | `MSG_VIEW_UNKNOWN` | Chat `/rnw view` | unknown area. Mapped areas: %s | Unbekanntes Gebiet. Kartierte Gebiete: %s |
 | `USAGE_COLOR` | Chat, Hilfe | /rnw color fill\|hatch\|shade\|terrain\|water\|roads\|questareas R G B [A]   (0-1) | (Befehl bleibt, nur ggf. „(0-1)“) |
-| `USAGE` | Chat, Hilfe | /rnw [toggle] \| config \| lock \| unlock \| alpha 5-100 \| zoom 0-100 \| size W [H] \| rotate \| edge 1-5 \| mode key\|mapkey\|permanent \| layer NAME \| color NAME R G B [A] \| keys \| pos \| view [ZONE \| N W] \| reset | (Befehle bleiben englisch) |
+| `USAGE` | Chat, Hilfe | /rnw [toggle] \| config \| lock \| unlock \| alpha 5-100 \| zoom 0-100 \| size W [H] \| rotate \| edge 0-100 \| mode key\|mapkey\|permanent \| layer NAME \| color NAME R G B [A] \| keys \| pos \| view [ZONE \| N W] \| reset | (Befehle bleiben englisch) |
 
 Das Leichnam-Symbol selbst zeigt keinen Text; das Symbol stammt aus dem Spiel.
 

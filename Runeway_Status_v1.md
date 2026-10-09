@@ -72,7 +72,7 @@ Seit 1.6 besteht das Release aus zwei Ordnern, die beide nach `Interface\AddOns`
 | `Runeway_<Paket>/Runeway_<Paket>.toc` | generiert von `build_raw.py` (`--toc` schreibt nur die `.toc`): `## Title`/`## Notes` mit `-<Locale>`-Varianten in allen elf Sprachen (offizielle Blizzard-Namen der Kontinente, `PACKS`), `## LoadOnDemand: 1`, `## Dependencies: Runeway`, `## X-Runeway-Maps: <Karten-ID>`, Interface und Version wie `Runeway.toc`; lädt `tiles\<id>\Tiles.lua` |
 | `Runeway_<Paket>/tiles/<Karten-ID>/Tiles.lua` | generiert, je Karte: `RunewayTiles[id]` (Kacheln mit ihren Ebenen, `["31_28"] = "fhstwr"`, Grenzkacheln als Zonenteile `"c_r_z<zone>"`) und `RunewayZones[id]` |
 | `Bindings.xml` | Tastenbelegungen `RUNEWAY_TOGGLE` und `RUNEWAY_WORLDMAP` |
-| `media/` | `hatch512/256/128.tga` (gemeinsames Schraffurmuster je Zoomstufe, erzeugt von `build_raw.py`), `fade1.tga`–`fade5.tga` (Ausblendmasken je Randstärke, `scripts/make_masks.py`), `arrow.tga` (Spielerpfeil), `edge.tga` (kantengeglättete Linientextur), `dot.tga` (Rückfall-Symbol) |
+| `media/` | `hatch512/256/128.tga` (gemeinsames Schraffurmuster je Zoomstufe, erzeugt von `build_raw.py`), `mask/s<0-5>f<0-10>.tga` (66 Ausblendmasken je Form- und Randstufe, `scripts/make_masks.py`, ~5,6 MB; geladen ist nur die aktive), `arrow.tga` (Spielerpfeil), `edge.tga` (kantengeglättete Linientextur), `dot.tga` (Rückfall-Symbol) |
 | `Runeway_<Paket>/tiles/0/[256/ \| 128/]<key>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Speicherbedarf siehe „Dateigröße“ unten |
 
 `tools/Probe.lua` ist ein Entwicklungswerkzeug und nicht im Release (siehe Abschnitt 6).
@@ -119,7 +119,8 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `mode` | `"key"` (eigene Taste), `"mapkey"` (Kartentaste M öffnet das Overlay), `"permanent"` |
 | `autoHide.combat/instance/mounted/city` | alle false (`city` = ausgeruht, also Städte und Gasthäuser) |
 | `wheelZoom` | true (Mausrad über der Karte zoomt) |
-| `edge` | 3 (Randstärke 1–5, Breite 0,12 / 0,25 / 0,38 / 0,55 / 0,75 des Radius) |
+| `shape` | 0.5 (Kartenform in 10-%-Schritten: 0 Rechteck, Superellipse mit Exponent 20 → 2 bis 50 % Oval, darüber schrumpft das Oval zur kürzeren Fensterseite = Kreis bei 100 %; `ShapeParams`/`ns.ShapeFn` für Questlinien, Hover und Leichnam) |
+| `edgeSoft` | 0.5 (weicher Rand in 10-%-Schritten: Verlaufsbreite = Wert × 0,75 des Radius; 0 = harte Kante, 100 % = frühere Stufe 5; alte Stufen 1–5 werden beim Laden umgerechnet) |
 | `arrowSize`, `pinSize`, `corpseSize`, `taxiSize`, `questEdge` | 25, 20, 25, 20, 0.8 (Faktor für die Breite der Questränder) |
 | `questMerge` | true: überlappende Questbereiche bekommen einen gemeinsamen Umriss |
 | `zoneDim` | 0.3: Deckkraft-Faktor der angrenzenden Zonen (Option „Adjacent zones opacity“) |
@@ -136,7 +137,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `/rnw zoom 0-100` | Zoom in % setzen (0 % = Faktor 0.1, 100 % = 1.5) |
 | `/rnw size W [H]` | Breite und Höhe 200–1400 px (ohne H: beide gleich) |
 | `/rnw rotate` | mitdrehen oder Norden oben |
-| `/rnw edge 1-5` | Stärke des weichen Rands |
+| `/rnw edge 0-100` | Weicher Rand in % (10-%-Schritte) |
 | `/rnw mode key\|mapkey\|permanent` | Aufruf-Modus |
 | `/rnw layer NAME` | Ebene ein/aus (`fill`, `hatch`, `shade`, `terrain`, `water`, `roads`, `questareas`) |
 | `/rnw color NAME R G B [A]` | Farbe und optional Deckkraft (0–1) |
@@ -180,7 +181,7 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 - **Knopf „Karte ein-/ausblenden“:** im Kopf des Einstellungsfensters links neben „Standard“, nur auf den Runeway-Seiten (`Settings.CategoryChanged` über `EventRegistry`); Text wechselt zwischen „Show map“ und „Hide map“.
 - **Ebenen:** eine Zeile je Ebene mit Häkchen, Farbfeld und Deckkraft-Regler (`RunewayLayerRowTemplate`, baut auf Blizzards Häkchen-plus-Regler-Zeile auf; die Farbe ist ein eigenes Proxy-Setting, „Standard“ setzt sie mit zurück).
 - **Unterpunkte im Baum links** (Runeway aufklappbar, `RegisterVerticalLayoutSubcategory`): Open with, Hide automatically, Window, Display, Layers. Jeder Unterpunkt hat eigene Proxy-Settings, „Standard“ setzt nur diesen Unterpunkt zurück.
-- **Display:** Kartendeckkraft, Zoom (Außenbereiche), Zoom (Innenbereiche), Deckkraft angrenzender Zonen, Weicher Rand, dann Marker-Zeilen wie die Ebenen (Schalter + Größe, `CreateSettingsCheckboxSliderInitializer`): Spielerpfeil (`showArrow`), Leichnam (`showCorpse`), Flugmeister (`showTaxi`), Questsymbole (`showQuests`, aus: weder Questsymbole noch Questbereiche); danach Rand des Questgebiets, Überlappende Questbereiche zusammenfassen und Klassische Questsymbole (`questClassic`), alle drei über `SetParentInitializer` am Questmarker-Schalter (ausgegraut, wenn aus; dafür `row.data.setting = cb`, sonst meldet die Checkbox-Slider-Zeile keine Änderung).
+- **Display:** Kartendeckkraft, Zoom (Außenbereiche), Zoom (Innenbereiche), Deckkraft angrenzender Zonen, Kartenform, Weicher Rand, dann Marker-Zeilen wie die Ebenen (Schalter + Größe, `CreateSettingsCheckboxSliderInitializer`): Spielerpfeil (`showArrow`), Leichnam (`showCorpse`), Flugmeister (`showTaxi`), Questsymbole (`showQuests`, aus: weder Questsymbole noch Questbereiche); danach Rand des Questgebiets, Überlappende Questbereiche zusammenfassen und Klassische Questsymbole (`questClassic`), alle drei über `SetParentInitializer` am Questmarker-Schalter (ausgegraut, wenn aus; dafür `row.data.setting = cb`, sonst meldet die Checkbox-Slider-Zeile keine Änderung).
 
 ### Schnellbefehle
 - Auf der Hauptseite („Quick commands“): alle Slash-Befehle mit Beschreibung. Eigene Zeilenvorlage `RunewayCommandRowTemplate` (`Options.xml`, erbt `SettingsListElementTemplate`): Befehl links, Beschreibung rechts. Der frühere Bedienhinweis oben auf der entsperrten Karte ist entfernt.
@@ -242,7 +243,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
 | `roads.py` | `prune` (Skelett entgraten), von `build_raw.py` genutzt |
 | `simulate.py` | rendert die Lua-Darstellung aus den Kacheln (`build/sim.png`) |
 | `probe_view.py` | wertet `/rnw probe`-SavedVariables aus (Entwicklung) |
-| `make_masks.py` | erzeugt die Randmasken `media/fade1–5.tga` (Breiten wie `FADE_WIDTH` in `Core.lua`) |
+| `make_masks.py` | erzeugt die Randmasken `media/mask/s<Form>f<Rand>.tga` (Formel wie `ShapeParams` in `Core.lua`) |
 | `zones_<id>.txt` | zu bauende Zonen je Karte, wird etappenweise erweitert |
 | `update_data_branch.ps1` | lokale Rohdaten als Commit auf `data` |
 

@@ -29,7 +29,7 @@ local COMMANDS = {
     { "/rnw zoom 0-100", L.CMD_ZOOM },
     { "/rnw size W [H]", L.CMD_SIZE },
     { "/rnw rotate", L.CMD_ROTATE },
-    { "/rnw edge 1-5", L.CMD_EDGE },
+    { "/rnw edge 0-100", L.CMD_EDGE },
     { "/rnw mode key | mapkey | permanent", L.CMD_MODE },
     { "/rnw layer NAME", L.CMD_LAYER },
     { "/rnw color NAME R G B [A]", L.CMD_COLOR },
@@ -190,7 +190,8 @@ local function Build()
         function(v) return ("%d %%"):format(ns.ZoomPct(v) + 0.5) end, function(v) ns.SetZoom(v, "zoomInside") end,
         L.ZOOM_INSIDE_TIP)
     Slider("zoneDim", L.NEIGHBOUR_ZONES, 0, 1, 0.01, Pct, nil, L.NEIGHBOUR_ZONES_TIP)
-    Slider("edge", L.SOFT_EDGE, 1, 5, 1, function(v) return ("%d"):format(v) end, function() ns.ApplyAll() end)
+    Slider("shape", L.MAP_SHAPE, 0, 1, 0.1, Pct, function() ns.ApplyAll() end, L.MAP_SHAPE_TIP)
+    Slider("edgeSoft", L.SOFT_EDGE, 0, 1, 0.1, Pct, function() ns.ApplyAll() end, L.SOFT_EDGE_TIP)
     -- markers: one row each with show and size, like the layer rows
     local function Marker(show, size, label, apply)
         local cb = Setting(show, Settings.VarType.Boolean, label, apply)

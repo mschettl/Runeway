@@ -755,8 +755,26 @@ L.execute('''
     for var, st in pairs(SETTINGS) do
         if st:GetValue() == nil then check("setting reads a value: " .. var, false) end
     end
-    SETTINGS.RUNEWAY_EDGE:SetValue(5)
-    check("edge 5 -> fade5.tga", TEXTURES[#TEXTURES]:find("fade5.tga") ~= nil)
+    -- map shape and soft edge: mask per 10 % step; the shape function matches; 100 % shrinks the oval to a circle
+    local function mask() return TEXTURES[#TEXTURES] end
+    SETTINGS.RUNEWAY_EDGESOFT:SetValue(1)
+    local m1 = mask()
+    SETTINGS.RUNEWAY_EDGESOFT:SetValue(0)
+    SETTINGS.RUNEWAY_SHAPE:SetValue(0)
+    local m2 = mask()
+    local W, H = view:GetSize()
+    local rectIn = NS.ShapeFn()(W / 2 * 0.9, H / 2 * 0.9)
+    SETTINGS.RUNEWAY_SHAPE:SetValue(0.5)
+    local ovalOut = NS.ShapeFn()(W / 2 * 0.9, H / 2 * 0.9)
+    SETTINGS.RUNEWAY_SHAPE:SetValue(1)
+    local fadeTex = TEXTURE_OBJECTS[mask()]
+    local m = math.min(W, H)
+    local circle = rawget(fadeTex, "_w") == m and rawget(fadeTex, "_h") == m and NS.ShapeFn()(m / 2 * 0.99, 0) == 1
+        and NS.ShapeFn()(m / 2 * 1.01, 0) == 0
+    SETTINGS.RUNEWAY_SHAPE:SetValue(0.5)
+    SETTINGS.RUNEWAY_EDGESOFT:SetValue(0.5)
+    check("shape and soft edge: masks, rectangle, oval, circle", m1:find("mask.s5f10%.tga$") and m2:find("mask.s0f0%.tga$")
+        and rectIn == 1 and ovalOut == 0 and circle and mask():find("mask.s5f5%.tga$"))
     SETTINGS.RUNEWAY_COLOR_FILL:SetValue("ff1a334d")
     check("colour swatch sets fill", math.abs(db.colors.fill.r - 0.1) < 0.01 and math.abs(db.colors.fill.b - 0.3) < 0.01)
     check("colour swatch reads hex", SETTINGS.RUNEWAY_COLOR_FILL:GetValue() == "ff1a334d")
@@ -764,7 +782,7 @@ L.execute('''
     SETTINGS.RUNEWAY_AUTOHIDE_COMBAT:SetValue(true)
     check("opacity and auto-hide write the db", db.colors.roads.a == 0.5 and db.autoHide.combat == true)
     for _, st in pairs(SETTINGS) do st:SetValue(st.default) end
-    check("defaults restored", db.edge == 3 and db.w == 800 and db.h == 600 and db.mode == "key" and db.colors.roads.a == 0.65
+    check("defaults restored", db.edgeSoft == 0.5 and db.shape == 0.5 and db.w == 800 and db.h == 600 and db.mode == "key" and db.colors.roads.a == 0.65
         and math.abs(db.colors.fill.r) < 0.01 and db.zoom == 0.66 and db.questMerge == true and db.corpseSize == 25)
     view:GetScript("OnUpdate")(view, 0.05)
 ''')

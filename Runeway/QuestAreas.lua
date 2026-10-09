@@ -563,6 +563,9 @@ end
 
 local function RefreshMap(m, st, rank)
     local areas, groups, inGroup = st.areas, st.groups, st.inGroup
+    -- while dead the known areas stay as they are (game test 0.6.1: as a ghost all areas vanished); the quest log
+    -- is checked again on PLAYER_ALIVE / PLAYER_UNGHOST
+    if UnitIsDeadOrGhost("player") then return end
     local onMap = {}
     local pN, pW = UnitPosition("player")
     for _, q in ipairs(C_QuestLog.GetQuestsOnMap(m) or {}) do

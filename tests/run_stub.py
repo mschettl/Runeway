@@ -683,6 +683,14 @@ L.execute('''
     fire("QUEST_LOG_UPDATE")
     sampler(400)
     check("death: no sampling while dead, outline kept", #A[4243].loops > 0 and A[4243].sig:find(":1$") ~= nil)
+    -- as a ghost the client may report no blobs: the known areas stay (all areas vanished in the game test)
+    local blobCount = GetQuestPOIBlobCount
+    GetQuestPOIBlobCount = function() return 0 end
+    fire("QUEST_LOG_UPDATE")
+    sampler(100)
+    check("death: no blobs reported while dead, areas kept", A[4242] and A[4243] and merged()
+        and NS.HasQuestArea(4242) and NS.HasQuestArea(4243))
+    GetQuestPOIBlobCount = blobCount
     local blob = BLOBS[4243]
     BLOBS[4243] = nil
     STATE.dead = false

@@ -22,7 +22,7 @@ OUT = sys.argv[4] if len(sys.argv) > 4 else os.path.join(ROOT, 'build', 'sim.png
 FILE_LOD = dict(fill={128: 128, 256: 128, 512: 128}, shade={128: 128, 256: 128, 512: 128})   # as in Core.lua
 HATCH_MASK_LOD = 128
 # tile keys: "c_r", or "c_r_z<zone>" for the zone parts of a border tile (RunewayZones is not needed here)
-lua = open(os.path.join(ROOT, 'Runeway', 'tiles', '0', 'Tiles.lua')).read().split('RunewayZones')[0]
+lua = open(os.path.join(ROOT, 'Runeway_EasternKingdoms', 'tiles', '0', 'Tiles.lua')).read().split('RunewayZones')[0]
 tiles = dict(re.findall(r'\["(\d+_\d+(?:_z\d+)?)"\] = "(\w+)"', lua))
 
 
@@ -31,7 +31,7 @@ def render(facing):
     can = np.full((H, W, 3), 30, np.float32)
     size = T * k
     lod = 128 if size < 160 else 256 if size < 360 else 512
-    path = lambda lo, key, layer: os.path.join(ROOT, 'Runeway', 'tiles', '0', '' if lo == 512 else str(lo), f'{key}_{layer}.tga')
+    path = lambda lo, key, layer: os.path.join(ROOT, 'Runeway_EasternKingdoms', 'tiles', '0', '' if lo == 512 else str(lo), f'{key}_{layer}.tga')
     rgba = lambda p: np.array(Image.open(p).convert('RGBA')).astype(np.float32) / 255
     for layer in LAYERS:
         for key, have in tiles.items():

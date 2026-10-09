@@ -19,6 +19,7 @@ local function obj(name)
             return self._loadIn < 0
         end end
         if k == "SetAlpha" then return function(self, a) self._alpha = a end end
+        if k == "SetAtlas" then return function(self, a) self._atlas = a return true end end
         if k == "SetStartPoint" then return function(self, _, _, x, y) self._p0 = { x, y } end end
         if k == "SetEndPoint" then return function(self, _, _, x, y) self._p1 = { x, y } end end
         if k == "SetVertexColor" then return function(self, r, g, b, a) self._color = { r, g, b, a } end end
@@ -92,9 +93,14 @@ function UnitPosition() return POS[1], POS[2], POS[3], POS[4] end
 function GetPlayerFacing() return 0.5 end
 function IsShiftKeyDown() return false end
 function HideUIPanel() end
-C_Map = { GetBestMapForUnit = function() return 1420 end,
+UI_MAP, SUBZONE = 1420, ""
+function GetSubZoneText() return SUBZONE end
+function GetZoneText() return ZONE or "Tirisfal Glades" end
+function GetRealZoneText() return ZONE or "Tirisfal Glades" end
+C_Map = { GetBestMapForUnit = function() return UI_MAP end,
+          GetAreaInfo = function(id) return id == 153 and "Ruins of Lordaeron" or nil end,
           GetPlayerMapPosition = function(m) if m == 1420 then return { GetXY = function() return 0.4, 0.6 end } end end,
-          GetMapInfo = function(m) return m == 1415 and { mapType = 2 } or { mapType = 3, parentMapID = 1415 } end,
+          GetMapInfo = function(m) return m == 1415 and { mapType = 2, name = CONTINENT or "Eastern Kingdoms" } or m == 9999 and { mapType = 4, name = "Ragefire Chasm" } or { mapType = 3, parentMapID = 1415 } end,
           GetMapChildrenInfo = function() return { { mapID = 1420 }, { mapID = 1421 }, { mapID = 1422 } } end }
 C_Minimap = { IsInsideQuestBlob = function() return true end }
 QUESTS_BY_MAP = { [1420] = { { questID = 4242, x = 0.4, y = 0.6 }, { questID = 4243, x = 0.55, y = 0.6 }, { questID = 4244, x = 0.45, y = 0.5 } },
@@ -103,8 +109,11 @@ C_QuestLog = { GetQuestsOnMap = function(m) return QUESTS_BY_MAP[m] or {} end,
                IsComplete = function(q) return q == 4244 end,
                GetTitleForQuestID = function(id) return "Test quest " .. id end }
 function CreateVector2D(x, y) return { x = x, y = y } end
-MAP_WEST = { [1420] = 2000, [1421] = 8000, [1422] = 40000 }   -- west edge of each zone map (yards)
-C_Map.GetWorldPosFromMapPos = function(m, v) return 0, { x = 3000 - v.y * 4000, y = MAP_WEST[m] - v.x * 6000 } end
+MAP_WEST = { [1420] = 2000, [1421] = 8000, [1422] = 40000, [1458] = 2000 }   -- west edge of each zone map (yards)
+C_Map.GetWorldPosFromMapPos = function(m, v)   -- maps without an entry (other continents, dungeons): no position
+    if not MAP_WEST[m] then return nil end
+    return 0, { x = 3000 - v.y * 4000, y = MAP_WEST[m] - v.x * 6000 }
+end
 function date() return "2026-10-07" end
 -- 3.4: visibility, bindings, settings
 function GetTime() return clock end
@@ -115,7 +124,11 @@ function UnitIsDeadOrGhost() return STATE.dead end
 C_DeathInfo = { GetCorpseMapPosition = function(m)
     if m == 1420 then return { GetXY = function() return 0.42, 0.61 end } end end }
 function UnitAffectingCombat() return STATE.combat end
-function IsInInstance() return STATE.instance, STATE.instance and "party" or "none" end
+function IsInInstance() return STATE.instance or STATE.lagging, STATE.instance and "party" or "none" end   -- lagging: still true after leaving
+function GetInstanceInfo()       -- name, type, ..., instance (map) ID: follows the client's state, not POS
+    if STATE.instance then return "Ragefire Chasm", "party", 1, "", 5, 0, false, INFO_LAG and POS[4] or 389 end
+    return ZONE or "Tirisfal Glades", "none", 0, "", 0, 0, false, INFO_MAP or POS[4]
+end
 function IsMounted() return STATE.mounted end
 function IsFlying() return false end
 function UnitOnTaxi() return false end
@@ -132,6 +145,13 @@ function SetOverrideBinding(_, _, key, cmd) BINDINGS[key] = cmd end
 function ClearOverrideBindings() wipe(BINDINGS) end
 function GetBindingAction(key, override) return override and BINDINGS[key] or (key == "M" and "TOGGLEWORLDMAP" or "") end
 GameTooltip = obj("GameTooltip")
+GameTooltipTextLeft1, GameTooltipText, GameTooltipHeaderText = obj("Line1"), { "normal font" }, { "header font" }
+function GameTooltipTextLeft1:SetFontObject(f) self._font, self._color = f, { 1, 1, 1 } end   -- resets the color
+function GameTooltipTextLeft1:SetTextColor(r, g, b) self._color = { r, g, b } end
+function GameTooltipTextLeft1:GetTextColor() local c = rawget(self, "_color") or { 1, 1, 1 } return c[1], c[2], c[3] end
+ItemRefTooltip = obj("ItemRefTooltip")          -- tooltip of chat links: keeps its lines for the tests
+function ItemRefTooltip:ClearLines() self.lines = {} end
+function ItemRefTooltip:AddLine(text) self.lines[#self.lines + 1] = text end
 function GameTooltip_Hide() end
 ColorPickerFrame = obj("ColorPickerFrame")
 function ColorPickerFrame:SetupColorPickerAndShow(info) self.info = info end
@@ -139,15 +159,20 @@ function ColorPickerFrame:GetColorRGB() return 0.1, 0.2, 0.3 end
 -- Settings API: proxy settings by variable name, rows as plain initializer tables
 SETTINGS, INITS = {}, {}
 local function Layout() return { AddInitializer = function(_, i) INITS[#INITS + 1] = i end } end
-local function Row(kind) return function(_, setting, options) INITS[#INITS + 1] = { kind = kind, setting = setting,
-    options = type(options) == "function" and options() or options } end end
+local function SetParent(i, parent, pred) i.parent, i.enabled = parent, pred end
+local function Row(kind) return function(_, setting, options)
+    local i = { kind = kind, setting = setting, options = type(options) == "function" and options() or options,
+                SetParentInitializer = SetParent }
+    INITS[#INITS + 1] = i
+    return i
+end end
 Settings = {
     VarType = { Boolean = "boolean", Number = "number", String = "string" },
     RegisterVerticalLayoutCategory = function() SETTINGS_MAIN = { GetID = function() return 77 end }; return SETTINGS_MAIN, Layout() end,
     RegisterVerticalLayoutSubcategory = function() return {}, Layout() end,
     RegisterProxySetting = function(_, var, varType, name, default, get, set)
         assert(type(default) == varType, var .. ": default must be " .. varType)
-        local st = { variable = var, default = default, GetValue = function() return get() end,
+        local st = { variable = var, default = default, name = name, GetValue = function() return get() end,
                      GetVariable = function() return var end,
                      SetValue = function(_, v) set(v) end }
         SETTINGS[var] = st
@@ -162,7 +187,13 @@ Settings = {
     end,
     RegisterAddOnCategory = function() end,
     CreateSettingInitializer = function(template, data)
-        return { kind = "layerrow", template = template, data = data, AddSearchTags = function() end }
+        return { kind = template == "RunewayCheckboxSliderTemplate" and "checkslider" or "layerrow", template = template,
+                 data = data, setting = data.setting, AddSearchTags = function() end, SetParentInitializer = SetParent }
+    end,
+    CreateControlInitializer = function(template, setting, options, tooltip)
+        return { kind = template == "RunewayCheckboxTemplate" and "checkbox" or "slider", template = template,
+                 setting = setting, options = type(options) == "function" and options() or options,
+                 data = { setting = setting, name = setting.name, tooltip = tooltip }, SetParentInitializer = SetParent }
     end,
     CreateElementInitializer = function(template, data) return { kind = "element", template = template, data = data } end,
     OpenToCategory = function(id) OPENED = id end,
@@ -179,6 +210,43 @@ function CreateFromMixins(...)
 end
 function CreateSettingsListSectionHeaderInitializer(name) return { kind = "header", name = name } end
 function CreateSettingsButtonInitializer(name, text, click) return { kind = "button", click = click } end
-function CreateSettingsCheckboxSliderInitializer(cb, _, _, slider, options) return { kind = "checkslider", setting = cb, slider = slider, options = options } end
+function CreateSettingsCheckboxSliderInitializer(cb, label, _, slider, options)
+    return { kind = "checkslider", data = { cbSetting = cb, cbLabel = label, sliderSetting = slider, sliderOptions = options },
+             AddSearchTags = function() end, SetParentInitializer = SetParent }
+end
 SettingsCheckboxSliderControlMixin = { OnLoad = function() end, Init = function() end }
+SettingsCheckboxControlMixin = { OnLoad = function() end, Init = function() end }
+SettingsSliderControlMixin = { OnLoad = function() end, Init = function() end }
 function CreateKeybindingEntryInitializer(i) return { kind = "binding", action = GetBinding(i) } end
+
+-- flight masters: one discovered (neutral), one undiscovered (Horde), one Alliance (not shown to a Horde player)
+Enum = Enum or {}
+Enum.FlightPathFaction = { Neutral = 0, Horde = 1, Alliance = 2 }
+function UnitFactionGroup() return "Horde" end
+UNDISCOVERED_FACTION_FLIGHTPOINT, FACTION_HORDE = "Undiscovered %s flight point", "Horde"
+-- atlases: the undiscovered flight point atlas is missing here (fallback texture)
+C_Texture = { GetAtlasInfo = function(a) if a == "" or a == "Taxi_Frame_Green" then return nil end return {} end }
+-- taxi map of a flight master: the nodes the character knows (classic TaxiFrame API)
+TAXI_KNOWN = { "Brill", "Undercity" }
+function NumTaxiNodes() return #TAXI_KNOWN + 2 end
+function TaxiNodeName(i) return TAXI_KNOWN[i] or (i == #TAXI_KNOWN + 1 and "Bulwark" or "Tarren Mill") end
+function TaxiNodeGetType(i)   -- Tarren Mill: hop of a route, not discovered ("DISTANT")
+    return TAXI_KNOWN[i] and "REACHABLE" or (i == #TAXI_KNOWN + 1 and "NONE" or "DISTANT")
+end
+function UnitName() return "Tester" end
+function GetRealmName() return "Realm" end
+C_TaxiMap = {
+    ShouldMapShowTaxiNodes = function(m) return m ~= 1458 end,   -- world map: no flight points on the city map
+    GetTaxiNodesForMap = function(m)
+        if m == 1458 then         -- Undercity's bat handler: on the interior map only
+            return { { nodeID = 14, name = "Undercity", atlasName = "Taxi_Undercity", faction = 1, isUndiscovered = false, position = { x = 0.5, y = 0.5 } } }
+        end
+        if m ~= 1420 then return {} end
+        return {
+            { nodeID = 11, name = "Brill", atlasName = "TaxiNode_Neutral", faction = 0, isUndiscovered = false, position = { x = 0.41, y = 0.6 } },
+            { nodeID = 12, name = "Bulwark", atlasName = "TaxiNode_Horde", faction = 1, isUndiscovered = false, position = { x = 0.4, y = 0.603 } },
+            { nodeID = 15, name = "zzOLDBulwark", atlasName = "TaxiNode_Horde", faction = 1, isUndiscovered = false, position = { x = 0.4, y = 0.6 } },
+            { nodeID = 13, name = "Southshore", atlasName = "TaxiNode_Alliance", faction = 2, isUndiscovered = false, position = { x = 0.5, y = 0.5 } },
+        }
+    end,
+}

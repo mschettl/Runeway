@@ -34,6 +34,8 @@ local queue = {}          -- quests to sample: { questID = , map = , x = , y = ,
 local job                 -- quest being sampled
 local dirty = 0           -- > 0: refresh the quest list after this many seconds
 local lines, shownLines = {}, 0
+local fills, shownFills = {}, 0   -- hovered area: horizontal spans that fill its loop
+local FILL_ALPHA, FILL_STEP = 0.15, 2
 ns.QuestAreaState = function()          -- for tests: areas and groups of the player's map
     local st = state[maps[1] or 0]
     if st then return st.areas, st.groups, state, owner end
@@ -252,14 +254,115 @@ local function ToWorldLoop(xs, ys, box)
     return out
 end
 
--- Owner map per quest: prefer an outline that does not touch its map border (not cut off), then the nearer map
+-- Owner map per quest: prefer an outline that does not touch its map border (not cut off), then the nearer map.
+-- Combined outlines (option): quests whose outlines overlap (on a map, also through others) are drawn as one
+-- outline from the map that lists most of them (then fewest cut outlines, then nearest). So a neighbouring map
+-- that lists only some of them cannot split the group when it comes into reach (zoomed out).
+local pending = true      -- owners changed: publish the shown outlines once sampling has settled
+local want = {}           -- combined outlines to draw: { map =, members = {questID, ...}, key = }
 local function Resolve()
     wipe(owner)
+    wipe(want)
     for _, m in ipairs(maps) do
         local st = state[m]
         for qid, a in pairs(st and st.areas or {}) do
             local o = owner[qid]
             if #a.loops > 0 and (not o or (state[o].areas[qid].cut and not a.cut)) then owner[qid] = m end
+        end
+    end
+    pending = true
+    if not ns.db().questMerge then return end
+    -- overlapping outlines (boxes) on the same map, also through others
+    local parent = {}
+    local function root(q) while parent[q] do q = parent[q] end return q end
+    for _, m in ipairs(maps) do
+        local ids, areas = {}, state[m] and state[m].areas or {}
+        for qid, a in pairs(areas) do
+            if #a.loops > 0 then ids[#ids + 1] = qid end
+        end
+        table.sort(ids)
+        for i = 1, #ids do
+            local a = areas[ids[i]].box
+            for j = i + 1, #ids do
+                local b = areas[ids[j]].box
+                if a[1] <= b[2] and b[1] <= a[2] and a[3] <= b[4] and b[3] <= a[4] then
+                    local ri, rj = root(ids[i]), root(ids[j])
+                    if ri ~= rj then parent[rj] = ri end
+                end
+            end
+        end
+    end
+    local ids, sets = {}, {}
+    for qid in pairs(owner) do ids[#ids + 1] = qid end
+    table.sort(ids)
+    for _, qid in ipairs(ids) do
+        local r = root(qid)
+        sets[r] = sets[r] or {}
+        table.insert(sets[r], qid)
+    end
+    -- each set from the map that lists most of it (then fewest cut outlines, then nearest); the rest likewise
+    for _, rest in pairs(sets) do
+        while #rest > 1 do
+            local best, bestN, bestCut
+            for _, m in ipairs(maps) do
+                local areas, n, cut = state[m] and state[m].areas or {}, 0, 0
+                for _, qid in ipairs(rest) do
+                    local a = areas[qid]
+                    if a and #a.loops > 0 then
+                        n = n + 1
+                        if a.cut then cut = cut + 1 end
+                    end
+                end
+                if n > 1 and (not best or n > bestN or (n == bestN and cut < bestCut)) then
+                    best, bestN, bestCut = m, n, cut
+                end
+            end
+            if not best then break end
+            local areas, list, left, key = state[best].areas, {}, {}, {}
+            for _, qid in ipairs(rest) do
+                local a = areas[qid]
+                if a and #a.loops > 0 then
+                    owner[qid] = best
+                    list[#list + 1] = qid
+                    key[#key + 1] = qid .. "=" .. a.sig
+                else
+                    left[#left + 1] = qid
+                end
+            end
+            want[#want + 1] = { map = best, members = list, key = table.concat(key, ",") }
+            rest = left
+        end
+    end
+end
+
+-- The outlines on screen: { area, questIDs, state } per shown group or single quest area. Rebuilt only when
+-- sampling has settled (or after PUBLISH_MAX s of work), so new areas appear together and merged instead of
+-- one by one. Combined outlines first (Resolve: one map per group), the other quests show their own outline on
+-- their owner map. So every quest is drawn exactly once, also when a neighbouring map that lists some of the
+-- same quests comes into view.
+local PUBLISH_MAX = 3
+local shown, shownQuest, published, publishedMerge = {}, {}, 0, nil
+local function Publish()
+    Resolve()
+    pending, published = false, GetTime()
+    publishedMerge = ns.db().questMerge  -- overlapping quests as one combined outline (option)
+    shown, shownQuest = {}, {}
+    for _, g in ipairs(want) do
+        local st = state[g.map]
+        local area = st.groups[g.key]
+        if area and #area.loops > 0 then
+            for _, qid in ipairs(g.members) do shownQuest[qid] = true end
+            shown[#shown + 1] = { area, area.members, st }
+        end
+    end
+    for _, m in ipairs(maps) do
+        local st = state[m]
+        for qid, a in pairs(st and st.areas or {}) do
+            if owner[qid] == m and #a.loops > 0 and not shownQuest[qid] then
+                a.qids = a.qids or { qid }
+                shownQuest[qid] = true
+                shown[#shown + 1] = { a, a.qids, st }
+            end
         end
     end
 end
@@ -344,53 +447,17 @@ local function Step(e)
 end
 
 -- Overlapping quest areas are sampled once more with all their blobs drawn, so they get one outline
-local function NextMapGroupJob(areas, groups)
-    if not ns.db().questMerge then return end
-    local ids = {}
-    for qid, a in pairs(areas) do
-        if a.rect then ids[#ids + 1] = qid end
-    end
-    table.sort(ids)
-    local parent = {}
-    local function root(q) while parent[q] do q = parent[q] end return q end
-    for i = 1, #ids do
-        for j = i + 1, #ids do
-            local a, b = areas[ids[i]].rect, areas[ids[j]].rect
-            if a[1] <= b[3] and b[1] <= a[3] and a[2] <= b[4] and b[2] <= a[4] then
-                local ri, rj = root(ids[i]), root(ids[j])
-                if ri ~= rj then parent[rj] = ri end
-            end
-        end
-    end
-    local sets = {}
-    for _, qid in ipairs(ids) do
-        local r = root(qid)
-        sets[r] = sets[r] or {}
-        table.insert(sets[r], qid)
-    end
-    for _, members in pairs(sets) do
-        if #members > 1 then
-            local key = {}
-            for _, qid in ipairs(members) do key[#key + 1] = qid .. "=" .. areas[qid].sig end
-            key = table.concat(key, ",")
-            if not groups[key] then
-                local x0, y0, x1, y1 = 1, 1, 0, 0
-                for _, qid in ipairs(members) do
-                    local r = areas[qid].rect
-                    x0, y0, x1, y1 = math.min(x0, r[1]), math.min(y0, r[2]), math.max(x1, r[3]), math.max(y1, r[4])
-                end
-                return key, members, x0, y0, x1, y1
-            end
-        end
-    end
-end
-
 local function NextGroupJob()
-    for _, m in ipairs(maps) do
-        local st = state[m]
-        if st then
-            local key, members, x0, y0, x1, y1 = NextMapGroupJob(st.areas, st.groups)
-            if key then return m, key, members, x0, y0, x1, y1 end
+    if not ns.db().questMerge then return end
+    for _, g in ipairs(want) do
+        local st = state[g.map]
+        if st and not st.groups[g.key] then
+            local x0, y0, x1, y1 = 1, 1, 0, 0
+            for _, qid in ipairs(g.members) do
+                local r = st.areas[qid].rect
+                x0, y0, x1, y1 = math.min(x0, r[1]), math.min(y0, r[2]), math.max(x1, r[3]), math.max(y1, r[4])
+            end
+            return g.map, g.key, g.members, x0, y0, x1, y1
         end
     end
 end
@@ -518,12 +585,17 @@ local function Refresh()
 end
 
 local driver = CreateFrame("Frame")
-local MAP_CHECK = 1        -- seconds between checks whether other zone maps came into view
+local MAP_CHECK = 0.25     -- seconds between checks whether other zone maps came into view
 local mapCheck = 0
 driver:SetScript("OnUpdate", function(_, e)
     if dirty > 0 then
         dirty = dirty - e
         if dirty <= 0 then Refresh() end
+    end
+    if ns.db().questMerge ~= publishedMerge then pending = true end
+    if pending and ((not job and #queue == 0 and not (blobFrame and NextGroupJob()))
+            or GetTime() - published > PUBLISH_MAX) then
+        Publish()
     end
     if not ns.view:IsShown() then return end
     mapCheck = mapCheck - e
@@ -569,6 +641,10 @@ lineParent:SetAllPoints()
 lineParent:SetFrameLevel(ns.view:GetFrameLevel() + 3)
 lineParent:SetClipsChildren(true)       -- hard edge if lines do not take the fade mask
 
+local fillParent = CreateFrame("Frame", nil, ns.view)
+fillParent:SetAllPoints()
+fillParent:SetFrameLevel(ns.view:GetFrameLevel() + 2)
+
 local function GetLine(i)
     local l = lines[i]
     if not l then
@@ -580,41 +656,73 @@ local function GetLine(i)
     return l
 end
 
+local px, py, qx, qy, qa = {}, {}, {}, {}, {}   -- reused buffers: screen points, subdivided points, fade
+local fillN = 0                                  -- fill spans used this frame
+
 function ns.HideQuestAreas()
     for i = 1, shownLines do lines[i]:Hide() end
-    shownLines = 0
+    for i = 1, shownFills do fills[i]:Hide() end
+    shownLines, shownFills = 0, 0
 end
 
--- true if the quest has an outline (its pin is then hidden)
+-- Mouse-over fill: a faint area colour inside a loop (screen points px/py), as spans of FILL_STEP px rows
+-- (even-odd per row). Adjacent spans meet exactly (no pixel snapping), the map's edge fade comes from its mask.
+local xs = {}
+local function FillLoop(nf, cnt, r, g, b, a)
+    local view = ns.view
+    local y0, y1 = math.huge, -math.huge
+    for i = 1, cnt do y0, y1 = math.min(y0, py[i]), math.max(y1, py[i]) end
+    local y = math.floor(y0 / FILL_STEP) * FILL_STEP
+    while y < y1 do
+        local yc, k = y + FILL_STEP / 2, 0
+        local jx, jy = px[cnt], py[cnt]
+        for i = 1, cnt do
+            local ix, iy = px[i], py[i]
+            if (iy > yc) ~= (jy > yc) then
+                k = k + 1
+                local x = ix + (yc - iy) * (jx - ix) / (jy - iy)
+                local m = k                       -- insertion sort: few crossings per row
+                while m > 1 and xs[m - 1] > x do xs[m] = xs[m - 1]; m = m - 1 end
+                xs[m] = x
+            end
+            jx, jy = ix, iy
+        end
+        for m = 1, k - 1, 2 do
+            if xs[m + 1] > xs[m] then
+                nf = nf + 1
+                local t = fills[nf]
+                if not t then
+                    t = fillParent:CreateTexture(nil, "BORDER")
+                    t:SetColorTexture(1, 1, 1, 1)
+                    ns.NoSnap(t)
+                    ns.Fade(t)
+                    fills[nf] = t
+                end
+                t:SetVertexColor(r, g, b, a)      -- not SetAlpha: it overwrites the vertex alpha
+                t:ClearAllPoints()
+                t:SetPoint("BOTTOMLEFT", view, "CENTER", xs[m], y)
+                t:SetSize(xs[m + 1] - xs[m], FILL_STEP)
+                t:Show()
+            end
+        end
+        y = y + FILL_STEP
+    end
+    return nf
+end
+
+ns.QuestAreasRepublish = function() Resolve() Publish() return shown end   -- for tests
+
+-- true if the quest has an outline on screen (its pin is then hidden)
 function ns.HasQuestArea(questID)
-    local st = state[owner[questID] or 0]
-    if not st then return false end
-    local a, g = st.areas[questID], ns.db().questMerge and st.groups[st.inGroup[questID] or ""]
-    return (a and #a.loops > 0) or (g and #g.loops > 0) or false
+    return shownQuest[questID] or false
 end
-
-local px, py, qx, qy, qa = {}, {}, {}, {}, {}   -- reused buffers: screen points, subdivided points, fade
 
 -- The outlines that are drawn: fn(area, questIDs, state) for every shown group or single quest area
 local function ForEachShown(fn)
-    local merge = ns.db().questMerge     -- overlapping quests as one combined outline (option)
-    for _, m in ipairs(maps) do
-        local st = state[m]
-        -- a group is drawn on its map if that map owns one of its members
-        if merge then
-            for _, g in pairs(st.groups) do
-                local own = false
-                for _, qid in ipairs(g.members) do own = own or owner[qid] == m end
-                if own and #g.loops > 0 then fn(g, g.members, st) end
-            end
-        end
-        for qid, a in pairs(st.areas) do
-            local g = merge and st.groups[st.inGroup[qid] or ""]
-            if owner[qid] == m and #a.loops > 0 and not (g and #g.loops > 0) then
-                a.qids = a.qids or { qid }
-                fn(a, a.qids, st)
-            end
-        end
+    local inside = ns.InteriorChunks()   -- inside Undercity: only areas within the city
+    for _, e in ipairs(shown) do
+        local b = e[1].box
+        if ns.InChunks(inside, (b[1] + b[2]) / 2, (b[3] + b[4]) / 2) then fn(e[1], e[2], e[3]) end
     end
 end
 
@@ -642,24 +750,46 @@ local function Inside(a, n, w)
     return inside
 end
 
--- Mouse-over: quests whose area contains the world point (n, w). Only the loops under the cursor are
--- highlighted. A combined outline can join areas that lie far apart (its quests are grouped through
--- overlapping bounding boxes), so each member is checked against its own area for the tooltip.
--- n = nil clears the hover.
+-- Quests of a combined outline that lie in one of its loops: a member counts when a point of its own outline
+-- is inside the loop (its blob is part of the union). Cached on the loop, which is rebuilt with each sampling.
+local function LoopQuests(loop, qids, st)
+    if loop.qids then return loop.qids end
+    local list = {}
+    for _, qid in ipairs(qids) do
+        local own = #qids > 1 and st.areas[qid]
+        local hit = not own
+        for _, l in ipairs(own and own.loops or {}) do
+            for m = 1, #l, 2 do
+                if InLoop(loop, l[m], l[m + 1]) then hit = true break end
+            end
+            if hit then break end
+        end
+        if hit then list[#list + 1] = qid end
+    end
+    loop.qids = list
+    return list
+end
+
+-- Mouse-over: quests whose area contains the world point (n, w); for a combined outline all quests of the
+-- hovered loop (its connected part), not those of its other loops. Only the loops under the cursor are
+-- highlighted. n = nil clears the hover.
 local hoverLoops, hoverQuests = {}, {}
 function ns.QuestAreasAt(n, w)
     wipe(hoverLoops)
     wipe(hoverQuests)
-    if n and ns.db().layers.questAreas then
+    if n and ns.db().layers.questAreas and ns.db().showQuests then
+        local seen = {}
         ForEachShown(function(a, qids, st)
             if not Inside(a, n, w) then return end
             for _, loop in ipairs(a.loops) do
-                if InLoop(loop, n, w) then hoverLoops[loop] = true end
-            end
-            for _, qid in ipairs(qids) do
-                local own = st.areas[qid]
-                if #qids == 1 or not (own and #own.loops > 0) or Inside(own, n, w) then
-                    hoverQuests[#hoverQuests + 1] = qid
+                if InLoop(loop, n, w) then
+                    hoverLoops[loop] = true
+                    for _, qid in ipairs(LoopQuests(loop, qids, st)) do
+                        if not seen[qid] then
+                            seen[qid] = true
+                            hoverQuests[#hoverQuests + 1] = qid
+                        end
+                    end
                 end
             end
         end)
@@ -674,13 +804,7 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2, ew)
     local c = ns.db().colors.questAreas
     local ew0 = ew
     local ov0 = math.min(1, ew / 2)       -- 1 px overlap closes the joints; more would show in the fade
-    local fw = ns.FadeWidth()
-    local function fade(x, y)            -- soft edge of the map: same oval fade as the tile mask
-        local mx, my = x / W2, y / H2
-        local t = (1 - math.sqrt(mx * mx + my * my)) / fw
-        if t <= 0 then return 0 end
-        return t >= 1 and 1 or t * t * (3 - 2 * t)
-    end
+    local fade = ns.ShapeFn()            -- shape and soft edge of the map: same as the tile mask
     for _, loop in ipairs(a.loops) do
         -- mouse-over: this loop wider, brighter and fully opaque
         local cr, cg, cb, ca, ew, ov = c.r, c.g, c.b, c.a, ew0, ov0
@@ -698,6 +822,7 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2, ew)
                 px[k], py[k] = x, y
             end
         end
+        if k >= 3 and hoverLoops[loop] then fillN = FillLoop(fillN, k, c.r, c.g, c.b, FILL_ALPHA) end
         if k >= 3 then
             -- zoomed in: Catmull-Rom subdivision, so the curve stays round instead of showing straight pieces
             local q = 0
@@ -746,7 +871,8 @@ end
 
 function ns.DrawQuestAreas()
     local n = 0
-    if ns.db().layers.questAreas and next(owner) then
+    fillN = 0
+    if ns.db().layers.questAreas and ns.db().showQuests and next(owner) then
         local pN, pW, k = ns.Player()
         local W, H = ns.view:GetSize()
         local reach = math.sqrt(W * W + H * H) / 2 / k
@@ -755,5 +881,6 @@ function ns.DrawQuestAreas()
         ForEachShown(function(a) n = DrawArea(a, n, pN, pW, reach, W / 2, H / 2, ew) end)
     end
     for i = n + 1, shownLines do lines[i]:Hide() end
-    shownLines = n
+    for i = fillN + 1, shownFills do fills[i]:Hide() end
+    shownLines, shownFills = n, fillN
 end

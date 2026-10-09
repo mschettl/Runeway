@@ -59,7 +59,7 @@ T = 1600 / 3
 prev = os.path.join(out, 'preview_over_minimap.png')
 if probe.corners and os.path.exists(prev):
     base = cv2.imread(prev)
-    tiles_lua = open(os.path.join(os.path.dirname(__file__), '..', 'Runeway', 'tiles', '0', 'Tiles.lua')).read()
+    tiles_lua = open(os.path.join(os.path.dirname(__file__), '..', 'Runeway_EasternKingdoms', 'tiles', '0', 'Tiles.lua')).read()
     import re
     keys = [tuple(map(int, k)) for k in re.findall(r'\["(\d+)_(\d+)"\]', tiles_lua)]
     c0, r0 = min(c for c, _ in keys) - 1, min(r for _, r in keys) - 1     # same margin as build_raw.py

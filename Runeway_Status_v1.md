@@ -1,4 +1,4 @@
-# Runeway – Stand Version 1.5 und Übergabe
+# Runeway – Stand Version 1.6 und Übergabe
 
 Diese Datei fasst den kompletten Stand zusammen, damit eine neue Session nahtlos weitermachen kann. Sie ersetzt den Chatverlauf. Vorgaben und Ziele stehen in `Runeway_Prompt_v1.md`, Arbeitsregeln in `CLAUDE.md`, alle sichtbaren Texte in `Runeway_Strings.md`.
 
@@ -8,10 +8,11 @@ Diese Datei fasst den kompletten Stand zusammen, damit eine neue Session nahtlos
 
 Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forever** (Interface 16001) im Stil von Path of Exile und Diablo IV.
 
-**Funktionen (Stand 1.5, alles im Spiel getestet):**
+**Funktionen (Stand 1.6, im Spiel getestet):**
 - **Karte:** alle 27 Gebiete der Östlichen Königreiche aus den RAW-Spieldaten (Etappen 1–4, Abschnitt 8) mit begehbarer Fläche, Schraffur für nicht begehbare Bereiche, Gelände-, Wasser- und Weglinien; Ruinen von Lordaeron als Stadt. Angrenzende Zonen gedimmt, nahtloser Zoom, frei einstellbare Breite und Höhe, ovale Randausblendung.
 - **Quests:** Questbereiche wie auf der Weltkarte (auch aus angrenzenden Zonen), Questmarker für Punktziele, Tooltips und Hervorhebung beim Überfahren.
 - **Leichnam-Marker** im Tod, am Kartenrand in Richtung des Leichnams, wenn er außerhalb liegt.
+- **Flugmeister** (1.6): aus `C_TaxiMap.GetTaxiNodesForMap` der nahen Zonenkarten (wie die Weltkarte), eigene Fraktion und neutral, auf der Oberfläche zusätzlich die Karten der Innenbereiche (Fledermausführer von Unterstadt liegt auf 1458), Icon (Mario per `/rnw taxi icons` gewählt): entdeckt `Taxi_Frame_Gray`, unentdeckt `Taxi_Frame_Green` (Knoten der Flugkarte); fehlt der Atlas: entdeckt Blizzards Weltkarten-Atlas des Knotens, unentdeckt grünes Taxi-Icon. Entdeckt: `isUndiscovered` ist im Client immer `false` (Spieltest: alle 36 Knoten der Östlichen Königreiche, auch fremde). Runeway merkt sich daher beim Öffnen der Flugkarte (`TAXIMAP_OPENED`) die bekannten Knoten (`TaxiNodeGetType` = "CURRENT"/"REACHABLE"; "DISTANT" sind Zwischenstationen fremder Routen, die Blizzards Flugkarte ausblendet: Spieltest Tarrens Mühle und Das Grabmal fälschlich als entdeckt; "DISTANT"/"NONE" löschen ältere Einträge) pro Charakter nach Name (`RunewayDB.taxiKnown["Name-Realm"]`); vorher gelten alle als unentdeckt. `GetTaxiNodesForMap(18)` ist leer, 1458 liefert den ganzen Kontinent; „zzOLD…“-Knoten werden ausgelassen. Nicht über `ShouldMapShowTaxiNodes` gefiltert (sagt nur, ob Blizzards Weltkarte sie auf dieser Karte zeigt). `SetAtlas` meldet einen unbekannten Atlas nicht (kein Rückgabewert, Textur bleibt leer), daher prüft `SetAtlasOr` vorher `C_Texture.GetAtlasInfo`. Diagnose: `/rnw taxi` (abgefragte Karten, Anzahl, bekannte Knoten, die fünf nächsten mit Entfernung, Status und Atlas). Tooltip mit Name (deDE: erster Buchstabe nach dem Komma groß, `TaxiName`; die Client-Daten schreiben „östliche Pestländer“) und bei unentdeckten Blizzards Text „Unentdeckter Flugpunkt“. Zeile „Flugmeister“ (`showTaxi` + Größe `taxiSize`, Standard 20 px) unter Display; aktualisiert bei `TAXIMAP_OPENED`/`TAXI_NODE_STATUS_CHANGED`.
 - **Bedienung:** drei Aufruf-Modi (eigene Taste, Kartentaste M, dauerhaft), automatisches Ausblenden, gesperrt/klickdurchlässig oder verschiebbar, Mausrad-Zoom abschaltbar, Ansichtsmodus (`/rnw view`) zum Betrachten anderer Orte, Slash-Befehle.
 - **Einstellungen** im Blizzard-Stil mit Unterpunkten, Profil-Export/-Import als Text, Lokalisierung in allen elf Client-Sprachen.
 
@@ -26,8 +27,9 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 | 1.4 | Profil-Export und -Import |
 | 1.4.1 | Aufräumen (u. a. Fehler beim Hervorheben des Leichnams behoben), Version im Chat beim Login und oben in den Einstellungen |
 | 1.5 | Östliche Königreiche komplett (27 Gebiete, Etappen 2–4), Block-Build, Kachelliste pro Karten-ID, Schraffur-Maske und Saum nur in 128 px, offenes Meer ausgeblendet, Ansichtsmodus `/rnw view` |
+| 1.6 | Datenpakete (`Runeway_EasternKingdoms`, LoadOnDemand) mit Meldung bei fehlenden Kartendaten (Login/Reload/Zonenwechsel getrennt); Unterstadt und Zwischenmap der Ruinen als Innen-Kachelsätze mit eigenem Zoom; Flugmeister (entdeckt/unentdeckt); Questsymbole neu („?“ modern, „…“, klassisch per Option), Questbereiche kartenübergreifend gebündelt, Füllung beim Überfahren, Tooltips; Optionen: Kartenform (Rechteck–Oval–Kreis), weicher Rand in %, Marker-Zeilen mit Schalter und Größe, breitere Beschriftungen, neue Standardwerte; Rahmen beim Entsperren mit runden Ecken |
 
-**Versionierung:** Zweite Stelle = abgeschlossener, im Spiel getesteter Schritt, der nach `main` geht; dritte Stelle = Korrekturen ohne neue Funktion; 2.0 = Route zum Questziel. Geplant: 1.6 Datenpakete (beim Betreten laden), 1.7 Kalimdor, 1.8+ Städte, Höhlen/Minen, Dungeons. Eine öffentliche Veröffentlichung (z. B. CurseForge) wird davon getrennt entschieden, sinnvoll frühestens nach den Datenpaketen (Ordnerumbau).
+**Versionierung:** Zweite Stelle = abgeschlossener, im Spiel getesteter Schritt, der nach `main` geht; dritte Stelle = Korrekturen ohne neue Funktion; 2.0 = Route zum Questziel. Geplant: 1.7 Kalimdor, 1.8+ Städte, Höhlen/Minen, Dungeons. Eine öffentliche Veröffentlichung (z. B. CurseForge) wird davon getrennt entschieden, sinnvoll frühestens nach den Datenpaketen (Ordnerumbau).
 
 ---
 
@@ -55,22 +57,39 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 
 ---
 
-## 3. Addon (Ordner `Runeway/`)
+## 3. Addon (Ordner `Runeway/`) und Datenpakete (`Runeway_<Kontinent>/`)
+
+Seit 1.6 besteht das Release aus zwei Ordnern, die beide nach `Interface\AddOns` gehören: das Kern-Addon `Runeway` (Code, Medien, Texte) und je Kontinent ein Datenpaket, bisher `Runeway_EasternKingdoms` (Karte 0, ~78 MB).
 
 | Datei | Inhalt |
 |---|---|
-| `Runeway.toc` | Interface 16001, Version 1.4.1, SavedVariables `RunewayDB`; lädt `Locales/*.lua`, `tiles/0/Tiles.lua`, `Core.lua`, `QuestAreas.lua`, `Profile.lua`, `Options.lua`, `Options.xml` |
+| `Runeway.toc` | Interface 16001, Version 1.6, SavedVariables `RunewayDB`; lädt `Locales/*.lua`, `Core.lua`, `QuestAreas.lua`, `Profile.lua`, `Options.lua`, `Options.xml` |
 | `Locales/` | Texte je Client-Sprache (`ns.L`): `enUS.lua` (Basis) und `deDE.lua` aus `Runeway_Strings.md` erzeugt, die übrigen neun von Hand gepflegt |
 | `Core.lua` | Fenster, Kacheln, Zoom, Drehung, Zonen-Dimmung, Questmarker, Leichnam, Mouse-over, Sichtbarkeit und Aufruf-Modi, Slash-Befehle, Standardwerte |
 | `QuestAreas.lua` | Questbereiche: Abtasten, Umriss, Zeichnen, Trefferprüfung für Mouse-over |
 | `Profile.lua` | Profil-Export/-Import und sein Dialog; Pfad-Hilfen `ns.GetPath`/`ns.SetPath` |
 | `Options.lua`, `Options.xml` | Einstellungen im Blizzard-Stil (`Settings.RegisterVerticalLayoutCategory` mit Proxy-Settings), eigene Zeilenvorlagen; wird bei `PLAYER_LOGIN` aufgebaut, weil die Tastenbelegungs-Zeilen `GetNumBindings` brauchen |
-| `tiles/<Karten-ID>/Tiles.lua` | generiert, je Karte: `RunewayTiles[id]` (Kacheln mit ihren Ebenen, `["31_28"] = "fhstwr"`, Grenzkacheln als Zonenteile `"c_r_z<zone>"`) und `RunewayZones[id]` |
+| `Runeway_<Paket>/Runeway_<Paket>.toc` | generiert von `build_raw.py` (`--toc` schreibt nur die `.toc`): `## Title`/`## Notes` mit `-<Locale>`-Varianten in allen elf Sprachen (offizielle Blizzard-Namen der Kontinente, `PACKS`), `## LoadOnDemand: 1`, `## Dependencies: Runeway`, `## X-Runeway-Maps: <Karten-ID>`, Interface und Version wie `Runeway.toc`; lädt `tiles\<id>\Tiles.lua` |
+| `Runeway_<Paket>/tiles/<Karten-ID>/Tiles.lua` | generiert, je Karte: `RunewayTiles[id]` (Kacheln mit ihren Ebenen, `["31_28"] = "fhstwr"`, Grenzkacheln als Zonenteile `"c_r_z<zone>"`) und `RunewayZones[id]` |
 | `Bindings.xml` | Tastenbelegungen `RUNEWAY_TOGGLE` und `RUNEWAY_WORLDMAP` |
-| `media/` | `hatch512/256/128.tga` (gemeinsames Schraffurmuster je Zoomstufe, erzeugt von `build_raw.py`), `fade1.tga`–`fade5.tga` (Ausblendmasken je Randstärke, `scripts/make_masks.py`), `arrow.tga` (Spielerpfeil), `edge.tga` (kantengeglättete Linientextur), `dot.tga` (Rückfall-Symbol) |
-| `tiles/0/[256/ \| 128/]<key>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Speicherbedarf siehe „Dateigröße“ unten |
+| `media/` | `hatch512/256/128.tga` (gemeinsames Schraffurmuster je Zoomstufe, erzeugt von `build_raw.py`), `mask/s<0-5>f<0-10>.tga` (66 Ausblendmasken je Form- und Randstufe, `scripts/make_masks.py`, ~5,6 MB; geladen ist nur die aktive), `arrow.tga` (Spielerpfeil), `edge.tga` (kantengeglättete Linientextur), `dot.tga` (Rückfall-Symbol) |
+| `Runeway_<Paket>/tiles/0/[256/ \| 128/]<key>_<layer>.tga` | weiße RLE-TGA-Kacheln je Ebene und Zoomstufe (512/256/128 px). Speicherbedarf siehe „Dateigröße“ unten |
 
 `tools/Probe.lua` ist ein Entwicklungswerkzeug und nicht im Release (siehe Abschnitt 6).
+
+### Innenraum-Kachelsätze (`Core.lua`, `TileSet`)
+- Neben dem Kachelsatz der Karte (`tiles/0`) kann ein Paket Innenraum-Sätze `tiles/<set>/` enthalten, gleiche Weltkoordinaten und Kachelraster wie die Oberfläche, eigene `RunewayTiles[set]`/`RunewayZones[set]`. Bisher: `0-1458` = Undercity, `0-1458-ruins` = Thronsaal, Mausoleum, Aufzugsschächte, Torhaus, Glockentürme und Kanalisationsabgänge der Ruinen (Innen-Gruppen „Ruins of Lordaeron“).
+- Regeln je Satz in `RunewayZones[set]`: `ui` (uiMap), `subzones` (nur in diesen Unterzonen und innerhalb des Grundrisses `inside`), `notSubzones` (nie in diesen), `inside` (Grundriss als Zellraster, `res` Zellen je Kachelseite: Undercity 16 ≈ 33 yd, Ruinen 64 ≈ 8 yd). `TileSet` nimmt den ersten Satz der uiMap, dessen Regeln gelten (Sätze mit `subzones` zuerst), sonst die Oberfläche. Index `SetsFor`, neu aufgebaut nach jedem Paket-Laden.
+- Grund: Hof, Thronsaal, Aufzug und Stadt melden alle uiMap 1458 und Zone „Undercity“; `UnitPosition` liefert keine Höhe, die WMO-Gruppe ist für Addons nicht abfragbar. Unterzone „Ruins of Lordaeron“ (Area 153) + Position im Grundriss der Innen-Gruppen trennt Thronsaal/Aufzug (Zwischenkarte) vom Hof (Oberfläche); andere Unterzonen = Undercity. Im Spieltest schaltet die Minimap am Eingang des Thronsaals (66.0 32.8) um.
+- Unterzonen-Vergleich: Name über `C_Map.GetAreaInfo(id)`, enthält-Prüfung ohne Groß-/Kleinschreibung, weil der Client „Die Ruinen von Lordaeron“ meldet. Die Satzwahl wird 0,2 s zwischengespeichert.
+- Unten am Aufzug meldet der Client außerhalb des Schachts weiter die Unterzone „Ruinen“ (dauerhaft, z. B. beim Warten auf den Aufzug bei 65.9 54.1). Eine Höhe gibt es für Addons nicht (`UnitPosition` z = 0). Darum gilt `notSubzones` von Undercity nur auf der Außenfläche der Ruinen (`surfaceArea`: Bodenflächen der Außen-Gruppen „Ruins of Lordaeron“ = Hof, Rosengang, Außeneingang, Raster 64) oder außerhalb des Undercity-Grundrisses; sonst Undercity.
+- Questbereiche und -marker (`NearbyMaps`): In einem Innenraum-Satz nur die uiMap des Innenraums, an der Oberfläche alle Zonen außer denen mit Innenraum-Sätzen. Die uiMap 1458 listet auch Tirisfal-Quests mit Gebiet (370/374): Im Innenraum gelten Bereiche und die Marker von Quests mit Gebiet nur innerhalb des Grundrisses (`ns.InChunks`); Abgabe- und Ansprech-Marker immer.
+- `/rnw pos` zeigt den aktiven Satz (`set=`).
+
+### Datenpakete laden (`Core.lua`, `PackOf`/`LoadPack`)
+- **Zuordnung:** Beim ersten Bedarf liest der Kern alle installierten Addons (`C_AddOns.GetNumAddOns`/`GetAddOnInfo`) und deren Feld `X-Runeway-Maps` (Karten-IDs, durch Leerzeichen oder Komma getrennt). Paketnamen sind damit nicht im Code festgelegt; ein späteres Retail-Paket bräuchte zusätzlich eine Unterscheidung nach Spieltyp.
+- **Laden:** `C_AddOns.LoadAddOn(paket)` einmal je Paket, sobald eine Karte gebraucht wird: bei `PLAYER_ENTERING_WORLD` (hinter dem Ladebildschirm), sonst beim ersten Kachelzugriff (`TileIndex`) bzw. bei `/rnw view <Gebiet>`. Kachelpfade: `Interface\AddOns\<paket>\tiles\<id>\…`.
+- **Fehler:** Lädt das Paket der aktuellen Karte nicht (z. B. in der Addon-Liste deaktiviert), meldet der Chat „Data from pack <Name> not found. Map data could not be loaded for <Area>.“ (`L.PACK_FAILED`; Name = Titel des Pakets in der Client-Sprache ohne „Runeway - “, z. B. „Östliche Königreiche“). Der Name ist ein Addon-Link (`|Haddon:Runeway:pack:<Paket>|h[<Name>]|h`, Runeway-Blau); ein Klick zeigt im `ItemRefTooltip` Paket, Grund (Blizzard-Text `ADDON_<REASON>`) und Hinweis zur Behebung, ein zweiter Klick schließt ihn (`EventRegistry` „SetItemRef“). Im Spieltest öffnet der Client bei keinem Chat-Link einen Tooltip, auch ohne Runeway; Link-Darstellung (blau, eckige Klammern) reicht, Tooltip-Code bleibt für Clients, in denen Links funktionieren, beim Laden und bei jedem Öffnen der Karte. Die Karte bleibt ausgeblendet (`MissingPack` in `UpdateVisibility` und `Runeway_Toggle`), also auch keine Questbereiche, Marker oder Spielerpfeil; auf einer Karte mit Daten erscheint sie wieder. Bekanntes, aber nicht installiertes Paket (`KNOWN_PACKS` in Core.lua: Karte → Paket, Kontinent-uiMap für den Namen): wie ein nicht ladendes Paket (`PACK_FAILED`, Status `ADDON_MISSING`). Ohne Daten für die Karte (Kalimdor, Instanzen ohne Position): Karte ausgeblendet, einmal pro Karte dieselbe Meldung; Paketname = Name des Kontinents (`ContinentName`; in Instanzen der zuletzt besuchte Kontinent, da Dungeon-Karten nicht zum Kontinent führen – Flammenschlund hängt unter Orgrimmar). Gebiet in Instanzen = Instanzname (`GetInstanceInfo()`), aber nur wenn die Position auf der Karte dieser Instanz liegt und sie kein Kontinent ist (`WORLD_MAPS` 0/1/530/571): nach dem Verlassen nennen Name und Typ noch eine Weile den Dungeon (Spieltest), die Position ist schon zurück auf dem Kontinent. Die Meldung nach einem Kartenwechsel kommt nie während eines Ladebildschirms (`LOADING_SCREEN_ENABLED`/`_DISABLED`) und unterscheidet den letzten Ladebildschirm (`PLAYER_ENTERING_WORLD` isInitialLogin/isReloadingUi, Mario): Login = warten auf einen echten Zonennamen (kurz leer bzw. Kontinentname), Reload = sofort (0,5 s), Zonenwechsel (Dungeon rein/raus, Portal) = 1 s, echter Zonenname (auch hier kurz leer, Kontinentname oder noch der Name des verlassenen Dungeons, die Spielerkarte noch der Dungeon; Spieltest: je nach Ladezeit mal richtig, mal Ragefire) und bis die Instanz-ID aus `GetInstanceInfo()` zur Position passt; Name der Spielerkarte nur als Rückfall nach Ablauf; höchstens 15 s (`SayNoData`). `/rnw pos` zeigt die Werte beim letzten Hinweis. Umschalten meldet sofort. **Entscheidung (Mario, 1.6):** Dungeons und Raids kommen ins Paket ihres Kontinents (eigene Karten-IDs in `X-Runeway-Maps` und `KNOWN_PACKS`), kein eigenes Dungeon-Paket. Eine Meldung für alle Fälle (`L.PACK_FAILED`): „Daten aus Paket [Paket] nicht gefunden. Kartendaten konnten für [Gebiet] nicht geladen werden.“ (Gebiet = `GetZoneText()`), ein Umschalten wiederholt den Hinweis (Spieltest 1.6: vorher blieb die Karte mit Questgebieten und „No contours …“ sichtbar). „No contours for this area yet“ bleibt nur für Lücken innerhalb einer Karte mit Paket.
 
 ### Ebenen (Zeichenreihenfolge, Kennbuchstabe in `Tiles.lua`)
 `fill` (f, begehbar) → `hatch` (h, Schraffur nicht begehbar) → `shade` (s, dunkler Saum) → `terrain` (t) → `water` (w) → `roads` (r). Darüber `questAreas` (Linien aus `QuestAreas.lua`), Questmarker und Spielerpfeil.
@@ -86,8 +105,9 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | Schlüssel | Standard |
 |---|---|
 | `w`, `h` | 800, 600 (Breite, Höhe; je 200–1400) |
-| `zoom` | 0.3 (0.08–5) |
-| `alpha` | 0.7 (nur Kartenebenen; Pfeil, Marker und Questränder immer voll) |
+| `zoom` | 0.66 (0.1–1.5, in Optionen und `/rnw zoom` als 0–100 %; 0.66 = 40 %) |
+| `zoomInside` | 0.8 (= 50 %; eigener Zoom in Innenkarten/Tile-Sets wie Unterstadt, wie Blizzards Minimap drinnen; Mausrad und `/rnw zoom` ändern den Zoom der aktuellen Ebene, `ZoomKey()`) |
+| `alpha` | 0.5 (0–100 %, nur Kartenebenen; Pfeil, Marker und Questränder immer voll) |
 | `rotate`, `locked`, `shown` | true, false, false |
 | `colors.fill` | #000000, a 0.10 |
 | `colors.hatch` | #CCD6E0, a 0.20 |
@@ -98,12 +118,12 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `layers.*` | alle true |
 | `mode` | `"key"` (eigene Taste), `"mapkey"` (Kartentaste M öffnet das Overlay), `"permanent"` |
 | `autoHide.combat/instance/mounted/city` | alle false (`city` = ausgeruht, also Städte und Gasthäuser) |
-| `hover` | true (Rahmen bei Mausüberfahrt, nur entsperrt) |
 | `wheelZoom` | true (Mausrad über der Karte zoomt) |
-| `edge` | 3 (Randstärke 1–5, Breite 0,12 / 0,25 / 0,38 / 0,55 / 0,75 des Radius) |
-| `arrowSize`, `pinSize`, `corpseSize`, `questEdge` | 25, 25, 25, 0.8 (Faktor für die Breite der Questränder) |
+| `shape` | 0.5 (Kartenform in 10-%-Schritten: 0 Rechteck, Superellipse mit Exponent 20 → 2 bis 50 % Oval, darüber schrumpft das Oval zur kürzeren Fensterseite = Kreis bei 100 %; `ShapeParams`/`ns.ShapeFn` für Questlinien, Hover und Leichnam) |
+| `edgeSoft` | 0.5 (weicher Rand in 10-%-Schritten: Verlaufsbreite = Wert × 0,75 des Radius; 0 = harte Kante, 100 % = frühere Stufe 5; alte Stufen 1–5 werden beim Laden umgerechnet) |
+| `arrowSize`, `pinSize`, `corpseSize`, `taxiSize`, `questEdge` | 20, 20, 20, 20, 1.0 (Faktor für die Breite der Questränder, 0,5–1,5, in den Optionen als 0–100 %; Standard 50 %) |
 | `questMerge` | true: überlappende Questbereiche bekommen einen gemeinsamen Umriss |
-| `zoneDim` | 0.3: Deckkraft-Faktor der angrenzenden Zonen (Option „Adjacent zones opacity“) |
+| `zoneDim` | 0.5: Deckkraft-Faktor der angrenzenden Zonen (Option „Adjacent zones opacity“) |
 | `questAreaCache` | `[mapID] = { areas, groups }`, Version über `questAreaCacheVersion` (2) |
 | `style` | 6. Migrationszähler: setzt bei Stiländerungen einzelne Farben einmalig zurück (siehe `ADDON_LOADED` in `Core.lua`) |
 
@@ -114,10 +134,10 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `/rnw config` | Einstellungsseite öffnen |
 | `/rnw lock` / `unlock` | gesperrt = klickdurchlässig |
 | `/rnw alpha 5-100` | Deckkraft der Kartenebenen |
-| `/rnw zoom 0.08-5` | Zoom setzen |
+| `/rnw zoom 0-100` | Zoom in % setzen (0 % = Faktor 0.1, 100 % = 1.5) |
 | `/rnw size W [H]` | Breite und Höhe 200–1400 px (ohne H: beide gleich) |
 | `/rnw rotate` | mitdrehen oder Norden oben |
-| `/rnw edge 1-5` | Stärke des weichen Rands |
+| `/rnw edge 0-100` | Weicher Rand in % (10-%-Schritte) |
 | `/rnw mode key\|mapkey\|permanent` | Aufruf-Modus |
 | `/rnw layer NAME` | Ebene ein/aus (`fill`, `hatch`, `shade`, `terrain`, `water`, `roads`, `questareas`) |
 | `/rnw color NAME R G B [A]` | Farbe und optional Deckkraft (0–1) |
@@ -132,9 +152,9 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 - **Mausrad:** zoomt gesperrt wie entsperrt, abschaltbar über „Zoom with the mouse wheel“ (`wheelZoom`, dann `EnableMouseWheel(false)` und das Mausrad steuert die Kamera). `EnableMouse` nur entsperrt.
 - **Nur entsperrt:**
   - Ziehen verschiebt die Karte.
-  - Der Griff unten rechts ändert Breite und Höhe unabhängig; die obere linke Ecke bleibt stehen.
+  - Der Griff unten rechts (6 px eingerückt, innerhalb der runden Rahmenecke) ändert Breite und Höhe unabhängig; die obere linke Ecke bleibt stehen.
   - Shift+Mausrad ändert die Größe.
-  - Beim Überfahren erscheint ein Rahmen, abschaltbar.
+  - Beim Überfahren erscheint ein Rahmen (seit 1.6 immer, ohne Option): Rechteck mit runden Ecken (Radius 16 px), dünne weiche Linie (1 px, 55 %) über einem schwachen Glow (8 px, 10 %), helles Grau der Kartenlinien, Segmente mit `edge.tga`; statt der früheren harten 1-px-Linien.
 
 **Sichtbarkeit (`UpdateVisibility`):**
 - **Grundregel:** Angezeigt wird, wenn `mode == "permanent"` oder `shown` gesetzt ist und keine Bedingung zum automatischen Ausblenden greift.
@@ -161,6 +181,8 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 - **Knopf „Karte ein-/ausblenden“:** im Kopf des Einstellungsfensters links neben „Standard“, nur auf den Runeway-Seiten (`Settings.CategoryChanged` über `EventRegistry`); Text wechselt zwischen „Show map“ und „Hide map“.
 - **Ebenen:** eine Zeile je Ebene mit Häkchen, Farbfeld und Deckkraft-Regler (`RunewayLayerRowTemplate`, baut auf Blizzards Häkchen-plus-Regler-Zeile auf; die Farbe ist ein eigenes Proxy-Setting, „Standard“ setzt sie mit zurück).
 - **Unterpunkte im Baum links** (Runeway aufklappbar, `RegisterVerticalLayoutSubcategory`): Open with, Hide automatically, Window, Display, Layers. Jeder Unterpunkt hat eigene Proxy-Settings, „Standard“ setzt nur diesen Unterpunkt zurück.
+- **Zeilen mit breiterer Beschriftung:** Runeways Checkbox-, Regler- und Checkbox+Regler-Zeilen nutzen eigene Vorlagen (`RunewayCheckboxTemplate`, `RunewaySliderTemplate`, `RunewayCheckboxSliderTemplate`, Options.xml), die Blizzards Mixins erweitern: Steuerelemente 60 px weiter rechts (`WIDE`), Text entsprechend breiter; Blizzards Zeilen anderer Seiten bleiben unverändert. Auswahlliste „Öffnen mit“ und Tastenbelegungen sind Blizzards Zeilen.
+- **Display:** Kartendeckkraft, Zoom (Außenbereiche), Zoom (Innenbereiche), Deckkraft angrenzender Zonen, Kartenform, Weicher Rand, dann Marker-Zeilen wie die Ebenen (Schalter + Größe, `CreateSettingsCheckboxSliderInitializer`): Spielerpfeil (`showArrow`), Leichnam (`showCorpse`), Flugmeister (`showTaxi`), Questsymbole (`showQuests`, aus: weder Questsymbole noch Questbereiche); danach Rand des Questbereichs, Überlagerte Questbereiche bündeln und Klassische Questsymbole (`questClassic`), alle drei über `SetParentInitializer` am Questmarker-Schalter (ausgegraut, wenn aus; dafür `row.data.setting = cb`, sonst meldet die Checkbox-Slider-Zeile keine Änderung).
 
 ### Schnellbefehle
 - Auf der Hauptseite („Quick commands“): alle Slash-Befehle mit Beschreibung. Eigene Zeilenvorlage `RunewayCommandRowTemplate` (`Options.xml`, erbt `SettingsListElementTemplate`): Befehl links, Beschreibung rechts. Der frühere Bedienhinweis oben auf der entsperrten Karte ist entfernt.
@@ -175,7 +197,7 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 - Reihenfolge: Spielerpfeil, Leichnam, Questmarker, dann Questbereiche. Marker unter dem Cursor werden um 30 % vergrößert; Questbereiche werden breiter, heller und voll deckend gezeichnet.
 - Tooltips wie auf der Minimap: Questtitel (gelb) und Ziele (`C_QuestLog.GetQuestObjectives`, erledigte grau), bei überlappenden Bereichen alle betroffenen Quests untereinander. Leichnam: Blizzards Text `CORPSE_RED`. Der Spielerpfeil hat keinen Tooltip.
 - Trefferprüfung Questbereich: Punkt-in-Polygon (gerade/ungerade über alle Umrisse) in Weltkoordinaten (`ns.QuestAreasAt`), gleiche Auswahl wie beim Zeichnen (`ForEachShown`, inkl. Option „Combine overlapping quest areas“).
-- Zusammengefasste Umrisse: Gruppen entstehen über sich überlappende Begrenzungsrechtecke und können daher weit auseinanderliegende Bereiche verbinden. Der Tooltip prüft deshalb jede Quest der Gruppe gegen ihren eigenen Bereich, und hervorgehoben wird nur der Umriss (Loop) unter dem Cursor.
+- Zusammengefasste Umrisse: Gruppen entstehen über sich überlappende Begrenzungsrechtecke und können daher mehrere getrennte Teile (Loops) haben. Der Tooltip listet die Quests des Teils unter dem Cursor: jede Quest der Gruppe, deren eigener Umriss in diesem Loop liegt (`LoopQuests`, am Loop gecacht). Hervorgehoben wird nur dieser Loop: breiterer, hellerer Rand und eine schwache Füllung in der Bereichsfarbe (Alpha 0,15, `FillLoop`: waagerechte Streifen à 2 px je Zeile, gerade/ungerade Schnittpunkte, ohne Pixel-Snapping, Rand-Ausblendung über die Maske der Karte). Die erste Tooltip-Zeile bekommt die normale Schrift (`GameTooltipText`), ihre Farbe bleibt erhalten (`SetFontObject` setzt sonst Weiß).
 
 ### Lokalisierung
 - **Quelle:** `Runeway_Strings.md` enthält alle sichtbaren Texte mit Schlüssel, Englisch und Deutsch (von Mario abgestimmt). `python scripts/make_locales.py` erzeugt daraus `Runeway/Locales/enUS.lua` und `deDE.lua` – nicht von Hand ändern, sondern die Liste pflegen und neu erzeugen.
@@ -205,9 +227,10 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 ```bash
 python scripts/build_raw.py               # Karte 0, Zonen aus scripts/zones_0.txt
 python scripts/build_raw.py --map 1       # andere Karte (1 = Kalimdor, Ordner kalimdor), Zonen aus zones_1.txt
+python scripts/build_wmo.py               # Innenraum-Sätze (Undercity), nach build_raw.py; schreibt auch die Paket-.toc
 python scripts/build_raw.py "Zone Name"   # einzelne Zone(n), Namen wie in AreaTable (AreaName_lang)
 ```
-Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `build/` (`preview_lines.png`, `preview_over_minimap.png`). Die Community-Listfile (`listfile.csv`) wird beim ersten Lauf geladen. Der Bereichsindex der ADTs wird in `build/area_index_<id>.npz` zwischengespeichert.
+Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc` (Paket je Karte in `PACKS`, `build_raw.py`: 0 = `Runeway_EasternKingdoms`, 1 = `Runeway_Kalimdor`) und Vorschauen nach `build/` (`preview_lines.png`, `preview_over_minimap.png`). Die Community-Listfile (`listfile.csv`) wird beim ersten Lauf geladen. Der Bereichsindex der ADTs wird in `build/area_index_<id>.npz` zwischengespeichert.
 
 **Block-Build:** Das Mosaik ist eine logische Gesamtkarte, gerechnet in Blöcken von 8 × 8 Kacheln (`BLOCK`) mit 1 Kachel Überlappung (`MARGIN`); behalten wird nur das Innere. Gleitkomma-Raster (Höhen, Steigung, Texturgewichte, Weichzeichnen, Linien, Randausblendung) gibt es nur je Block. Nicht-lokale Schritte (Entfernen kleiner Inseln und Flecken, Wege-Skelett und -Linienzüge, Umrisse) laufen auf 1-Byte-Masken der ganzen Karte; Umrisse und Wege werden einmal global vereinfacht und je Block nur gezeichnet. Ergebnis für Etappe 1 bitgleich zum früheren Gesamtbau (1241 Kacheln), Spitzen-RAM 3,8 → 1,7 GB, Laufzeit 146 → 108 s. Der RAM betrifft nur den Build auf dem Entwicklungsrechner, nicht das Addon.
 
@@ -217,10 +240,11 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
 | `raw_mosaic.py` | setzt Kacheln zu Rastern zusammen; exaktes Dreiecksnetz → 512 px pro Kachel (~1,04 yd/px); Texturgewichte |
 | `structures.py` | Gebäude: Wände platzierter WMOs (OBJ-Export) und ausgewählte M2 (Türme) werden „nicht begehbar“ |
 | `build_raw.py` | Masken, Zonen-Zuschnitt, Linien je Zoomstufe, Schraffur, Kacheln, `Tiles.lua`, Vorschauen |
+| `build_wmo.py` | Innenraum-Kachelsätze aus WMO-Exporten (`SETS`, bisher Undercity `0-1458` und Ruinen `0-1458-ruins`; Gruppen per `skip`/`only`, Regeln `subzones`/`not_subzones`, Grundriss `margin`/`res`): Grundriss von oben, gleiche Ebenen und Funktionen wie `build_raw.py`; Vorschau `build/preview_<set>.png` |
 | `roads.py` | `prune` (Skelett entgraten), von `build_raw.py` genutzt |
 | `simulate.py` | rendert die Lua-Darstellung aus den Kacheln (`build/sim.png`) |
 | `probe_view.py` | wertet `/rnw probe`-SavedVariables aus (Entwicklung) |
-| `make_masks.py` | erzeugt die Randmasken `media/fade1–5.tga` (Breiten wie `FADE_WIDTH` in `Core.lua`) |
+| `make_masks.py` | erzeugt die Randmasken `media/mask/s<Form>f<Rand>.tga` (Formel wie `ShapeParams` in `Core.lua`) |
 | `zones_<id>.txt` | zu bauende Zonen je Karte, wird etappenweise erweitert |
 | `update_data_branch.ps1` | lokale Rohdaten als Commit auf `data` |
 
@@ -253,6 +277,9 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
    - Umrechnung in Weltkoordinaten über die Kartenecken.
    - Je Umriss wird gespeichert, auf welcher Seite die Fläche liegt (`inward`).
 4. **Überlappende Quests:** Sie werden zusätzlich gemeinsam abgetastet und bekommen einen einzigen Umriss (`groups`). Abschaltbar über die Option „Combine overlapping quest areas“ (`questMerge`); dann wird nicht gemeinsam abgetastet und jede Quest behält ihren Umriss.
+   - **Anzeige (`Publish`):** Die gezeigten Umrisse sind eine feste Liste, neu aufgebaut erst, wenn die Abtastung fertig ist (keine Warteschlange, keine offene Gruppe) oder spätestens nach 3 s Arbeit. Neue Bereiche erscheinen dadurch gemeinsam und schon zusammengefasst statt einzeln.
+   - **Jede Quest genau einmal, Gruppen kartenübergreifend (`Resolve`):** Quests, deren Bereiche sich auf einer Karte überlappen (Begrenzungsrechtecke, auch über andere), bilden eine Menge. Sie wird als ein Umriss von der Karte gezeichnet, die die meisten dieser Quests listet (dann wenigste abgeschnittene Umrisse, dann nächste Karte); der Rest ebenso. Vorher bildete jede Karte eigene Gruppen; kam beim Rauszoomen eine Nachbarkarte mit einem Teil derselben Quests dazu, blockierte deren Gruppe die große und deren übrige Quests wurden einzeln gezeichnet (Spieltest: Merge je nach Zoomstufe nur teilweise).
+   - Neue Karten in Sichtweite werden alle 0,25 s geprüft (vorher 1 s).
 5. **Neu abtasten:** nur, wenn sich die Signatur ändert (Anzahl Teilbereiche, Questpunkt, Zielfortschritt). Auslöser: `QUEST_LOG_UPDATE` (0,3 s gebündelt), `QUEST_POI_UPDATE`, Zonenwechsel. Ergebnisse werden je Karte in `RunewayDB.questAreaCache` gespeichert und sind nach `/reload` sofort da.
 6. **Zeichnen:**
    - Linien-Objekte mit `media/edge.tga` (WoW glättet Linienkanten nicht, die Textur schon).
@@ -269,7 +296,8 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
    - Cache-Version 3 (`cut` neu); alte Einträge werden einmal verworfen.
 8. **Questmarker (`Core.lua`):**
    - Nur Quests ohne Umriss bekommen einen Marker (punktuelle Ziele).
-   - Atlas `UI-QuestPoi-QuestNumber` (Kreis mit Goldrand) plus `UI-QuestIcon-TurnIn-Normal` (Abgabe) bzw. `Quest-In-Progress-Icon-yellow` (läuft), 26 px.
+   - Seit 1.6 (Mario, aus `interface/minimap/objecticonsatlas.blp`): Abgabe `quest-campaign-turnin` („?“, eigener Ring, ohne Hintergrund). In Bearbeitung (Punktziel ohne Gebiet) wie auf der Retail-Weltkarte immer rund `Quest-In-Progress-Icon-yellow` („…“) auf dem Hintergrund; „!“ bleibt verfügbaren Quests vorbehalten.
+   - **Verfügbare Quests („!“): nicht möglich.** `C_QuestLine.GetAvailableQuestLines` liefert im Forever-Client 0 (Spieltest direkt vor einem Questgeber, nach `RequestQuestLinesForMap`); die Weltkarte zeigt keine, nur die Minimap (Server-Blips, für Addons nicht lesbar). Bliebe nur eine eigene Questgeber-Datenbank (wie Questie), eigenes Projekt. Option „Classic quest icons“ (`questClassic`, Standard aus, nach „Zusammenfassen“, folgt dem Questmarker-Schalter) oder fehlender Atlas: wie bisher `UI-QuestPoi-QuestNumber` (Kreis mit Goldrand) plus `UI-QuestIcon-TurnIn-Normal` bzw. `Quest-In-Progress-Icon-yellow`. Vorschau weiterer Kandidaten: `/rnw quest icons`.
 
 ---
 
@@ -315,7 +343,7 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
 
 **Architektur-Grundsätze:**
 - **Laufzeit bleibt kachelbasiert:** Kacheln in Weltkoordinaten, geladen nach Sichtfeld, keine Zonen im Addon. Zonen-Maps zur Laufzeit zusammenzusetzen ist ausdrücklich verworfen (doppelte Texturen und Überblend-Artefakte an Grenzen).
-- **Pro Karten-ID ein Kachelsatz:** `tiles/<mapID>/…` (heute `tiles/0` = Östliche Königreiche). Die Instanz-ID kommt aus `UnitPosition` (4. Wert); `Tiles.lua` führt die Kachelliste pro Karten-ID.
+- **Pro Karten-ID ein Kachelsatz:** `<Paket>/tiles/<mapID>/…` (heute `Runeway_EasternKingdoms/tiles/0`). Die Instanz-ID kommt aus `UnitPosition` (4. Wert); `Tiles.lua` führt die Kachelliste pro Karten-ID.
 - **Bauen als logische Gesamtkarte, gerechnet in Blöcken:** z. B. 8×8 Kacheln mit 1–2 Kacheln Überlappungsrand, geschrieben wird nur das Innere. Das Ergebnis ist identisch zu einem Gesamtbau, der RAM-Bedarf bleibt konstant. Schraffur-Phase an Weltkoordinaten statt am Mosaik-Ursprung ausrichten. Nicht-lokal und deshalb mit breitem Rand oder global auf grobem Raster: das Entfernen kleiner Inseln (`MIN_WALK`, `MIN_ISLAND`) und das Zusammensetzen der Wegstücke.
 - **Zwei Pipelines, ein Kachelformat:**
 
@@ -331,7 +359,7 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
 **Reihenfolge:**
 1. **Fundament:** Block-Build mit Überlappung, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID im Addon. **Erledigt**, siehe unten.
 2. **Östliche Königreiche:** alle Gebiete in Etappen (Tabelle unten), plus Questbereiche angrenzender Zonen. **Erledigt** (1.5).
-3. **Daten-Addons:** Aufteilung in Pakete, die beim Betreten geladen werden.
+3. **Daten-Addons:** Aufteilung in Pakete, die beim Betreten geladen werden. **Erledigt** (1.6).
 4. **Kalimdor:** dieselbe Pipeline.
 5. **WMO-Grundriss-Pipeline mit Etagen:** zuerst Städte (Ironforge, Stormwind), Undercity unterirdisch, dann Höhlen und Minen.
 6. **Dungeons und Raids.**
@@ -374,7 +402,7 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
 - **Block-Build:** siehe Abschnitt 4. Etappe 1 bitgleich zum alten Gesamtbau. Probelauf mit allen 27 Gebieten in einem Lauf: 9,6 min, 4,7 GB Spitzen-RAM (alter Gesamtbau hochgerechnet ~22 GB), 769 Kacheln, 106,5 MB.
 - **Schraffur in Weltkoordinaten:** unverändert gültig. Das Muster hat eine ganze Zahl Linien pro Kachel und ist damit an Kachelgrenzen (= Weltkoordinaten) ausgerichtet; Blöcke beginnen immer an Kachelgrenzen.
 - **Kachelliste pro Karten-ID:** `tiles/<id>/Tiles.lua` setzt `RunewayTiles[id]` und `RunewayZones[id]`; Build mit `--map <id>` und `zones_<id>.txt`. Die Laufzeit indiziert die Liste einmal nach `"c_r"` und besucht pro Frame nur die Kacheln um den Spieler. Zonen-Chunks: ein Zeichen je Chunk (`1-9A-Za-z`), bis 61 Zonen je Karte.
-- **Kalimdor später:** Ordner `kalimdor` (Karte 1) mit ADTs auf `data` ablegen, `zones_1.txt` anlegen, `build_raw.py --map 1`, `tiles\1\Tiles.lua` in die `.toc`.
+- **Kalimdor später:** Ordner `kalimdor` (Karte 1) mit ADTs auf `data` ablegen, `zones_1.txt` anlegen, `build_raw.py --map 1`; Paket `Runeway_Kalimdor` samt `.toc` entsteht dabei.
 
 **Etappen** (Gruppen von Nord nach Süd; immer alle Zonen aus `zones_0.txt` zusammen bauen, neue Zonen unten anhängen, weil die Zeilennummer die Zonennummer ist):
 
@@ -404,7 +432,7 @@ Das schreibt `Runeway/tiles/<id>/…` samt `Tiles.lua` und Vorschauen nach `buil
   - WMO als OBJ exportieren (wow.export, „Split WMO Groups“, ohne Texturen) und auf `data` legen.
   - Turm- oder Mauer-M2 in `M2_BLOCKERS` eintragen.
   - Die Ausrichtung je Stadt gegen die Minimap prüfen, weil die Drehrichtung erst nahe 0° kalibriert ist.
-- **Undercity unterirdisch (optional):** Ein Prototyp des Grundrisses aus den 197 Innen-Gruppen ist gezeigt, aber nicht eingebaut. Dafür bräuchte es eine eigene Ebene, die über die Karten-ID umschaltet; die ID per `/rnw pos` in Undercity ermitteln.
+- **Undercity unterirdisch:** erledigt (1.6, `build_wmo.py`). Grundriss: Bodenflächen (Normale > 0,75) der Innen-Gruppen (Flag 0x2000) ohne „Ruins of Lordaeron“, je Pixel und Höhe ein Knoten; Nachbarn mit < 1,2 yd Höhenunterschied sind verbunden (Treppen, Rampen). Das größte Netz ist die begehbare Stadt, die übrigen 929 Netze sind Mauerkronen, Bögen und Deckenträger. Je Pixel zählt der höchste Boden des Netzes; Wasser = WMO-Flüssigkeit (MLIQ, Kachel-Flag & 0xF ≠ 0xF), wo sie darüber liegt (Kanäle; Brücken bleiben begehbar). Mehrere Ebenen erscheinen übereinander von oben gesehen; Etagen-Umschaltung später.
 - **Questbereiche (optional):** Innenschein bzw. Schraffur wie auf der Minimap. Mit Linien gab es Artefakte an den Stoßstellen, das bräuchte gefüllte Flächen, z. B. Dreiecks-Texturen.
 - **Version 2, Kalimdor, Instanzen:** siehe Roadmap oben.
 
@@ -423,18 +451,20 @@ RUNEWAY_LOCALE=ruRU python tests/run_stub.py  # derselbe Test mit anderer Client
 python tests/run_stub.py                      # lädt das Addon (Lua 5.1) gegen einen WoW-API-Stub: Kacheln, Questbereiche, Optionen, Profil, Mouse-over; meldet versehentliche globale Variablen
 python tests/render_quest_outlines.py <SavedVariables/Runeway.lua>   # Questumrisse aus Probe-Daten mit dem Addon-Code
 python scripts/simulate.py                    # Darstellung aus den Kacheln
-cd <repo> && zip -r build/Runeway-<version>.zip Runeway
+cd <repo> && zip -r build/Runeway-<version>.zip Runeway Runeway_EasternKingdoms
 ```
 
 **Testwerkzeug `/rnw probe`:** Nur in Entwicklungsbuilds; dazu `tools/Probe.lua` in den Addon-Ordner kopieren und in der `.toc` eintragen. Es tastet die Questbereiche der aktuellen Zone ab und speichert sie in `RunewayDB.probe`. Die Auswertung macht `scripts/probe_view.py`.
 
-**Installation:** Alten Ordner `Interface\AddOns\Runeway` löschen, das ZIP dort entpacken und WoW komplett neu starten. Neue Dateien (Kacheln, Einträge in der `.toc`, `Bindings.xml`) lädt WoW erst nach einem Neustart; reine Lua-Änderungen an bestehenden Dateien reichen mit `/reload`.
+**Installation:** Alte Ordner `Interface\AddOns\Runeway` und `Runeway_*` löschen, das ZIP dort entpacken (beide Ordner) und WoW komplett neu starten. Neue Dateien (Kacheln, Einträge in der `.toc`, `Bindings.xml`) lädt WoW erst nach einem Neustart; reine Lua-Änderungen an bestehenden Dateien reichen mit `/reload`.
+
+**Im Spiel prüfen (1.6):** beide Ordner installiert, WoW neu starten; in der Addon-Liste erscheint „Runeway - Eastern Kingdoms“ (bei Bedarf geladen); Login in den Östlichen Königreichen zeigt die Karte sofort; `/rnw view <Gebiet>` funktioniert; Paket in der Addon-Liste deaktivieren → Chat-Meldung, Karte bleibt ausgeblendet (auch beim Umschalten), keine Lua-Fehler; Kalimdor bzw. Instanz → „No contours …“.
 
 **Regressionsliste (vor jedem Release im Spiel prüfen, Stand 1.4 alles bestanden; 1.5: Punkte 1–2 für Etappen 2–4 über den Ansichtsmodus geprüft):**
 1. **Karte:** Look wie im Diablo-Screenshot; Zoom nahtlos ohne Flackern oder Kachelkanten; Schraffur deckungsgleich mit den Geländelinien; Ruinen von Lordaeron erkennbar.
 2. **Zonen:** Übergänge zwischen den gebauten Zonen ohne Kante oder Lücke; angrenzende Zonen gedimmt, beim Grenzübertritt weicher Tausch; Außenrand blendet weich aus.
 3. **Questbereiche:** durchgehend in jeder Zoomstufe, weich zum Kartenrand, korrekt bei Fortschritt; auch aus angrenzenden Zonen, grenzüberschreitende nicht abgeschnitten oder doppelt; Option „Combine overlapping quest areas“ an/aus.
-4. **Questmarker und Mouse-over:** Marker nur für Punktziele, kein Springen beim Gehen; Tooltips wie auf der Minimap, bei überlappenden Bereichen nur die betroffenen Quests; Hervorhebung von Pfeil, Leichnam, Markern und Bereichen.
+4. **Questmarker und Mouse-over:** Marker nur für Punktziele, kein Springen beim Gehen; Tooltips wie auf der Minimap, alle Questtitel in normaler Schrift (keine größere erste Zeile); ein zusammengefasster Bereich listet überall alle seine Quests; Hervorhebung von Pfeil, Leichnam, Markern und Bereichen.
 5. **Leichnam:** im Tod markiert, außerhalb am Rand in seiner Richtung, nach der Wiederbelebung weg.
 6. **Fenster:** Gesperrt = klickdurchlässig; entsperrt verschieben, Griff ändert Breite und Höhe; Mausrad-Zoom an/aus; Position und Größe bleiben über Logout; Regler zeigen Änderungen per Mausrad/Griff sofort.
 7. **Aufruf-Modi:** eigene Taste; Kartentaste M (Weltkarte über „World map (map key mode)“, auch nach Kampf und `/reload`); dauerhaft; automatisches Ausblenden (Kampf, Instanz, Reittier/Flug, Stadt).
@@ -450,8 +480,8 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway
 ```text
 Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch claude/dreamy-lovelace-efolxg.
 Lies zuerst CLAUDE.md, Runeway_Status_v1.md und Runeway_Prompt_v1.md.
-Version 1.5 ist abgeschlossen und in main gemergt (Östliche Königreiche komplett, Block-Build, Kachelliste pro Karten-ID, Ansichtsmodus /rnw view).
+Version 1.5 ist in main gemergt. Version 1.6 (Datenpakete: Kacheln als LoadOnDemand-Addon Runeway_EasternKingdoms, Laden beim Betreten) ist auf dem Entwicklungsbranch umgesetzt, aber im Spiel noch nicht geprüft (Abschnitt 9, „Im Spiel prüfen (1.6)“).
 Langfristziel, Architektur und Versionsplan: Runeway_Status_v1.md, Abschnitte 1 und 8.
-Aufgabe dieser Session: Datenpakete (Roadmap Schritt 3, Version 1.6): Kacheln je Kontinent als LoadOnDemand-Addon, beim Betreten laden.
+Aufgabe dieser Session: Ergebnisse des Spieltests von 1.6 einarbeiten, dann Kalimdor (Roadmap Schritt 4, Version 1.7).
 Rohdaten liegen auf dem Branch data (git fetch origin data, siehe Abschnitt 2). Kommunikation Deutsch, Code Englisch.
 ```

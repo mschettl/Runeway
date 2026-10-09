@@ -4,12 +4,12 @@
 local ADDON, ns = ...               -- ns: shared by all addon files
 local L = ns.L                      -- texts in the client language (Locales/)
 local T = 1600 / 3                 -- edge length of an ADT tile in yards (533.33)
-local PATH = "Interface\\AddOns\\Runeway\\tiles\\"
+local ADDONS = "Interface\\AddOns\\"
 local MEDIA = "Interface\\AddOns\\Runeway\\media\\"
-local ZOOM_MIN, ZOOM_MAX = 0.08, 5
+local ZOOM_MIN, ZOOM_MAX = 0.1, 1.5   -- shown as 0-100 % (ZoomPct)
 local SIZE_MIN, SIZE_MAX = 200, 1400
--- Soft edge strength 1-5: width of the fade as a share of the radius (media/fade<N>.tga, scripts/make_masks.py)
-local FADE_WIDTH = { 0.12, 0.25, 0.38, 0.55, 0.75 }
+-- Soft edge 100 %: width of the fade as a share of the radius (scripts/make_masks.py)
+local FADE_MAX = 0.75
 
 -- Tile layers, drawn bottom to top. Tiles are white; colours are applied with SetVertexColor.
 -- fill = walkable area, hatch = not walkable (mountains, water), lines on top.
@@ -27,15 +27,15 @@ local STYLE = 6            -- bump when the default colours change: resets the s
 local LINE = { 0xD1 / 255, 0xDB / 255, 0xE3 / 255 }
 local defaults = {
     x = nil, y = nil, w = 800, h = 600, -- map width and height
-    zoom = 0.3, alpha = 0.7, rotate = true, locked = false, shown = false,
+    zoom = 0.66, zoomInside = 0.8, alpha = 0.5, rotate = true, locked = false, shown = false,
     mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
     autoHide = { combat = false, instance = false, mounted = false, city = false },
-    hover = true,            -- unlocked: subtle frame while the mouse is over the map
     wheelZoom = true,        -- mouse wheel over the map zooms (off: the wheel goes to the game camera)
-    edge = 3,                -- soft edge strength, index into FADE_WIDTH
-    arrowSize = 25, pinSize = 25, corpseSize = 25, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
+    shape = 0.5,             -- map shape: 0 rectangle, 0.5 oval, 1 circle (10 % steps)
+    edgeSoft = 0.5,          -- soft edge: 0 hard, 1 widest fade (10 % steps)
+    arrowSize = 20, pinSize = 20, corpseSize = 20, taxiSize = 20, showTaxi = true, showArrow = true, showCorpse = true, showQuests = true, questClassic = false, questEdge = 1.0,   -- quest edge = width factor of the quest area outline (0.5-1.5)
     questMerge = true,       -- overlapping quest areas as one combined outline
-    zoneDim = 0.3,           -- opacity factor of the adjacent zones (the player is not in)
+    zoneDim = 0.5,           -- opacity factor of the adjacent zones (the player is not in)
     colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,
         fill    = { r = 0, g = 0, b = 0, a = 0.10 },              -- roads #EBB748, quest areas #73C7FF
         hatch   = { r = 0xCC / 255, g = 0xD6 / 255, b = 0xE0 / 255, a = 0.20 },
@@ -94,7 +94,6 @@ ns.db = function() return db end
 local fade
 if view.CreateMaskTexture then
     fade = view:CreateMaskTexture()
-    fade:SetAllPoints()
 else
     view:SetClipsChildren(true)
 end
@@ -110,13 +109,42 @@ ns.NoSnap = NoSnap
 local function Fade(tex)
     if fade and tex.AddMaskTexture then tex:AddMaskTexture(fade) end
 end
-ns.FadeWidth = function() return FADE_WIDTH[db.edge] or FADE_WIDTH[3] end
+ns.Fade = Fade
+
+-- Map shape and soft edge (10 % steps). The shape is a superellipse stretched to the window: exponent 20
+-- (rectangle) at 0 down to 2 (oval) at 50 %; from 50 % to 100 % the oval shrinks to the shorter side (circle).
+-- Masks media/mask/s<shape step 0-5>f<soft edge step 0-10>.tga (scripts/make_masks.py, same formula).
+-- ShapeFn gives the mask's alpha at a point of the view, for quest lines, hover and the corpse marker.
+local function Step(v) return math.floor(v * 10 + 0.5) end
+local function ShapeParams()
+    local W, H = view:GetSize()
+    local s = Step(db.shape) / 10
+    local m, f = math.min(W, H), math.max(0, s - 0.5) * 2
+    local n = 2 + (1 - 2 * math.min(s, 0.5)) ^ 2 * 18
+    return (W + (m - W) * f) / 2, (H + (m - H) * f) / 2, n, Step(db.edgeSoft) / 10 * FADE_MAX
+end
+local function ShapeD(x, y, a, b, n)               -- 1 on the outline, homogeneous: (x, y) / d lies on it
+    return ((math.abs(x) / a) ^ n + (math.abs(y) / b) ^ n) ^ (1 / n)
+end
+function ns.ShapeFn()
+    local a, b, n, fw = ShapeParams()
+    return function(x, y)
+        local d = ShapeD(x, y, a, b, n)
+        if fw <= 0 then return d <= 1 and 1 or 0 end
+        local t = (1 - d) / fw
+        if t <= 0 then return 0 elseif t >= 1 then return 1 end
+        return t * t * (3 - 2 * t)
+    end
+end
 
 local function ApplyEdge()
-    if fade then
-        fade:SetTexture(MEDIA .. "fade" .. (FADE_WIDTH[db.edge] and db.edge or 3) .. ".tga",
-            "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
-    end
+    if not fade then return end
+    fade:SetTexture(("%smask\\s%df%d.tga"):format(MEDIA, math.min(Step(db.shape), 5), Step(db.edgeSoft)),
+        "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")   -- outside the mask: hidden (oval shrunk to a circle)
+    local a, b = ShapeParams()
+    fade:ClearAllPoints()
+    fade:SetPoint("CENTER")
+    fade:SetSize(2 * a, 2 * b)
 end
 
 local canvas = CreateFrame("Frame", nil, view)
@@ -129,25 +157,56 @@ top:SetFrameLevel(canvas:GetFrameLevel() + 5)
 local status = top:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 status:SetPoint("BOTTOM", 0, 6)
 
--- Hover frame (unlocked only): 1 px lines along the edges
-local border = {}
-for i, pts in ipairs({ { "TOPLEFT", "TOPRIGHT" }, { "BOTTOMLEFT", "BOTTOMRIGHT" }, { "TOPLEFT", "BOTTOMLEFT" }, { "TOPRIGHT", "BOTTOMRIGHT" } }) do
-    local t = top:CreateTexture(nil, "BORDER")
-    t:SetColorTexture(1, 1, 1, 0.3)
-    t:SetPoint(pts[1])
-    t:SetPoint(pts[2])
-    if i <= 2 then t:SetHeight(1) else t:SetWidth(1) end
-    t:Hide()
-    border[i] = t
-end
-local function ShowBorder(on)
-    for _, t in ipairs(border) do t:SetShown(on) end
+-- Frame while the mouse is over the unlocked map: a thin soft line with rounded corners and a faint glow, in the
+-- light grey of the map lines. The glow uses the soft edge texture of the quest outlines.
+local FRAME_RADIUS, FRAME_ARC = 16, 8                -- corner radius (px), segments per corner
+-- { width, alpha, texture }: glow, then the line (solid: 1 px with the soft texture would fade away)
+local FRAME_PASSES = { { 8, 0.10, MEDIA .. "edge.tga" }, { 1, 0.55, "Interface\\Buttons\\WHITE8X8" } }
+local FRAME_COLOR = { 0.85, 0.88, 0.92 }
+local framePts, frameLines = {}, {}
+local function UpdateBorder()
+    local on = not db.locked and view:IsMouseOver()
+    local n = 0
+    if on then
+        -- rounded rectangle, 1 px inside the window, as a closed list of points
+        local W, H = view:GetSize()
+        local hw, hh = W / 2 - 1, H / 2 - 1
+        local r = math.min(FRAME_RADIUS, hw, hh)
+        local k = 0
+        for c, q in ipairs({ { 1, 1 }, { -1, 1 }, { -1, -1 }, { 1, -1 } }) do   -- corners: top right, counter-clockwise
+            local cx, cy = q[1] * (hw - r), q[2] * (hh - r)
+            for i = 0, FRAME_ARC do
+                local a = ((c - 1) + i / FRAME_ARC) * math.pi / 2
+                k = k + 1
+                framePts[2 * k - 1], framePts[2 * k] = cx + r * math.cos(a), cy + r * math.sin(a)
+            end
+        end
+        for _, pass in ipairs(FRAME_PASSES) do
+            for i = 1, k do
+                local j = i % k + 1
+                n = n + 1
+                local l = frameLines[n]
+                if not l then
+                    l = top:CreateLine(nil, "BORDER")
+                    l:SetTexture(pass[3])
+                    NoSnap(l)
+                    frameLines[n] = l
+                end
+                l:SetThickness(pass[1])
+                l:SetVertexColor(FRAME_COLOR[1], FRAME_COLOR[2], FRAME_COLOR[3], pass[2])   -- not SetAlpha
+                l:SetStartPoint("CENTER", view, framePts[2 * i - 1], framePts[2 * i])
+                l:SetEndPoint("CENTER", view, framePts[2 * j - 1], framePts[2 * j])
+                l:Show()
+            end
+        end
+    end
+    for i = n + 1, #frameLines do frameLines[i]:Hide() end
 end
 
 -- Resize grip, bottom right (unlocked only); changes the size only, the zoom stays
 local grip = CreateFrame("Button", nil, top)
 grip:SetSize(16, 16)
-grip:SetPoint("BOTTOMRIGHT", -2, 2)
+grip:SetPoint("BOTTOMRIGHT", -6, 6)          -- inside the rounded corner of the frame
 grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
 grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
 grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
@@ -187,7 +246,7 @@ ns.Player = function() return pN, pW, k end
 local LODS = { 128, 256, 512 }
 local SWITCH = { 160, 360 }            -- on-screen tile size (px) where the next finer level takes over
 local BAND = 1.25                      -- cross-fade from SWITCH / BAND to SWITCH * BAND
-local tiles = {}                       -- ["inst:c_r:layer"] = { layer = name, [lod] = Texture }
+local tiles = {}                       -- ["set:c_r:layer"] = { layer = name, [lod] = Texture }
 local frame = 0                        -- update counter; textures not used in the current update get hidden
 
 -- Note: on textures SetAlpha overwrites the vertex colour alpha, so opacity only goes through SetVertexColor
@@ -196,15 +255,217 @@ local function ApplyColor(t, layer, weight)
     t:SetVertexColor(c.r, c.g, c.b, c.a * (weight or 1))
 end
 
-local function TilePath(inst, key, layer, lod)
-    return PATH .. inst .. "\\" .. (lod < 512 and (lod .. "\\") or "") .. key .. "_" .. layer .. ".tga"
+---------------------------------------------------------------------------
+-- Data packs: the tiles of each map live in a load-on-demand addon (Runeway_EasternKingdoms, ...) whose .toc
+-- names its maps ("## X-Runeway-Maps: 0"). The pack of a map is loaded when the map is first needed.
+local packOf, packTitle, packTried = nil, {}, {}
+local setsByUi                          -- interior tile sets per map and uiMap (SetsFor), nil = rebuild
+local function PackOf(inst)
+    if not packOf then
+        packOf = {}
+        local api = C_AddOns or {}
+        local num, info, meta = api.GetNumAddOns or GetNumAddOns, api.GetAddOnInfo or GetAddOnInfo,
+            api.GetAddOnMetadata or GetAddOnMetadata
+        for i = 1, num and num() or 0 do
+            local name, title = info(i)
+            for id in (meta(name, "X-Runeway-Maps") or ""):gmatch("%d+") do
+                packOf[tonumber(id)] = name
+                -- shown name: the pack's title in the client language ("Runeway - Eastern Kingdoms") without "Runeway - "
+                packTitle[name] = title and title:gsub("^Runeway %- ", "") or name:gsub("^Runeway_", "")
+            end
+        end
+    end
+    return packOf[inst]
+end
+
+-- Chat note for a data pack that cannot be loaded. The pack shows as a link in Runeway blue with its localized
+-- title ("[Eastern Kingdoms]"); a click opens a tooltip with pack, reason and fix, a second click closes it.
+-- One note for every map without data: the pack (link if installed, else its continent's name) and the area
+local PACK_LINK = "|cff66ccff|Haddon:Runeway:pack:%s|h[%s]|h|r"
+local function Blue(text) return ("|cff66ccff[%s]|r"):format(text or "?") end
+local noteState                                       -- values when the last note was written (/rnw pos)
+local lastDungeon                                     -- name of the last dungeon a note was written for
+local WORLD_MAPS = { [0] = true, [1] = true, [530] = true, [571] = true }   -- continents: never a dungeon
+ns.WORLD_MAPS = WORLD_MAPS                            -- for tests
+local function PackFailed(pack, name, late)       -- late: waited in vain, the player's map may name the area
+    -- in a dungeon its name: only when the position is on that instance's own map (after leaving a dungeon the
+    -- instance info still names it for a while, the position is already back on the continent)
+    local iname, itype, _, _, _, _, _, iid = GetInstanceInfo()
+    local inst = select(4, UnitPosition("player"))
+    local dungeon = itype and itype ~= "none" and iid == inst and not WORLD_MAPS[inst]
+    local area = dungeon and iname or GetZoneText()
+    if dungeon then lastDungeon = iname end
+    if late and (area == "" or area == name) then       -- zone text not there yet: the name of the player's map
+        local m = C_Map.GetBestMapForUnit("player")
+        local info = m and C_Map.GetMapInfo(m)
+        area = info and info.name or ""
+    end
+    noteState = ("%s/%s/%s inInstance=%s zone=%s pos=%s"):format(tostring(iname), tostring(itype), tostring(iid),
+        tostring(IsInInstance()), tostring(GetZoneText()), tostring(inst))
+    Print(L.PACK_FAILED:format(pack and PACK_LINK:format(pack, packTitle[pack]) or Blue(name), Blue(area ~= "" and area or name)))
+end
+
+-- ItemRefTooltip comes with Blizzard_UIPanels_Game, which may load after this addon: look it up on the click
+local packTipLink, tipHooked
+if EventRegistry then
+    EventRegistry:RegisterCallback("SetItemRef", function(_, link)
+        local pack = link:match("^addon:Runeway:pack:(.+)$")
+        local tip = ItemRefTooltip
+        if not pack or not tip then return end
+        if not tipHooked then
+            tipHooked = true
+            tip:HookScript("OnTooltipCleared", function() packTipLink = nil end)   -- other content or closed
+        end
+        if tip:IsShown() and packTipLink == link then return tip:Hide() end
+        tip:SetOwner(UIParent, "ANCHOR_PRESERVE")
+        tip:ClearLines()
+        tip:SetPadding(16, 0)                                             -- room for the close button
+        tip:AddLine(packTitle[pack] or pack, 0.4, 0.8, 1)
+        tip:AddLine(L.PACK_TIP_ADDON:format(pack), 1, 1, 1)
+        tip:AddLine(L.PACK_TIP_STATUS:format(tostring(packTried[pack])), 1, 0.3, 0.3)
+        tip:AddLine(L.PACK_TIP_HINT:format(pack), nil, nil, nil, true)
+        tip:Show()
+        packTipLink = link
+    end, ns)
+end
+
+-- Loads the data pack of a map once; reports a pack that cannot be loaded (disabled, wrong version, ...)
+local function LoadPack(inst)
+    local pack = inst and PackOf(inst)
+    if not pack or packTried[pack] then return end
+    packTried[pack] = true
+    local loaded, reason = (C_AddOns and C_AddOns.LoadAddOn or LoadAddOn)(pack)
+    setsByUi = nil                                   -- the pack may bring interior sets
+    if not loaded then
+        packTried[pack] = _G["ADDON_" .. tostring(reason)] or tostring(reason)
+        PackFailed(pack)
+    end
+end
+
+-- Pack name and reason when the data pack of the player's map could not be loaded, else nil.
+-- Without its data the map stays hidden (no quest areas or player arrow on an empty map).
+-- Data packs that exist (map -> pack, continent uiMap for its name): a known pack that is not installed is
+-- reported like one that does not load; a map without a known pack has no data at all (NoMapData)
+local KNOWN_PACKS = { [0] = { "Runeway_EasternKingdoms", 1415 } }
+local function MissingPack()
+    local inst = select(4, UnitPosition("player"))
+    LoadPack(inst)
+    local pack = inst and PackOf(inst)
+    local known = not pack and inst and KNOWN_PACKS[inst]
+    if known then
+        pack = known[1]
+        if not packTried[pack] then
+            local info = C_Map.GetMapInfo and C_Map.GetMapInfo(known[2])
+            packTitle[pack] = info and info.name or pack:gsub("^Runeway_", "")
+            packTried[pack] = ADDON_MISSING or "MISSING"
+            PackFailed(pack)
+        end
+    end
+    local state = pack and packTried[pack]
+    if type(state) == "string" then return pack, state end
+end
+
+-- Tile sets: the map's own ("0", tiles/0) and interior sets "<map>-<uiMap>" (tiles/0-1458 = Undercity below
+-- Tirisfal) in the same world coordinates, both in the map's data pack
+local function MapOf(set)
+    return tonumber((tostring(set):match("^%d+")))
+end
+
+local function TilePath(set, key, layer, lod)
+    return ADDONS .. PackOf(MapOf(set)) .. "\\tiles\\" .. set .. "\\" .. (lod < 512 and (lod .. "\\") or "") .. key .. "_" .. layer .. ".tga"
+end
+
+-- Footprint of an interior set ({ res = cells per tile side, ["c_r"] = "0110..." }): is (n, w) inside?
+function ns.InChunks(chunks, n, w)
+    if not chunks then return true end
+    local res = chunks.res or 16
+    local x, y = 32 - w / T, 32 - n / T
+    local c, r = math.floor(x), math.floor(y)
+    local g = chunks[c .. "_" .. r]
+    local i = math.floor((y - r) * res) * res + math.floor((x - c) * res) + 1
+    return g ~= nil and g:sub(i, i) == "1"
+end
+
+-- Interior sets per "<map>-<uiMap>" (RunewayZones[set].ui), sets with a subzone list first; rebuilt when a
+-- data pack loads
+local function SetsFor(inst, ui)
+    if not setsByUi then
+        setsByUi = {}
+        for set, z in pairs(RunewayZones or {}) do
+            if type(set) == "string" and z.ui then
+                local k = MapOf(set) .. "-" .. z.ui
+                setsByUi[k] = setsByUi[k] or {}
+                table.insert(setsByUi[k], set)
+            end
+        end
+        for _, list in pairs(setsByUi) do
+            table.sort(list, function(a, b)
+                local sa, sb = RunewayZones[a].subzones and 0 or 1, RunewayZones[b].subzones and 0 or 1
+                if sa ~= sb then return sa < sb end
+                return a < b
+            end)
+        end
+    end
+    return setsByUi[inst .. "-" .. ui]
+end
+
+-- Is the player in one of these subzones (AreaTable IDs)? The subzone text may add an article ("Die Ruinen von
+-- Lordaeron"), so the area name is matched inside it.
+local areaNames = {}
+local function InSubzone(ids)
+    local sub = GetSubZoneText():lower()
+    for _, id in ipairs(ids) do
+        if areaNames[id] == nil then areaNames[id] = (C_Map.GetAreaInfo(id) or ""):lower() end
+        if areaNames[id] ~= "" and sub:find(areaNames[id], 1, true) then return true end
+    end
+    return false
+end
+
+-- Tile set at the player's position: the first interior set of the player's uiMap whose rules hold
+-- (subzones: in one of them and inside the set's footprint; notSubzones: in none of them), else the map's own.
+-- Undercity and the Ruins of Lordaeron above it both report uiMap 1458: in the Ruins subzone the throne room,
+-- mausoleum and elevators have their own set, the courtyard shows the surface, elsewhere it is Undercity.
+local setCache, setTime = {}, {}
+local function TileSet(inst)
+    local now = GetTime()
+    if setTime[inst] and now - setTime[inst] < 0.2 then return setCache[inst] end   -- called several times a frame
+    setTime[inst] = now
+    LoadPack(inst)
+    local ui = C_Map.GetBestMapForUnit("player")
+    local n, w = UnitPosition("player")
+    local result = inst
+    for _, set in ipairs(ui and n and SetsFor(inst, ui) or {}) do
+        local z = RunewayZones[set]
+        local ok = true
+        if z.notSubzones and InSubzone(z.notSubzones) then
+            -- with a surface area the excluded subzone only counts there: no height is available, but the Ruins
+            -- surface is only reachable on its courtyard; below it (bottom of the elevators) it is Undercity
+            ok = z.surfaceArea ~= nil and not ns.InChunks(z.surfaceArea, n, w) and ns.InChunks(z.inside, n, w)
+        end
+        if ok and z.subzones then
+            ok = InSubzone(z.subzones) and ns.InChunks(z.inside, n, w)
+        end
+        if ok then result = set break end
+    end
+    setCache[inst] = result
+    return result
+end
+
+ns.TileSet = function() return TileSet(select(4, UnitPosition("player"))) end   -- for tests
+
+-- Inside an interior set: its footprint. The interior's uiMap can also list quests of the surface around it
+-- (Undercity: Scarlet Crusade quests of Tirisfal); areas and pins outside are left out.
+function ns.InteriorChunks()
+    local inst = select(4, UnitPosition("player"))
+    local set = inst and TileSet(inst)
+    return set ~= inst and RunewayZones[set].inside or nil
 end
 
 local function IsLoaded(t)
     return not t.IsObjectLoaded or t:IsObjectLoaded()
 end
 
-local function GetTex(e, inst, key, lod)
+local function GetTex(e, set, key, lod)
     local t = e[lod]
     if not t then
         t = canvas:CreateTexture(nil, "ARTWORK", nil, LAYER_LEVEL[e.layer])
@@ -216,13 +477,13 @@ local function GetTex(e, inst, key, lod)
                 NoSnap(e.mask)
             end
             if not e.maskSet then
-                e.mask:SetTexture(TilePath(inst, key, "hatch", HATCH_MASK_LOD), "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+                e.mask:SetTexture(TilePath(set, key, "hatch", HATCH_MASK_LOD), "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
                 e.maskSet = true
             end
             t:AddMaskTexture(e.mask)
             t:SetTexture(MEDIA .. "hatch" .. lod .. ".tga")
         else
-            t:SetTexture(TilePath(inst, key, e.layer, lod))
+            t:SetTexture(TilePath(set, key, e.layer, lod))
         end
         e[lod] = t
     end
@@ -310,13 +571,14 @@ end
 
 ns.ZoneAlpha = function() return zoneAlpha end     -- for tests
 
--- Tile list of a map (tiles/<map>/Tiles.lua) indexed by "c_r": { { key, layers }, ... } (several parts on
+-- Tile list of a tile set (tiles/<set>/Tiles.lua) indexed by "c_r": { { key, layers }, ... } (several parts on
 -- zone border tiles), built on first use
 local tileIndex = {}
-local function TileIndex(inst)
-    local idx = tileIndex[inst]
+local function TileIndex(set)
+    local idx = tileIndex[set]
     if idx == nil then
-        local data = RunewayTiles and RunewayTiles[inst]
+        LoadPack(MapOf(set))
+        local data = RunewayTiles and RunewayTiles[set]
         idx = false
         if data then
             idx = {}
@@ -326,16 +588,16 @@ local function TileIndex(inst)
                 table.insert(idx[cr], { key, have })
             end
         end
-        tileIndex[inst] = idx
+        tileIndex[set] = idx
     end
     return idx
 end
 
-local function UpdateTiles(inst, angle)
-    local idx = TileIndex(inst)
+local function UpdateTiles(set, angle)
+    local idx = TileIndex(set)
     frame = frame + 1
     if not idx then HideTiles() return false end
-    local zones = RunewayZones and RunewayZones[inst]
+    local zones = RunewayZones and RunewayZones[set]
     if zones then UpdateZoneAlpha(zones) end
 
     local W, H = view:GetSize()
@@ -357,7 +619,7 @@ local function UpdateTiles(inst, angle)
                     local zf = zones and zoneAlpha[zones.tile[key]] or 1
                     for _, layer in ipairs(LAYERS) do
                         if db.layers[layer] and have:find(LAYER_CODE[layer], 1, true) and (layer ~= "hatch" or fade) then
-                            local id = inst .. ":" .. key .. ":" .. layer
+                            local id = set .. ":" .. key .. ":" .. layer
                             local e = tiles[id]
                             if not e then e = { layer = layer }; tiles[id] = e end
                             -- levels not stored for this layer: the nearest stored one, cross-fade only between two files
@@ -365,8 +627,8 @@ local function UpdateTiles(inst, angle)
                             local la, lb, ta, tb = loA, loB, wA, wB
                             if fl then la, lb = fl[loA], fl[loB] end
                             if la == lb then ta, tb = 1, 0 end
-                            local a = GetTex(e, inst, key, la)
-                            local b = tb > 0 and GetTex(e, inst, key, lb)
+                            local a = GetTex(e, set, key, la)
+                            local b = tb > 0 and GetTex(e, set, key, lb)
                             if e.mask then PlaceMask(e.mask, x, y, size, angle) end
                             local okA, okB = IsLoaded(a), b and IsLoaded(b)
                             if not okA and okB then ta, tb = 0, 1 elseif okA and b and not okB then ta, tb = 1, 0 end
@@ -412,6 +674,9 @@ end
 ---------------------------------------------------------------------------
 local quests = {}      -- { {n, w}, ... }
 local qpins = {}
+local taxis = {}       -- flight masters: { {n, w}, name =, atlas =, undiscovered =, faction = }
+local tpins = {}
+ns.TaxiPins, ns.Taxis, ns.QuestPins = tpins, taxis, qpins    -- for tests
 
 local function WorldFromMap(mapID, x, y)
     if not (C_Map.GetWorldPosFromMapPos and CreateVector2D) then return end
@@ -444,16 +709,29 @@ local function MapToWorld(mapID, x, y)
 end
 ns.MapToWorld = MapToWorld
 
+-- Interiors (tile sets such as Undercity) keep their own zoom, like Blizzard's minimap indoors: the mouse wheel,
+-- /rnw zoom and the view use the zoom of the level the player is on
+local function ZoomKey()
+    local inst = select(4, UnitPosition("player"))
+    return inst and TileSet(inst) ~= inst and "zoomInside" or "zoom"
+end
+local function Zoom() return db[ZoomKey()] end
+
 -- Zone maps near the player: the player's map first, then the zones of the same continent whose map
 -- rectangle comes within view reach (+ margin), nearest first. Quest areas and pins come from all of them.
+-- Interior sets have their own level: inside (Undercity) only the interior's map counts; on the surface the
+-- maps with an interior set are left out (also when the player's map is one, as in the Ruins of Lordaeron).
 local REACH_MARGIN = 200                 -- yards beyond the map corner
 local UIMAP_CONTINENT, UIMAP_ZONE = 2, 3 -- Enum.UIMapType
 local zoneRect = {}                      -- [mapID] = { n0, n1, w0, w1 } in world yards, or false
 local function NearbyMaps()
     local m = C_Map.GetBestMapForUnit("player")
     if not m then return end
-    local list = { m }
-    local pn, pw = UnitPosition("player")
+    local pn, pw, _, inst = UnitPosition("player")
+    if inst and TileSet(inst) ~= inst then return { m } end
+    local function Interior(id) return inst and SetsFor(inst, id) end
+    local list = {}
+    if not Interior(m) then list[1] = m end
     if not (pn and C_Map.GetMapInfo and C_Map.GetMapChildrenInfo) then return list end
     local cont, info = m, C_Map.GetMapInfo(m)
     while info and info.mapType ~= UIMAP_CONTINENT and (info.parentMapID or 0) > 0 do
@@ -463,11 +741,11 @@ local function NearbyMaps()
     if not (info and info.mapType == UIMAP_CONTINENT) then return list end
     MapToWorld(m, 0, 0)                  -- settles the axis order on the player's map first
     local W, H = view:GetSize()
-    local reach = math.sqrt(W * W + H * H) / 2 / db.zoom + REACH_MARGIN
+    local reach = math.sqrt(W * W + H * H) / 2 / Zoom() + REACH_MARGIN
     local found = {}
     for _, c in ipairs(C_Map.GetMapChildrenInfo(cont, UIMAP_ZONE) or {}) do
         local id = c.mapID
-        if id ~= m then
+        if id ~= m and not Interior(id) then
             local r = zoneRect[id]
             if r == nil then
                 local n0, w0 = MapToWorld(id, 0, 0)
@@ -488,19 +766,85 @@ local function NearbyMaps()
 end
 ns.NearbyMaps = NearbyMaps
 
+-- Discovered flight points: isUndiscovered of GetTaxiNodesForMap is always false in this client, so the
+-- nodes a flight master lists as known (taxi map, type ~= "NONE") are kept per character by name
+local UNDISCOVERED_ATLAS = "Taxi_Frame_Green"  -- flight map node icons (Mario's choice from /rnw taxi icons)
+local KNOWN_ATLAS = "Taxi_Frame_Gray"          -- else the node's world map atlas
+local function KnownTaxiNodes()
+    db.taxiKnown = db.taxiKnown or {}
+    local key = (UnitName("player") or "?") .. "-" .. (GetRealmName and GetRealmName() or "")
+    db.taxiKnown[key] = db.taxiKnown[key] or {}
+    return db.taxiKnown[key]
+end
+local function LearnTaxiNodes()
+    if not (NumTaxiNodes and TaxiNodeName and TaxiNodeGetType) then return end
+    local known = KnownTaxiNodes()
+    -- only nodes the flight master offers (or where it stands) are known; "DISTANT" nodes are hops of routes the
+    -- character has not discovered (Blizzard's taxi map hides them), so they and "NONE" also clear older entries
+    for i = 1, NumTaxiNodes() do
+        local kind = TaxiNodeGetType(i)
+        known[TaxiNodeName(i)] = (kind == "CURRENT" or kind == "REACHABLE") or nil
+    end
+end
+
+-- Flight point names "Node, zone": the German client data writes some zones in lower case ("östliche
+-- Pestländer"); zone names are proper names, so the first letter after the comma is capitalised
+local UPPER = { ["ä"] = "Ä", ["ö"] = "Ö", ["ü"] = "Ü" }
+local function TaxiName(name)
+    if GetLocale() ~= "deDE" then return name end
+    return (name:gsub(", (%l)", function(c) return ", " .. c:upper() end)
+        :gsub(", (\195[\164\182\188])", function(c) return ", " .. UPPER[c] end))
+end
+ns.TaxiName = TaxiName   -- for tests
+
 local function RefreshQuests()
     wipe(quests)
     local maps = NearbyMaps()
     if not (maps and C_QuestLog and C_QuestLog.GetQuestsOnMap) then return end
     local seen = {}          -- a quest can show on two zone maps: the first (nearest) map wins
+    local inside = ns.InteriorChunks()
     for _, mapID in ipairs(maps) do
         for _, q in ipairs(C_QuestLog.GetQuestsOnMap(mapID) or {}) do
             local n, w = MapToWorld(mapID, q.x, q.y)
-            if n and not seen[q.questID] then
+            local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
+                or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
+            -- inside an interior only quests with an area are filtered by its footprint (areas of the surface
+            -- around it); turn-ins and talk-to targets of the interior always show
+            local area = not done and GetQuestPOIBlobCount and GetQuestPOIBlobCount(q.questID) > 0
+            if n and not seen[q.questID] and (not area or ns.InChunks(inside, n, w)) then
                 seen[q.questID] = true
-                local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
-                    or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
                 quests[#quests + 1] = { n, w, questID = q.questID, done = done and true or false }
+            end
+        end
+    end
+    -- flight masters of the same maps, as on the world map (C_TaxiMap: discovered or not, own faction and neutral).
+    -- On the surface also those of the interior maps (Undercity's bat handler), as they are reached from there.
+    wipe(taxis)
+    if not (db.showTaxi and C_TaxiMap and C_TaxiMap.GetTaxiNodesForMap) then return end
+    local faction, seenNode, known = UnitFactionGroup("player"), {}, KnownTaxiNodes()
+    local FP = Enum and Enum.FlightPathFaction or {}
+    local inst = select(4, UnitPosition("player"))
+    if not inside and inst then
+        local list, has = {}, {}
+        for _, id in ipairs(maps) do list[#list + 1], has[id] = id, true end
+        for set, z in pairs(RunewayZones or {}) do
+            if type(set) == "string" and z.ui and MapOf(set) == inst and not has[z.ui] then
+                list[#list + 1], has[z.ui] = z.ui, true
+            end
+        end
+        maps = list
+    end
+    -- not limited by ShouldMapShowTaxiNodes: it only says whether Blizzard's world map shows them on that map
+    for _, mapID in ipairs(maps) do
+        for _, t in ipairs(C_TaxiMap.GetTaxiNodesForMap(mapID) or {}) do
+            local own = (t.faction ~= FP.Horde or faction == "Horde") and (t.faction ~= FP.Alliance or faction == "Alliance")
+            local n, w = MapToWorld(mapID, t.position.x, t.position.y)
+            -- "zzOLD..." = retired nodes still in the client data
+            if n and own and not seenNode[t.nodeID] and not t.name:find("^zz") and ns.InChunks(inside, n, w) then
+                seenNode[t.nodeID] = true
+                local undiscovered = t.isUndiscovered or not known[t.name]
+                taxis[#taxis + 1] = { n, w, name = t.name, atlas = undiscovered and UNDISCOVERED_ATLAS or KNOWN_ATLAS, nodeAtlas = t.atlasName,
+                                      undiscovered = undiscovered, faction = t.faction }
             end
         end
     end
@@ -508,10 +852,15 @@ end
 ns.RefreshQuests = RefreshQuests
 
 -- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
--- Same look as the world map pins: dark round badge with gold rim, "?" for turn-in, yellow "..." in progress.
+-- Look: turn-in = the minimap's campaign "?" (own ring); in progress and classic = the world map pins (dark round
+-- badge with gold rim, "?" for turn-in, yellow "..." in progress).
+local function AtlasExists(atlas)
+    return not (C_Texture and C_Texture.GetAtlasInfo) or C_Texture.GetAtlasInfo(atlas) ~= nil
+end
+-- SetAtlas returns nothing and leaves the texture empty for an unknown atlas, so the atlas is checked first
 local function SetAtlasOr(t, atlas, file)
-    local ok, res = pcall(t.SetAtlas, t, atlas)
-    if not ok or res == false then t:SetTexture(file) end
+    local ok = AtlasExists(atlas) and pcall(t.SetAtlas, t, atlas)
+    if not ok then t:SetTexture(file) end
 end
 
 -- Mouse-over (also on the locked, click-through map: the cursor position is polled, no mouse events):
@@ -541,7 +890,7 @@ local function FindCorpse()
 end
 
 local function UpdateCorpse()
-    if not UnitIsDeadOrGhost("player") then
+    if not (db.showCorpse and UnitIsDeadOrGhost("player")) then
         corpseN = nil
         corpse:Hide()
         return
@@ -554,10 +903,9 @@ local function UpdateCorpse()
     if not corpseN then corpse:Hide() return end
     local x, y = ToScreen(corpseN, corpseW)
     local size = db.corpseSize * (hovered == "corpse" and HOVER_SCALE or 1)
-    local W, H = view:GetSize()
-    -- keep the whole icon inside the oval map
-    local rx, ry = math.max(1, W / 2 - db.corpseSize), math.max(1, H / 2 - db.corpseSize)
-    local d = math.sqrt((x / rx) ^ 2 + (y / ry) ^ 2)
+    -- keep the whole icon inside the map's shape
+    local a, b, n = ShapeParams()
+    local d = ShapeD(x, y, math.max(1, a - db.corpseSize), math.max(1, b - db.corpseSize), n)
     if d > 1 then x, y = x / d, y / d end
     corpse.x, corpse.y = x, y
     corpse:SetSize(size, size)
@@ -566,6 +914,7 @@ local function UpdateCorpse()
     corpse:Show()
 end
 
+local QUEST_TURNIN = "quest-campaign-turnin"
 local tipKey                          -- what the tooltip shows now (avoids rebuilding it every update)
 
 local function AddQuestLines(questID)
@@ -579,6 +928,9 @@ local function AddQuestLines(questID)
     end
 end
 
+-- The first tooltip line uses the larger header font; Runeway's tooltips list quest titles of equal rank, so
+-- line 1 gets the normal font. Restored when the tooltip is cleared for its next owner.
+local tipLine1, tipSmall, tipHooked
 local function ShowTip(key, fill)
     if tipKey == key then return end
     tipKey = key
@@ -588,12 +940,26 @@ local function ShowTip(key, fill)
     end
     GameTooltip:SetOwner(view, "ANCHOR_CURSOR")
     fill()
+    tipLine1 = tipLine1 or _G[(GameTooltip:GetName() or "GameTooltip") .. "TextLeft1"]
+    if tipLine1 and GameTooltipText then
+        if not tipHooked and GameTooltip.HookScript then
+            tipHooked = true
+            GameTooltip:HookScript("OnTooltipCleared", function()
+                if tipSmall and GameTooltipHeaderText then tipLine1:SetFontObject(GameTooltipHeaderText) end
+                tipSmall = false
+            end)
+        end
+        local r, g, b = tipLine1:GetTextColor()   -- SetFontObject also resets the color to the font's
+        tipLine1:SetFontObject(GameTooltipText)
+        tipLine1:SetTextColor(r, g, b)
+        tipSmall = true
+    end
     GameTooltip:Show()
 end
 
 local function UpdateQuestPins()
     local n = 0
-    for _, q in ipairs(quests) do
+    for _, q in ipairs(db.showQuests and quests or {}) do     -- option off: no quest pins and no quest areas
         if not (ns.HasQuestArea and ns.HasQuestArea(q.questID)) then
             n = n + 1
             local p = qpins[n]
@@ -612,10 +978,17 @@ local function UpdateQuestPins()
                 p.back:SetSize(size, size)
                 p.icon:SetSize(size, size)
             end
-            if p.done ~= q.done then
-                p.done = q.done
-                SetAtlasOr(p.icon, q.done and "UI-QuestIcon-TurnIn-Normal" or "Quest-In-Progress-Icon-yellow",
-                    "Interface\\GossipFrame\\ActiveQuestIcon")
+            if p.done ~= q.done or p.classic ~= db.questClassic then
+                p.done, p.classic = q.done, db.questClassic
+                -- turn-in: the minimap's campaign "?" with its own ring (Mario's choice); classic (option), quests
+                -- in progress (round "..." as on the retail world map) or without the atlas: icon on the badge
+                p.badge = db.questClassic or not q.done or not AtlasExists(QUEST_TURNIN)
+                if p.badge then
+                    SetAtlasOr(p.icon, q.done and "UI-QuestIcon-TurnIn-Normal" or "Quest-In-Progress-Icon-yellow",
+                        "Interface\\GossipFrame\\ActiveQuestIcon")
+                else
+                    p.icon:SetAtlas(QUEST_TURNIN)
+                end
             end
             local x, y = ToScreen(q[1], q[2])
             p.x, p.y, p.questID, p.shown = x, y, q.questID, true
@@ -624,12 +997,48 @@ local function UpdateQuestPins()
                 t:SetPoint("CENTER", view, "CENTER", x, y)
                 t:Show()
             end
+            p.back:SetShown(p.badge)
         end
     end
     for i = n + 1, #qpins do
         qpins[i].shown = false
         qpins[i].back:Hide()
         qpins[i].icon:Hide()
+    end
+end
+
+-- Flight masters, below the quest pins: discovered = grey flight map node (else the node's world map atlas),
+-- not yet discovered = green flight map node (else the green taxi icon)
+local function TaxiAtlas(t)
+    if AtlasExists(t.atlas) then return t.atlas end
+    return not t.undiscovered and t.nodeAtlas or ""
+end
+local function UpdateTaxiPins()
+    for i, t in ipairs(taxis) do
+        local p = tpins[i]
+        if not p then
+            p = { icon = top:CreateTexture(nil, "ARTWORK", nil, -1) }
+            Fade(p.icon)
+            NoSnap(p.icon)
+            tpins[i] = p
+        end
+        local atlas = TaxiAtlas(t)
+        if p.atlas ~= atlas or p.undiscovered ~= t.undiscovered then
+            p.atlas, p.undiscovered = atlas, t.undiscovered
+            SetAtlasOr(p.icon, atlas, t.undiscovered and "Interface\\TaxiFrame\\UI-Taxi-Icon-Green"
+                or "Interface\\TaxiFrame\\UI-Taxi-Icon-White")
+        end
+        local size = db.taxiSize * (hovered == p and HOVER_SCALE or 1)
+        p.icon:SetSize(size, size)
+        local x, y = ToScreen(t[1], t[2])
+        p.x, p.y, p.taxi, p.shown = x, y, t, true
+        p.icon:ClearAllPoints()
+        p.icon:SetPoint("CENTER", view, "CENTER", x, y)
+        p.icon:Show()
+    end
+    for i = #taxis + 1, #tpins do
+        tpins[i].shown = false
+        tpins[i].icon:Hide()
     end
 end
 
@@ -652,8 +1061,7 @@ local function UpdateHover()
         local s = view:GetEffectiveScale()
         local vx, vy = view:GetCenter()
         local x, y = cx / s - vx, cy / s - vy
-        local W, H = view:GetSize()
-        if (x / (W / 2)) ^ 2 + (y / (H / 2)) ^ 2 < 1 then
+        if ns.ShapeFn()(x, y) > 0 then
             local function Near(px, py, size) return (x - px) ^ 2 + (y - py) ^ 2 <= (size / 2) ^ 2 end
             if arrow:IsShown() and Near(0, 0, db.arrowSize) then
                 target = "arrow"
@@ -662,6 +1070,9 @@ local function UpdateHover()
             else
                 for _, p in ipairs(qpins) do
                     if p.shown and Near(p.x, p.y, db.pinSize) then target = p break end
+                end
+                for _, p in ipairs(target and {} or tpins) do
+                    if p.shown and Near(p.x, p.y, db.taxiSize) then target = p break end
                 end
             end
             if not target and ns.QuestAreasAt then
@@ -675,6 +1086,18 @@ local function UpdateHover()
     hovered = target
     if target == "corpse" then
         ShowTip("corpse", function() GameTooltip:SetText(CORPSE_RED or L.CORPSE_MARKER) end)
+    elseif type(target) == "table" and target.taxi then
+        local t = target.taxi
+        ShowTip("t" .. t.name, function()
+            GameTooltip:AddLine(TaxiName(t.name), 1, 1, 1)
+            if t.undiscovered then             -- Blizzard's world map texts
+                local FP = Enum and Enum.FlightPathFaction or {}
+                local f = (t.faction == FP.Horde and FACTION_HORDE) or (t.faction == FP.Alliance and FACTION_ALLIANCE)
+                local text = f and UNDISCOVERED_FACTION_FLIGHTPOINT and UNDISCOVERED_FACTION_FLIGHTPOINT:format(f)
+                    or UNDISCOVERED_NEUTRAL_FLIGHTPOINT
+                if text then GameTooltip:AddLine(text, 0.5, 1, 0.5, true) end
+            end
+        end)
     elseif type(target) == "table" then
         ShowTip("q" .. target.questID, function() AddQuestLines(target.questID) end)
     elseif quests and #quests > 0 then
@@ -706,16 +1129,16 @@ view:SetScript("OnUpdate", function(self, e)
     end
     if pan then
         local cx, cy = GetCursorPosition()
-        local s = view:GetEffectiveScale() * db.zoom
+        local s = view:GetEffectiveScale() * Zoom()
         viewAt.n, viewAt.w = pan.n - (cy - pan.y) / s, pan.w + (cx - pan.x) / s
     end
     if viewAt then n, w = viewAt.n, viewAt.w end
-    pN, pW, k = n, w, db.zoom
+    pN, pW, k = n, w, Zoom()
 
     local facing = GetPlayerFacing() or 0
     local angle = db.rotate and not viewAt and -facing or 0
-    arrow:SetShown(not viewAt)
-    arrowShadow:SetShown(not viewAt)
+    arrow:SetShown(db.showArrow and not viewAt)
+    arrowShadow:SetShown(db.showArrow and not viewAt)
     cosA, sinA = math.cos(angle), math.sin(angle)
     local as = db.arrowSize * (hovered == "arrow" and HOVER_SCALE or 1)
     arrow:SetSize(as, as)
@@ -723,11 +1146,12 @@ view:SetScript("OnUpdate", function(self, e)
     arrow:SetRotation(db.rotate and 0 or facing)
     arrowShadow:SetRotation(db.rotate and 0 or facing)
 
-    if UpdateTiles(inst, angle) then
+    if UpdateTiles(TileSet(inst), angle) then
         status:SetText(viewAt and L.VIEW_MODE or "")
     else
         status:SetText(L.NO_DATA)
     end
+    UpdateTaxiPins()
     UpdateQuestPins()
     UpdateCorpse()
     UpdateHover()
@@ -760,6 +1184,8 @@ local function ApplySize()
     db.w = math.floor(math.max(SIZE_MIN, math.min(SIZE_MAX, db.w)) + 0.5)
     db.h = math.floor(math.max(SIZE_MIN, math.min(SIZE_MAX, db.h)) + 0.5)
     view:SetSize(db.w, db.h)
+    ApplyEdge()                          -- the circle follows the shorter side
+    UpdateBorder()                       -- the frame follows while sizing
 end
 
 -- Mouse wheel zooms locked and unlocked (option); clicks only reach the map when unlocked (locked: they pass through)
@@ -768,12 +1194,16 @@ local function ApplyLock()
     view:EnableMouse(unlocked or viewAt ~= nil)      -- view mode: dragging pans, also when locked
     view:EnableMouseWheel(db.wheelZoom)
     grip:SetShown(unlocked)
-    ShowBorder(unlocked and db.hover and view:IsMouseOver())
+    UpdateBorder()
 end
 
-local function SetZoom(z)
-    db.zoom = math.max(ZOOM_MIN, math.min(ZOOM_MAX, z))
+local function SetZoom(z, key)                 -- key: "zoom" / "zoomInside", default the current level
+    key = key or ZoomKey()
+    db[key] = math.max(ZOOM_MIN, math.min(ZOOM_MAX, z))
 end
+-- zoom factor <-> percent of the range (options and /rnw zoom)
+local function ZoomPct(z) return (z - ZOOM_MIN) / (ZOOM_MAX - ZOOM_MIN) * 100 end
+ns.ZoomPct = ZoomPct
 
 view:SetScript("OnDragStart", function(self)
     if viewAt then
@@ -796,19 +1226,16 @@ view:SetScript("OnMouseWheel", function(_, delta)
         ApplySize()
         Notify("w", "h")
     else
-        SetZoom(db.zoom * (delta > 0 and 1.15 or 1 / 1.15))
-        Notify("zoom")
+        SetZoom(Zoom() * (delta > 0 and 1.15 or 1 / 1.15))
+        Notify(ZoomKey())
     end
 end)
 view:SetScript("OnShow", RefreshQuests)
-
-local function UpdateBorder()
-    ShowBorder(not db.locked and db.hover and view:IsMouseOver())
-end
 view:SetScript("OnEnter", UpdateBorder)
 view:SetScript("OnLeave", UpdateBorder)
 grip:SetScript("OnEnter", UpdateBorder)
 grip:SetScript("OnLeave", UpdateBorder)
+
 
 -- Sizing from the top left corner, width and height follow the cursor
 local sizeLeft, sizeTop
@@ -866,6 +1293,68 @@ local function AutoHideReason()
 end
 
 -- A toggle while auto-hidden (or in permanent mode) overrides until the auto-hide state changes
+-- No data pack for the player's map (Kalimdor for now, instances without a position): the map stays hidden, with
+-- one chat note per map
+local noDataSaid
+local function NoMapData()
+    local inst = select(4, UnitPosition("player"))
+    return not (inst and (PackOf(inst) or KNOWN_PACKS[inst])), inst
+end
+-- no pack at all: the continent names the pack that would hold the data (Kalimdor). Dungeons belong to the pack
+-- of their continent; their maps do not lead to it, so the last continent the player was on counts
+local lastContinent, continentOf
+local function UpdateContinent()
+    local m = C_Map.GetBestMapForUnit("player")
+    if m == continentOf or IsInInstance() then return end
+    continentOf = m
+    local info = m and C_Map.GetMapInfo(m)
+    while info and info.mapType ~= UIMAP_CONTINENT and (info.parentMapID or 0) > 0 do
+        info = C_Map.GetMapInfo(info.parentMapID)
+    end
+    if info and info.mapType == UIMAP_CONTINENT then lastContinent = info.name end
+end
+local function ContinentName()
+    UpdateContinent()
+    return lastContinent or GetRealZoneText()
+end
+-- After a map change the note waits until the game's info belongs to the new place. The last loading screen tells
+-- which case it is (PLAYER_ENTERING_WORLD: isInitialLogin, isReloadingUi):
+--   login:  the zone text is empty or the continent's name for a moment -> wait for a real zone name
+--   reload: everything is current at once
+--   zone change (dungeon in or out, portal, ship): instance info follows the position late -> wait 1 s and for
+--           the instance ID of the new position
+-- Login and zone change also wait for a real zone name (empty or the continent's name for a moment).
+-- Never during a loading screen (the position changes while it is shown). At most SAY_MAX seconds;
+-- now = at once (toggle).
+local SAY_MAX = 15
+local sayFor, sayAt
+local worldAt, worldKind, loading = 0, "login", false
+ns.ResetNoData = function() noDataSaid, sayFor = nil, nil end   -- for tests: a reload starts without notes
+local function SayNoData(inst, now)
+    local key = inst or false
+    if noDataSaid == key then return end
+    if not now and sayFor ~= key then
+        sayFor, sayAt = key, GetTime() + SAY_MAX
+        return
+    end
+    local settled = not loading and GetTime() >= worldAt + (worldKind == "reload" and 0.5 or 1)
+    if settled and worldKind ~= "reload" then
+        -- after login and after leaving a dungeon the zone text is empty or the continent's name for a moment
+        local zone = GetZoneText()
+        settled = zone ~= "" and zone ~= ContinentName()
+            and (worldKind == "login" or select(8, GetInstanceInfo()) == inst)
+        -- back on a continent the zone text may still name the dungeon just left
+        if settled and WORLD_MAPS[inst] then
+            local iname, itype = GetInstanceInfo()
+            settled = zone ~= lastDungeon and not (itype ~= "none" and zone == iname)
+        end
+    end
+    if now or settled or GetTime() >= sayAt then
+        PackFailed(nil, ContinentName(), not (now or settled))
+        noDataSaid, sayFor = key, nil
+    end
+end
+
 local override, lastReason
 local function UpdateVisibility()
     local reason = AutoHideReason()
@@ -878,10 +1367,26 @@ local function UpdateVisibility()
     else
         want = (db.mode == "permanent" or db.shown) and not reason
     end
+    want = want and not MissingPack()
+    UpdateContinent()
+    local none, inst = NoMapData()
+    if not none then
+        noDataSaid, sayFor = nil, nil
+    elseif want then
+        SayNoData(inst)
+        want = false
+    end
     if view:IsShown() ~= want then view:SetShown(want) end
 end
 
 function Runeway_Toggle()
+    local pack = MissingPack()
+    if pack then return PackFailed(pack) end
+    local none, inst = NoMapData()
+    if none then
+        noDataSaid = nil                             -- asked for the map: say it again
+        return SayNoData(inst, true)
+    end
     if lastReason or db.mode == "permanent" then
         override = not view:IsShown()
     else
@@ -985,7 +1490,15 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         db = RunewayDB
         if (db.style or 0) < STYLE then db.colors = nil end   -- default look changed: colours back to defaults
         db.style = STYLE
+        if db.edge then                -- 1.6: soft edge strength 1-5 -> percent (5 = 100 %)
+            db.edgeSoft = Step((({ 0.12, 0.25, 0.38, 0.55, 0.75 })[db.edge] or 0.38) / FADE_MAX) / 10
+            db.edge = nil
+        end
         ApplyDefaults(db, defaults)
+        db.questEdge = math.max(0.5, math.min(1.5, db.questEdge))   -- 1.6: range 0.5-1.5 (was up to 2.5)
+        db.hover = nil                 -- option removed in 1.6
+        SetZoom(db.zoom, "zoom")       -- zoom range changed in 1.6
+        SetZoom(db.zoomInside, "zoomInside")
         canvas:SetAlpha(db.alpha)      -- map layers only; player arrow, quest marks and areas stay opaque
         ApplyEdge()
         ApplySize()
@@ -995,8 +1508,12 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         if not fade then Print(L.NO_MASKS) end
         self:UnregisterEvent("ADDON_LOADED")
         self:RegisterEvent("PLAYER_ENTERING_WORLD")
+        self:RegisterEvent("LOADING_SCREEN_ENABLED")
+        self:RegisterEvent("LOADING_SCREEN_DISABLED")
         self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
         self:RegisterEvent("QUEST_LOG_UPDATE")
+        self:RegisterEvent("TAXIMAP_OPENED")              -- talking to a flight master discovers its node
+        self:RegisterEvent("TAXI_NODE_STATUS_CHANGED")
         self:RegisterEvent("PLAYER_REGEN_DISABLED")
         self:RegisterEvent("PLAYER_REGEN_ENABLED")
         self:RegisterEvent("UPDATE_BINDINGS")
@@ -1005,7 +1522,12 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     elseif event == "UPDATE_BINDINGS" then
         -- key bindings (re)loaded or changed by the player: take the map key over again
         if not binding then ApplyBindings() end
+    elseif event == "LOADING_SCREEN_ENABLED" or event == "LOADING_SCREEN_DISABLED" then
+        loading = event == "LOADING_SCREEN_ENABLED"
     elseif event == "PLAYER_ENTERING_WORLD" then
+        local reloading = ...
+        worldAt, worldKind = GetTime(), arg1 and "login" or reloading and "reload" or "zone"
+        loading = false                       -- also if LOADING_SCREEN_DISABLED does not come
         if not announced then                 -- once per login / reload: name and version in the chat
             announced = true
             Print(L.LOADED:format(ns.Version()))
@@ -1013,12 +1535,16 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         ApplySize()            -- again after WoW's layout restore
         ApplyPos()
         ApplyBindings()
+        LoadPack(select(4, UnitPosition("player")))   -- behind the loading screen rather than on the first frame
         UpdateVisibility()
         RefreshQuests()
     elseif event == "ADDON_ACTION_BLOCKED" or event == "ADDON_ACTION_FORBIDDEN" then
         -- taint diagnostics: name the protected function the game blocked under our name
         local func = ...                       -- payload: addon name, function name
         if arg1 == ADDON then Print(("%s: %s"):format(event, tostring(func))) end
+    elseif event == "TAXIMAP_OPENED" or event == "TAXI_NODE_STATUS_CHANGED" then
+        LearnTaxiNodes()
+        if view:IsShown() then RefreshQuests() end
     elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
         if bindPending and event == "PLAYER_REGEN_ENABLED" then ApplyBindings() end
         UpdateVisibility()
@@ -1041,6 +1567,7 @@ end)
 -- Centre (north, west) of a mapped zone whose name contains `name` (lower case), or nil and the list of
 -- mapped zones
 local function ZoneCentre(inst, name)
+    LoadPack(inst)
     local zones = RunewayZones and RunewayZones[inst]
     if not zones then return end
     for z, zn in ipairs(zones.names) do
@@ -1067,6 +1594,58 @@ end
 
 SLASH_RUNEWAY1 = "/runeway"
 SLASH_RUNEWAY2 = "/rnw"
+-- /rnw taxi icons: atlases of the retail client for flight masters, and two classic textures
+local TAXI_ICONS = { "FlightMaster", "FlightPath", "TaxiNode_Neutral", "TaxiNode_Horde", "TaxiNode_Alliance",
+    "TaxiNode_Continent_Neutral", "TaxiNode_Continent_Horde", "Taxi_Frame_Green", "Taxi_Frame_Gray", "Taxi_Frame_Yellow",
+    "TaxiNode_Undiscovered", "Crosshair_Taxi_32", "Interface\\Minimap\\Tracking\\FlightMaster",
+    "Interface\\TaxiFrame\\UI-Taxi-Icon-Green" }
+-- /rnw quest icons: turn-in icons of the retail client; "+" = on the quest pin badge as Runeway draws it
+local QUEST_ICONS = { "UI-QuestIcon-TurnIn-Normal+", "UI-QuestPoi-QuestBangTurnIn+", "UI-QuestPoi-QuestBangTurnIn",
+    "UI-QuestIcon-TurnIn-Normal", "QuestTurnin", "UI-QuestPoiCampaign-QuestBangTurnIn",
+    "UI-QuestPoiImportant-QuestBangTurnIn", "UI-QuestPoiRecurring-QuestBangTurnIn", "UI-QuestPoiLegendary-QuestBangTurnIn",
+    "UI-QuestPoiWrapper-QuestBangTurnIn", "UI-DailyQuestPoiCampaign-QuestBangTurnIn", "Callings-Turnin",
+    "questlog-questtypeicon-legendaryturnin", "Interface\\GossipFrame\\ActiveQuestIcon" }
+
+-- Icons side by side, numbered, 40 px; "(-)" = atlas missing in this client. A click hides the panel.
+local previews = {}
+local function IconPreview(list)
+    local f = previews[list]
+    if not f then
+        f = CreateFrame("Button", nil, UIParent, "BackdropTemplate")
+        f:SetPoint("CENTER", 0, 150)
+        f:SetFrameStrata("DIALOG")
+        if f.SetBackdrop then
+            f:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8" })
+            f:SetBackdropColor(0, 0, 0, 0.8)
+        end
+        f:SetScript("OnClick", f.Hide)
+        for i, entry in ipairs(list) do
+            local a, badge = entry:match("^(.-)(%+?)$")
+            local x = ((i - 1) % 7) * 90 + 10
+            local y = -math.floor((i - 1) / 7) * 90 - 10
+            local t = f:CreateTexture(nil, "ARTWORK", nil, 1)
+            t:SetSize(40, 40)
+            t:SetPoint("TOPLEFT", x + 25, y)
+            if badge ~= "" then
+                local b = f:CreateTexture(nil, "ARTWORK", nil, 0)
+                b:SetAllPoints(t)
+                SetAtlasOr(b, "UI-QuestPoi-QuestNumber", MEDIA .. "dot.tga")
+            end
+            local file = a:find("\\") and a
+            if file then t:SetTexture(file) else SetAtlasOr(t, a, "Interface\\Icons\\INV_Misc_QuestionMark") end
+            local l = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+            l:SetPoint("TOP", t, "BOTTOM", 0, -4)
+            l:SetWidth(88)
+            l:SetText(i .. ". " .. (file and a:match("[^\\]+$") or a) .. (badge ~= "" and " +" or "")
+                .. ((file or AtlasExists(a)) and "" or " (-)"))
+        end
+        f:SetSize(7 * 90 + 20, math.ceil(#list / 7) * 90 + 20)
+        previews[list] = f
+    end
+    for _, p in pairs(previews) do p:Hide() end
+    f:Show()
+end
+
 SlashCmdList.RUNEWAY = function(msg)
     local cmd, arg = msg:lower():match("^(%S*)%s*(.-)$")
     local n = tonumber(arg)
@@ -1080,13 +1659,13 @@ SlashCmdList.RUNEWAY = function(msg)
         ApplyLock()
         Print(db.locked and L.MSG_LOCKED or L.MSG_UNLOCKED)
     elseif cmd == "alpha" and n then
-        db.alpha = math.max(5, math.min(100, n)) / 100
+        db.alpha = math.max(0, math.min(100, n)) / 100
         canvas:SetAlpha(db.alpha)
         Print(L.MSG_OPACITY:format(db.alpha * 100))
     elseif cmd == "zoom" and n then
-        SetZoom(n)
-        Notify("zoom")
-        Print(L.MSG_ZOOM:format(db.zoom))
+        SetZoom(ZOOM_MIN + math.max(0, math.min(100, n)) / 100 * (ZOOM_MAX - ZOOM_MIN))
+        Notify(ZoomKey())
+        Print(L.MSG_ZOOM:format(math.floor(ZoomPct(Zoom()) + 0.5)))
     elseif cmd == "size" then
         local w, h = arg:match("^(%d+)%s*(%d*)$")
         if w then
@@ -1099,9 +1678,10 @@ SlashCmdList.RUNEWAY = function(msg)
         db.rotate = not db.rotate
         Print(db.rotate and L.MSG_ROTATE_ON or L.MSG_ROTATE_OFF)
     elseif cmd == "edge" and n then
-        db.edge = math.max(1, math.min(#FADE_WIDTH, math.floor(n + 0.5)))
+        db.edgeSoft = Step(math.max(0, math.min(100, n)) / 100) / 10
         ApplyEdge()
-        Print(L.MSG_EDGE:format(db.edge))
+        Notify("edgeSoft")
+        Print(L.MSG_EDGE:format(db.edgeSoft * 100))
     elseif cmd == "mode" and (arg == "key" or arg == "mapkey" or arg == "permanent") then
         db.mode = arg
         ApplyBindings()
@@ -1132,8 +1712,26 @@ SlashCmdList.RUNEWAY = function(msg)
     elseif cmd == "pos" then
         local pn, pw, _, inst = UnitPosition("player")
         local mapID = C_Map.GetBestMapForUnit("player")
-        ShowCopy(("%s %s %s map=%s facing=%.3f"):format(
-            tostring(pn), tostring(pw), tostring(inst), tostring(mapID), GetPlayerFacing() or -1))
+        local iname, itype, _, _, _, _, _, iid = GetInstanceInfo()
+        ShowCopy(("%s %s %s map=%s set=%s facing=%.3f instance=%s/%s/%s inInstance=%s zone=%s"):format(tostring(pn),
+            tostring(pw), tostring(inst), tostring(mapID), tostring(inst and TileSet(inst)), GetPlayerFacing() or -1,
+            tostring(iname), tostring(itype), tostring(iid), tostring(IsInInstance()), tostring(GetZoneText()))
+            .. (noteState and (" | last note: " .. noteState) or ""))
+    elseif (cmd == "taxi" or cmd == "quest") and arg == "icons" then   -- candidate icons side by side
+        IconPreview(cmd == "taxi" and TAXI_ICONS or QUEST_ICONS)
+    elseif cmd == "taxi" then                      -- flight masters: what the map draws, nearest first
+        local list = {}
+        for _, t in ipairs(taxis) do list[#list + 1] = { t, math.sqrt((t[1] - pN) ^ 2 + (t[2] - pW) ^ 2) } end
+        table.sort(list, function(a, b) return a[2] < b[2] end)
+        local known = 0
+        for _ in pairs(KnownTaxiNodes()) do known = known + 1 end
+        Print(("taxi: maps=%s nodes=%d known=%d showTaxi=%s"):format(table.concat(NearbyMaps() or {}, ","), #taxis,
+            known, tostring(db.showTaxi)))
+        for i = 1, math.min(5, #list) do
+            local t = list[i][1]
+            Print(("  %s %.0f yd undiscovered=%s atlas=%s(%s) icon=%s"):format(TaxiName(t.name), list[i][2], tostring(t.undiscovered),
+                tostring(t.atlas), AtlasExists(t.atlas or "") and "ok" or "missing", TaxiAtlas(t)))
+        end
     elseif cmd == "view" then
         local vn, vw = arg:match("^(%-?[%d%.]+)%s+(%-?[%d%.]+)$")
         if arg == "" and viewAt then

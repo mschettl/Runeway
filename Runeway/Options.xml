@@ -33,6 +33,25 @@
             <OnLoad method="OnLoad"/>
         </Scripts>
     </Frame>
+    <!-- Checkbox, slider and checkbox + slider rows with a wider label column (RunewayCheckboxMixin etc.) -->
+    <Frame name="RunewayCheckboxTemplate" inherits="SettingsListElementTemplate" mixin="RunewayCheckboxMixin" virtual="true">
+        <Size x="280" y="26"/>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
+    <Frame name="RunewaySliderTemplate" inherits="SettingsListElementTemplate" mixin="RunewaySliderMixin" virtual="true">
+        <Size x="280" y="26"/>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
+    <Frame name="RunewayCheckboxSliderTemplate" inherits="SettingsListElementTemplate" mixin="RunewayCheckboxSliderMixin" virtual="true">
+        <Size x="280" y="26"/>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
     <!-- Layer row: label, checkbox, colour swatch, opacity slider (RunewayLayerRowMixin) -->
     <Frame name="RunewayLayerRowTemplate" inherits="SettingsListElementTemplate" mixin="RunewayLayerRowMixin" virtual="true">
         <Size x="280" y="26"/>

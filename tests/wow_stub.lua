@@ -125,6 +125,7 @@ C_DeathInfo = { GetCorpseMapPosition = function(m)
     if m == 1420 then return { GetXY = function() return 0.42, 0.61 end } end end }
 function UnitAffectingCombat() return STATE.combat end
 function IsInInstance() return STATE.instance, STATE.instance and "party" or "none" end
+function GetInstanceInfo() return STATE.instance and "Ragefire Chasm" or "Tirisfal Glades", STATE.instance and "party" or "none" end
 function IsMounted() return STATE.mounted end
 function IsFlying() return false end
 function UnitOnTaxi() return false end

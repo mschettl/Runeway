@@ -157,13 +157,18 @@ L.execute('''
     print("second click shown:", tostring(ItemRefTooltip:IsShown()))
     EVENT_CALLBACKS.SetItemRef("item:6948", "[Hearthstone]", "LeftButton")   -- other links are not ours
     -- a map without any data pack (Kalimdor): hidden with one chat note, a toggle repeats the note
-    POS[4], ZONE, CONTINENT = 1000, "The Barrens", "Kalimdor"
+    UI_MAP0 = UI_MAP
+    POS[4], ZONE, CONTINENT, UI_MAP = 1000, "The Barrens", "Kalimdor", 1413
     poll()
     poll()
     print("map without any pack shown:", tostring(RunewayFrame:IsShown()))
     SlashCmdList.RUNEWAY("toggle")
     poll()
     print("after toggle shown:", tostring(RunewayFrame:IsShown()))
+    -- a dungeon of that continent: its own map, no way up to the continent; the last continent names the pack
+    POS[4], ZONE, CONTINENT, STATE.instance, UI_MAP = 389, "Orgrimmar", nil, true, 9999
+    poll()
+    STATE.instance, UI_MAP = false, UI_MAP0
     POS[4], ZONE, CONTINENT = 0, nil, nil
     poll()
     print("back on map 0 shown:", tostring(RunewayFrame:IsShown()))

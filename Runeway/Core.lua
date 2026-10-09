@@ -226,7 +226,7 @@ end
 local PACK_LINK = "|cff66ccff|Haddon:Runeway:pack:%s|h[%s]|h|r"
 local function Blue(text) return ("|cff66ccff[%s]|r"):format(text or "?") end
 local function PackFailed(pack, name)
-    local area = GetZoneText()
+    local area = IsInInstance() and GetInstanceInfo() or GetZoneText()   -- in a dungeon: its name
     Print(L.PACK_FAILED:format(pack and PACK_LINK:format(pack, packTitle[pack]) or Blue(name), Blue(area ~= "" and area or name)))
 end
 
@@ -1225,14 +1225,22 @@ local function NoMapData()
     local inst = select(4, UnitPosition("player"))
     return not (inst and (PackOf(inst) or KNOWN_PACKS[inst])), inst
 end
--- no pack at all: the continent names the pack that would hold the data (Kalimdor)
-local function ContinentName()
+-- no pack at all: the continent names the pack that would hold the data (Kalimdor). Dungeons belong to the pack
+-- of their continent; their maps do not lead to it, so the last continent the player was on counts
+local lastContinent, continentOf
+local function UpdateContinent()
     local m = C_Map.GetBestMapForUnit("player")
+    if m == continentOf or IsInInstance() then return end
+    continentOf = m
     local info = m and C_Map.GetMapInfo(m)
     while info and info.mapType ~= UIMAP_CONTINENT and (info.parentMapID or 0) > 0 do
         info = C_Map.GetMapInfo(info.parentMapID)
     end
-    return info and info.mapType == UIMAP_CONTINENT and info.name or GetRealZoneText()
+    if info and info.mapType == UIMAP_CONTINENT then lastContinent = info.name end
+end
+local function ContinentName()
+    UpdateContinent()
+    return lastContinent or GetRealZoneText()
 end
 local function SayNoData(inst)
     if noDataSaid ~= (inst or false) then PackFailed(nil, ContinentName()) end
@@ -1252,6 +1260,7 @@ local function UpdateVisibility()
         want = (db.mode == "permanent" or db.shown) and not reason
     end
     want = want and not MissingPack()
+    UpdateContinent()
     local none, inst = NoMapData()
     if not none then
         noDataSaid = nil

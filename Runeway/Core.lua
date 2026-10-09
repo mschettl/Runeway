@@ -33,7 +33,7 @@ local defaults = {
     hover = true,            -- unlocked: subtle frame while the mouse is over the map
     wheelZoom = true,        -- mouse wheel over the map zooms (off: the wheel goes to the game camera)
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
-    arrowSize = 25, pinSize = 25, corpseSize = 25, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
+    arrowSize = 25, pinSize = 25, corpseSize = 25, taxiSize = 25, showTaxi = true, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
     questMerge = true,       -- overlapping quest areas as one combined outline
     zoneDim = 0.3,           -- opacity factor of the adjacent zones (the player is not in)
     colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,
@@ -582,6 +582,9 @@ end
 ---------------------------------------------------------------------------
 local quests = {}      -- { {n, w}, ... }
 local qpins = {}
+local taxis = {}       -- flight masters: { {n, w}, name =, atlas =, undiscovered =, faction = }
+local tpins = {}
+ns.TaxiPins = tpins    -- for tests
 
 local function WorldFromMap(mapID, x, y)
     if not (C_Map.GetWorldPosFromMapPos and CreateVector2D) then return end
@@ -680,6 +683,24 @@ local function RefreshQuests()
             if n and not seen[q.questID] and (not area or ns.InChunks(inside, n, w)) then
                 seen[q.questID] = true
                 quests[#quests + 1] = { n, w, questID = q.questID, done = done and true or false }
+            end
+        end
+    end
+    -- flight masters of the same maps, as on the world map (C_TaxiMap: discovered or not, own faction and neutral)
+    wipe(taxis)
+    if not (db.showTaxi and C_TaxiMap and C_TaxiMap.GetTaxiNodesForMap) then return end
+    local faction, seenNode = UnitFactionGroup("player"), {}
+    local FP = Enum and Enum.FlightPathFaction or {}
+    for _, mapID in ipairs(maps) do
+        if not C_TaxiMap.ShouldMapShowTaxiNodes or C_TaxiMap.ShouldMapShowTaxiNodes(mapID) then
+            for _, t in ipairs(C_TaxiMap.GetTaxiNodesForMap(mapID) or {}) do
+                local own = (t.faction ~= FP.Horde or faction == "Horde") and (t.faction ~= FP.Alliance or faction == "Alliance")
+                local n, w = MapToWorld(mapID, t.position.x, t.position.y)
+                if n and own and not seenNode[t.nodeID] and ns.InChunks(inside, n, w) then
+                    seenNode[t.nodeID] = true
+                    taxis[#taxis + 1] = { n, w, name = t.name, atlas = t.atlasName, undiscovered = t.isUndiscovered,
+                                          faction = t.faction }
+                end
             end
         end
     end
@@ -812,6 +833,36 @@ local function UpdateQuestPins()
     end
 end
 
+-- Flight masters: Blizzard's world map icon of the node (discovered: flight point; not yet discovered: its own
+-- icon), below the quest pins
+local function UpdateTaxiPins()
+    for i, t in ipairs(taxis) do
+        local p = tpins[i]
+        if not p then
+            p = { icon = top:CreateTexture(nil, "ARTWORK", nil, -1) }
+            Fade(p.icon)
+            NoSnap(p.icon)
+            tpins[i] = p
+        end
+        if p.atlas ~= t.atlas or p.undiscovered ~= t.undiscovered then
+            p.atlas, p.undiscovered = t.atlas, t.undiscovered
+            SetAtlasOr(p.icon, t.atlas or "", t.undiscovered and "Interface\\TaxiFrame\\UI-Taxi-Icon-Green"
+                or "Interface\\TaxiFrame\\UI-Taxi-Icon-White")
+        end
+        local size = db.taxiSize * (hovered == p and HOVER_SCALE or 1)
+        p.icon:SetSize(size, size)
+        local x, y = ToScreen(t[1], t[2])
+        p.x, p.y, p.taxi, p.shown = x, y, t, true
+        p.icon:ClearAllPoints()
+        p.icon:SetPoint("CENTER", view, "CENTER", x, y)
+        p.icon:Show()
+    end
+    for i = #taxis + 1, #tpins do
+        tpins[i].shown = false
+        tpins[i].icon:Hide()
+    end
+end
+
 ---------------------------------------------------------------------------
 -- Main loop
 ---------------------------------------------------------------------------
@@ -842,6 +893,9 @@ local function UpdateHover()
                 for _, p in ipairs(qpins) do
                     if p.shown and Near(p.x, p.y, db.pinSize) then target = p break end
                 end
+                for _, p in ipairs(target and {} or tpins) do
+                    if p.shown and Near(p.x, p.y, db.taxiSize) then target = p break end
+                end
             end
             if not target and ns.QuestAreasAt then
                 -- screen -> world: inverse of ToScreen
@@ -854,6 +908,18 @@ local function UpdateHover()
     hovered = target
     if target == "corpse" then
         ShowTip("corpse", function() GameTooltip:SetText(CORPSE_RED or L.CORPSE_MARKER) end)
+    elseif type(target) == "table" and target.taxi then
+        local t = target.taxi
+        ShowTip("t" .. t.name, function()
+            GameTooltip:AddLine(t.name, 1, 1, 1)
+            if t.undiscovered then             -- Blizzard's world map texts
+                local FP = Enum and Enum.FlightPathFaction or {}
+                local f = (t.faction == FP.Horde and FACTION_HORDE) or (t.faction == FP.Alliance and FACTION_ALLIANCE)
+                local text = f and UNDISCOVERED_FACTION_FLIGHTPOINT and UNDISCOVERED_FACTION_FLIGHTPOINT:format(f)
+                    or UNDISCOVERED_NEUTRAL_FLIGHTPOINT
+                if text then GameTooltip:AddLine(text, 0.5, 1, 0.5, true) end
+            end
+        end)
     elseif type(target) == "table" then
         ShowTip("q" .. target.questID, function() AddQuestLines(target.questID) end)
     elseif quests and #quests > 0 then
@@ -907,6 +973,7 @@ view:SetScript("OnUpdate", function(self, e)
     else
         status:SetText(L.NO_DATA)
     end
+    UpdateTaxiPins()
     UpdateQuestPins()
     UpdateCorpse()
     UpdateHover()
@@ -1179,6 +1246,8 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         self:RegisterEvent("PLAYER_ENTERING_WORLD")
         self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
         self:RegisterEvent("QUEST_LOG_UPDATE")
+        self:RegisterEvent("TAXIMAP_OPENED")              -- talking to a flight master discovers its node
+        self:RegisterEvent("TAXI_NODE_STATUS_CHANGED")
         self:RegisterEvent("PLAYER_REGEN_DISABLED")
         self:RegisterEvent("PLAYER_REGEN_ENABLED")
         self:RegisterEvent("UPDATE_BINDINGS")

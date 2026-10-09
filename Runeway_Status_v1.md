@@ -12,6 +12,7 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 - **Karte:** alle 27 Gebiete der Östlichen Königreiche aus den RAW-Spieldaten (Etappen 1–4, Abschnitt 8) mit begehbarer Fläche, Schraffur für nicht begehbare Bereiche, Gelände-, Wasser- und Weglinien; Ruinen von Lordaeron als Stadt. Angrenzende Zonen gedimmt, nahtloser Zoom, frei einstellbare Breite und Höhe, ovale Randausblendung.
 - **Quests:** Questbereiche wie auf der Weltkarte (auch aus angrenzenden Zonen), Questmarker für Punktziele, Tooltips und Hervorhebung beim Überfahren.
 - **Leichnam-Marker** im Tod, am Kartenrand in Richtung des Leichnams, wenn er außerhalb liegt.
+- **Flugmeister** (1.6, im Spiel noch zu prüfen): aus `C_TaxiMap.GetTaxiNodesForMap` der nahen Zonenkarten (wie die Weltkarte), eigene Fraktion und neutral, Icon = Blizzards Atlas des Knotens (`atlasName`, entdeckt bzw. noch nicht entdeckt), Tooltip mit Name und bei unentdeckten Blizzards Text „Unentdeckter Flugpunkt“. Option „Show flight masters“ (`showTaxi`) und Größe (`taxiSize`) unter Display; aktualisiert bei `TAXIMAP_OPENED`/`TAXI_NODE_STATUS_CHANGED`.
 - **Bedienung:** drei Aufruf-Modi (eigene Taste, Kartentaste M, dauerhaft), automatisches Ausblenden, gesperrt/klickdurchlässig oder verschiebbar, Mausrad-Zoom abschaltbar, Ansichtsmodus (`/rnw view`) zum Betrachten anderer Orte, Slash-Befehle.
 - **Einstellungen** im Blizzard-Stil mit Unterpunkten, Profil-Export/-Import als Text, Lokalisierung in allen elf Client-Sprachen.
 

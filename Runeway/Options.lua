@@ -191,6 +191,8 @@ local function Build()
     Slider("arrowSize", L.PLAYER_ARROW, 12, 48, 1, function(v) return ("%d px"):format(v) end)
     Slider("pinSize", L.QUEST_MARKS, 12, 48, 1, function(v) return ("%d px"):format(v) end)
     Slider("corpseSize", L.CORPSE_MARKER, 12, 48, 1, function(v) return ("%d px"):format(v) end)
+    Slider("taxiSize", L.FLIGHT_MASTERS, 12, 48, 1, function(v) return ("%d px"):format(v) end)
+    Check("showTaxi", L.SHOW_FLIGHT_MASTERS, nil, function() ns.RefreshQuests() end)
     Slider("questEdge", L.QUEST_EDGE, 0.5, 2.5, 0.05, function(v) return ("%.2f x"):format(v) end)
     Check("questMerge", L.QUEST_MERGE, L.QUEST_MERGE_TIP)
 

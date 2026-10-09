@@ -19,6 +19,7 @@ local function obj(name)
             return self._loadIn < 0
         end end
         if k == "SetAlpha" then return function(self, a) self._alpha = a end end
+        if k == "SetAtlas" then return function(self, a) self._atlas = a return true end end
         if k == "SetStartPoint" then return function(self, _, _, x, y) self._p0 = { x, y } end end
         if k == "SetEndPoint" then return function(self, _, _, x, y) self._p1 = { x, y } end end
         if k == "SetVertexColor" then return function(self, r, g, b, a) self._color = { r, g, b, a } end end
@@ -188,3 +189,20 @@ function CreateSettingsButtonInitializer(name, text, click) return { kind = "but
 function CreateSettingsCheckboxSliderInitializer(cb, _, _, slider, options) return { kind = "checkslider", setting = cb, slider = slider, options = options } end
 SettingsCheckboxSliderControlMixin = { OnLoad = function() end, Init = function() end }
 function CreateKeybindingEntryInitializer(i) return { kind = "binding", action = GetBinding(i) } end
+
+-- flight masters: one discovered (neutral), one undiscovered (Horde), one Alliance (not shown to a Horde player)
+Enum = Enum or {}
+Enum.FlightPathFaction = { Neutral = 0, Horde = 1, Alliance = 2 }
+function UnitFactionGroup() return "Horde" end
+UNDISCOVERED_FACTION_FLIGHTPOINT, FACTION_HORDE = "Undiscovered %s flight point", "Horde"
+C_TaxiMap = {
+    ShouldMapShowTaxiNodes = function() return true end,
+    GetTaxiNodesForMap = function(m)
+        if m ~= 1420 then return {} end
+        return {
+            { nodeID = 11, name = "Brill", atlasName = "TaxiNode_Neutral", faction = 0, isUndiscovered = false, position = { x = 0.41, y = 0.6 } },
+            { nodeID = 12, name = "Bulwark", atlasName = "TaxiNode_Undiscovered", faction = 1, isUndiscovered = true, position = { x = 0.4, y = 0.603 } },
+            { nodeID = 13, name = "Southshore", atlasName = "TaxiNode_Alliance", faction = 2, isUndiscovered = false, position = { x = 0.5, y = 0.5 } },
+        }
+    end,
+}

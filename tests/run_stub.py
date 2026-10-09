@@ -414,6 +414,32 @@ L.execute('''
     local merged = false
     for _, e in ipairs(NS.QuestAreasRepublish()) do if #e[2] == 2 then merged = true end end
     check("merge: every quest drawn once with a neighbouring map", ok and merged)
+    -- flight masters: own faction and neutral, discovered and undiscovered with their own icons; tooltip
+    NS.RefreshQuests()
+    view:GetScript("OnUpdate")(view, 0.05)
+    local atl = {}
+    for _, t in ipairs(ALL_TEX) do
+        local a = rawget(t, "_atlas")
+        if a and a:find("TaxiNode") and rawget(t, "_shown") then atl[#atl + 1] = a end
+    end
+    table.sort(atl)
+    check("flight masters: own faction shown with Blizzard icons", table.concat(atl, ",") == "TaxiNode_Neutral,TaxiNode_Undiscovered")
+    local tip = {}
+    local tn, tw = NS.MapToWorld(1420, 0.4, 0.603)
+    local pn, pw = POS[1], POS[2]
+    POS[1], POS[2] = tn + 80, tw               -- the undiscovered node 80 yd away from the player
+    view:GetScript("OnUpdate")(view, 0.05)
+    for _, p in ipairs(NS.TaxiPins) do
+        if p.shown and p.taxi.undiscovered then
+            wipe(tipLines)
+            CURSOR[1], CURSOR[2] = 500 + p.x, 400 + p.y
+            view:GetScript("OnUpdate")(view, 0.05)
+            tip = tipLines
+        end
+    end
+    POS[1], POS[2] = pn, pw
+    check("flight masters: tooltip names an undiscovered node", tip[1] == "Bulwark" and tip[2] == "Undiscovered Horde flight point")
+    CURSOR[1], CURSOR[2] = 500, 400
     a1420.cut, a1421.cut = cut1420, cut1421
     NS.QuestAreasRepublish()
     NS.QuestAreasAt(nil)

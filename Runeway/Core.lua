@@ -1242,9 +1242,20 @@ local function ContinentName()
     UpdateContinent()
     return lastContinent or GetRealZoneText()
 end
-local function SayNoData(inst)
-    if noDataSaid ~= (inst or false) then PackFailed(nil, ContinentName()) end
-    noDataSaid = inst or false
+-- After a map change the note waits a second: on leaving a dungeon the new position arrives while zone and
+-- instance info still name the dungeon. now = at once (toggle).
+local sayFor, sayAt
+local function SayNoData(inst, now)
+    local key = inst or false
+    if noDataSaid == key then return end
+    if not now and sayFor ~= key then
+        sayFor, sayAt = key, GetTime() + 1
+        return
+    end
+    if now or GetTime() >= sayAt then
+        PackFailed(nil, ContinentName())
+        noDataSaid, sayFor = key, nil
+    end
 end
 
 local override, lastReason
@@ -1263,7 +1274,7 @@ local function UpdateVisibility()
     UpdateContinent()
     local none, inst = NoMapData()
     if not none then
-        noDataSaid = nil
+        noDataSaid, sayFor = nil, nil
     elseif want then
         SayNoData(inst)
         want = false
@@ -1277,7 +1288,7 @@ function Runeway_Toggle()
     local none, inst = NoMapData()
     if none then
         noDataSaid = nil                             -- asked for the map: say it again
-        return SayNoData(inst)
+        return SayNoData(inst, true)
     end
     if lastReason or db.mode == "permanent" then
         override = not view:IsShown()

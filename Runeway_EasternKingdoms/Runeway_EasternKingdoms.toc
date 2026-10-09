@@ -28,3 +28,4 @@
 
 tiles\0\Tiles.lua
 tiles\0-1458\Tiles.lua
+tiles\0-1458-ruins\Tiles.lua

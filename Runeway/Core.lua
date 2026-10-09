@@ -200,6 +200,7 @@ end
 -- Data packs: the tiles of each map live in a load-on-demand addon (Runeway_EasternKingdoms, ...) whose .toc
 -- names its maps ("## X-Runeway-Maps: 0"). The pack of a map is loaded when the map is first needed.
 local packOf, packTitle, packTried = nil, {}, {}
+local setsByUi                          -- interior tile sets per map and uiMap (SetsFor), nil = rebuild
 local function PackOf(inst)
     if not packOf then
         packOf = {}
@@ -255,6 +256,7 @@ local function LoadPack(inst)
     if not pack or packTried[pack] then return end
     packTried[pack] = true
     local loaded, reason = (C_AddOns and C_AddOns.LoadAddOn or LoadAddOn)(pack)
+    setsByUi = nil                                   -- the pack may bring interior sets
     if not loaded then
         packTried[pack] = _G["ADDON_" .. tostring(reason)] or tostring(reason)
         PackFailed(pack)
@@ -281,44 +283,83 @@ local function TilePath(set, key, layer, lod)
     return ADDONS .. PackOf(MapOf(set)) .. "\\tiles\\" .. set .. "\\" .. (lod < 512 and (lod .. "\\") or "") .. key .. "_" .. layer .. ".tga"
 end
 
--- Tile set at the player's position: the interior set of the player's uiMap if there is one, except in its
--- surface subzones (Ruins of Lordaeron is uiMap Undercity too); else the map's own set
-local surfaceNames, setCache, setTime = {}, {}, {}
+-- Footprint of an interior set ({ res = cells per tile side, ["c_r"] = "0110..." }): is (n, w) inside?
+function ns.InChunks(chunks, n, w)
+    if not chunks then return true end
+    local res = chunks.res or 16
+    local x, y = 32 - w / T, 32 - n / T
+    local c, r = math.floor(x), math.floor(y)
+    local g = chunks[c .. "_" .. r]
+    local i = math.floor((y - r) * res) * res + math.floor((x - c) * res) + 1
+    return g ~= nil and g:sub(i, i) == "1"
+end
+
+-- Interior sets per "<map>-<uiMap>" (RunewayZones[set].ui), sets with a subzone list first; rebuilt when a
+-- data pack loads
+local function SetsFor(inst, ui)
+    if not setsByUi then
+        setsByUi = {}
+        for set, z in pairs(RunewayZones or {}) do
+            if type(set) == "string" and z.ui then
+                local k = MapOf(set) .. "-" .. z.ui
+                setsByUi[k] = setsByUi[k] or {}
+                table.insert(setsByUi[k], set)
+            end
+        end
+        for _, list in pairs(setsByUi) do
+            table.sort(list, function(a, b)
+                local sa, sb = RunewayZones[a].subzones and 0 or 1, RunewayZones[b].subzones and 0 or 1
+                if sa ~= sb then return sa < sb end
+                return a < b
+            end)
+        end
+    end
+    return setsByUi[inst .. "-" .. ui]
+end
+
+-- Is the player in one of these subzones (AreaTable IDs)? The subzone text may add an article ("Die Ruinen von
+-- Lordaeron"), so the area name is matched inside it.
+local areaNames = {}
+local function InSubzone(ids)
+    local sub = GetSubZoneText():lower()
+    for _, id in ipairs(ids) do
+        if areaNames[id] == nil then areaNames[id] = (C_Map.GetAreaInfo(id) or ""):lower() end
+        if areaNames[id] ~= "" and sub:find(areaNames[id], 1, true) then return true end
+    end
+    return false
+end
+
+-- Tile set at the player's position: the first interior set of the player's uiMap whose rules hold
+-- (subzones: in one of them and inside the set's footprint; notSubzones: in none of them), else the map's own.
+-- Undercity and the Ruins of Lordaeron above it both report uiMap 1458: in the Ruins subzone the throne room,
+-- mausoleum and elevators have their own set, the courtyard shows the surface.
+local setCache, setTime = {}, {}
 local function TileSet(inst)
     local now = GetTime()
     if setTime[inst] and now - setTime[inst] < 0.2 then return setCache[inst] end   -- called several times a frame
     setTime[inst] = now
     LoadPack(inst)
     local ui = C_Map.GetBestMapForUnit("player")
-    local set = ui and inst .. "-" .. ui
-    local zones = set and RunewayZones and RunewayZones[set]
-    if zones then
-        -- the subzone text may add an article ("Die Ruinen von Lordaeron"): match the area name inside it
-        local sub = GetSubZoneText():lower()
-        for _, id in ipairs(zones.surface or {}) do
-            if surfaceNames[id] == nil then surfaceNames[id] = (C_Map.GetAreaInfo(id) or ""):lower() end
-            if surfaceNames[id] ~= "" and sub:find(surfaceNames[id], 1, true) then set = nil end
+    local result = inst
+    for _, set in ipairs(ui and SetsFor(inst, ui) or {}) do
+        local z = RunewayZones[set]
+        local ok = not (z.notSubzones and InSubzone(z.notSubzones))
+        if ok and z.subzones then
+            local n, w = UnitPosition("player")
+            ok = InSubzone(z.subzones) and n ~= nil and ns.InChunks(z.inside, n, w)
         end
+        if ok then result = set break end
     end
-    setCache[inst] = zones and set or inst
-    return setCache[inst]
+    setCache[inst] = result
+    return result
 end
 
--- Inside an interior set: the chunks its floor plan covers. The interior's uiMap can also list quests of the
--- surface around it (Undercity: Scarlet Crusade quests of Tirisfal); areas and pins outside are left out.
+-- Inside an interior set: its footprint. The interior's uiMap can also list quests of the surface around it
+-- (Undercity: Scarlet Crusade quests of Tirisfal); areas and pins outside are left out.
 function ns.InteriorChunks()
     local inst = select(4, UnitPosition("player"))
     local set = inst and TileSet(inst)
     return set ~= inst and RunewayZones[set].inside or nil
-end
-
-function ns.InChunks(chunks, n, w)
-    if not chunks then return true end
-    local x, y = 32 - w / T, 32 - n / T
-    local c, r = math.floor(x), math.floor(y)
-    local g = chunks[c .. "_" .. r]
-    local i = math.floor((y - r) * 16) * 16 + math.floor((x - c) * 16) + 1
-    return g ~= nil and g:sub(i, i) == "1"
 end
 
 local function IsLoaded(t)
@@ -578,7 +619,7 @@ local function NearbyMaps()
     if not m then return end
     local pn, pw, _, inst = UnitPosition("player")
     if inst and TileSet(inst) ~= inst then return { m } end
-    local function Interior(id) return inst and RunewayZones and RunewayZones[inst .. "-" .. id] end
+    local function Interior(id) return inst and SetsFor(inst, id) end
     local list = {}
     if not Interior(m) then list[1] = m end
     if not (pn and C_Map.GetMapInfo and C_Map.GetMapChildrenInfo) then return list end

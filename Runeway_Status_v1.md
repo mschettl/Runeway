@@ -77,10 +77,11 @@ Seit 1.6 besteht das Release aus zwei Ordnern, die beide nach `Interface\AddOns`
 `tools/Probe.lua` ist ein Entwicklungswerkzeug und nicht im Release (siehe Abschnitt 6).
 
 ### Innenraum-Kachelsätze (`Core.lua`, `TileSet`)
-- Neben dem Kachelsatz der Karte (`tiles/0`) kann ein Paket Innenraum-Sätze `tiles/<Karte>-<uiMap>/` enthalten, bisher `tiles/0-1458` = Undercity (uiMap 1458). Gleiche Weltkoordinaten und Kachelraster wie die Oberfläche, eigene `RunewayTiles["0-1458"]`/`RunewayZones["0-1458"]`.
-- Auswahl je Frame: Hat die uiMap des Spielers (`C_Map.GetBestMapForUnit`) einen Satz, wird er gezeigt, außer die Unterzone (`GetSubZoneText`) ist eine seiner Oberflächen-Unterzonen (`RunewayZones[set].surface`, AreaTable-IDs, Name über `C_Map.GetAreaInfo`). Grund: Auch die Ruinen von Lordaeron (Hof, Thronsaal, Aufzug) melden uiMap 1458 und Zone „Undercity“; nur die Unterzone „Ruins of Lordaeron“ (Area 153) unterscheidet sie. `UnitPosition` liefert keine Höhe.
-- Questbereiche und -marker (`NearbyMaps`): Im Innenraum-Satz nur die uiMap des Innenraums (Undercity), an der Oberfläche alle Zonen außer denen mit Innenraum-Satz (auch in den Ruinen, wo die eigene uiMap 1458 ist). Die uiMap 1458 listet auch Tirisfal-Quests (Scharlachroter Kreuzzug, 370/374); im Innenraum zählen deshalb nur Bereiche und Marker in den Chunks des Grundrisses (`RunewayZones[set].inside`, `ns.InChunks`).
-- Unterzonen-Vergleich: enthält-Prüfung ohne Groß-/Kleinschreibung, weil der Client „Die Ruinen von Lordaeron“ meldet. Die Satzwahl wird 0,2 s zwischengespeichert.
+- Neben dem Kachelsatz der Karte (`tiles/0`) kann ein Paket Innenraum-Sätze `tiles/<set>/` enthalten, gleiche Weltkoordinaten und Kachelraster wie die Oberfläche, eigene `RunewayTiles[set]`/`RunewayZones[set]`. Bisher: `0-1458` = Undercity, `0-1458-ruins` = Thronsaal, Mausoleum, Aufzugsschächte, Torhaus, Glockentürme und Kanalisationsabgänge der Ruinen (Innen-Gruppen „Ruins of Lordaeron“).
+- Regeln je Satz in `RunewayZones[set]`: `ui` (uiMap), `subzones` (nur in diesen Unterzonen und innerhalb des Grundrisses `inside`), `notSubzones` (nie in diesen), `inside` (Grundriss als Zellraster, `res` Zellen je Kachelseite: Undercity 16 ≈ 33 yd, Ruinen 64 ≈ 8 yd). `TileSet` nimmt den ersten Satz der uiMap, dessen Regeln gelten (Sätze mit `subzones` zuerst), sonst die Oberfläche. Index `SetsFor`, neu aufgebaut nach jedem Paket-Laden.
+- Grund: Hof, Thronsaal, Aufzug und Stadt melden alle uiMap 1458 und Zone „Undercity“; `UnitPosition` liefert keine Höhe, die WMO-Gruppe ist für Addons nicht abfragbar. Unterzone „Ruins of Lordaeron“ (Area 153) + Position im Grundriss der Innen-Gruppen trennt Thronsaal/Aufzug (Zwischenkarte) vom Hof (Oberfläche); andere Unterzonen = Undercity. Im Spieltest schaltet die Minimap am Eingang des Thronsaals (66.0 32.8) um.
+- Unterzonen-Vergleich: Name über `C_Map.GetAreaInfo(id)`, enthält-Prüfung ohne Groß-/Kleinschreibung, weil der Client „Die Ruinen von Lordaeron“ meldet. Die Satzwahl wird 0,2 s zwischengespeichert.
+- Questbereiche und -marker (`NearbyMaps`): In einem Innenraum-Satz nur die uiMap des Innenraums und nur innerhalb seines Grundrisses (`ns.InChunks`; die uiMap 1458 listet auch Tirisfal-Quests 370/374), an der Oberfläche alle Zonen außer denen mit Innenraum-Sätzen.
 - `/rnw pos` zeigt den aktiven Satz (`set=`).
 
 ### Datenpakete laden (`Core.lua`, `PackOf`/`LoadPack`)
@@ -234,7 +235,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
 | `raw_mosaic.py` | setzt Kacheln zu Rastern zusammen; exaktes Dreiecksnetz → 512 px pro Kachel (~1,04 yd/px); Texturgewichte |
 | `structures.py` | Gebäude: Wände platzierter WMOs (OBJ-Export) und ausgewählte M2 (Türme) werden „nicht begehbar“ |
 | `build_raw.py` | Masken, Zonen-Zuschnitt, Linien je Zoomstufe, Schraffur, Kacheln, `Tiles.lua`, Vorschauen |
-| `build_wmo.py` | Innenraum-Kachelsätze aus WMO-Exporten (`SETS`, bisher Undercity `0-1458`): Grundriss von oben, gleiche Ebenen und Funktionen wie `build_raw.py`; Vorschau `build/preview_<set>.png` |
+| `build_wmo.py` | Innenraum-Kachelsätze aus WMO-Exporten (`SETS`, bisher Undercity `0-1458` und Ruinen `0-1458-ruins`; Gruppen per `skip`/`only`, Regeln `subzones`/`not_subzones`, Grundriss `margin`/`res`): Grundriss von oben, gleiche Ebenen und Funktionen wie `build_raw.py`; Vorschau `build/preview_<set>.png` |
 | `roads.py` | `prune` (Skelett entgraten), von `build_raw.py` genutzt |
 | `simulate.py` | rendert die Lua-Darstellung aus den Kacheln (`build/sim.png`) |
 | `probe_view.py` | wertet `/rnw probe`-SavedVariables aus (Entwicklung) |

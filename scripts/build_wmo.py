@@ -1,7 +1,7 @@
 # Builds the tile set of a city interior from its WMO export (floor plan seen from above), e.g. Undercity
 # below Tirisfal. Same tile grid, layers and file format as build_raw.py; the set goes into the data pack of
-# its map as tiles/<map>-<uiMap>/ and the addon shows it while the player is on that uiMap (outside the
-# surface subzones listed in its `surface` entry).
+# its map as tiles/<set>/ and the addon shows it while the player is on its uiMap and the subzone rules hold
+# (`subzones`: only there, and only inside the set's footprint; `not_subzones`: never there).
 #   python scripts/build_wmo.py [set ...]      default: all sets in SETS
 # Walkable = the largest connected network of upward floor faces of the indoor groups, seen from above (highest
 # floor per pixel); water = WMO liquid where it lies above that floor (canals; bridges stay walkable).
@@ -22,18 +22,22 @@ from raw_mosaic import MAPS
 T = structures.T
 P = B.P
 EXPORT = os.path.join(MAPS, '..')
-# set -> map ID, WMO export (without extension), group descriptions left out (surface parts), surface areas
-# (AreaTable IDs: in these subzones the addon keeps the surface map), zone name
+# set -> map ID, uiMap, WMO export (without extension), groups by description (`skip` or `only`), subzone rules
+# (AreaTable IDs), zone name, margin of the footprint (px) and its resolution (cells per tile side)
+UC = 'world/wmo/autogen-names/undercity/20736'
 SETS = {
-    '0-1458': dict(map=0, wmo='world/wmo/autogen-names/undercity/20736', skip=('Ruins of Lordaeron',),
-                   surface=(153,), name='Undercity'),
+    # Undercity below Tirisfal; the Ruins of Lordaeron report uiMap 1458 too, so their subzone is excluded
+    '0-1458': dict(map=0, ui=1458, wmo=UC, skip=('Ruins of Lordaeron',), not_subzones=(153,), name='Undercity',
+                   margin=16, res=16),
+    # throne room, mausoleum and elevator shafts of the Ruins: only inside their footprint (not the courtyard)
+    '0-1458-ruins': dict(map=0, ui=1458, wmo=UC, only=('Ruins of Lordaeron',), subzones=(153,),
+                         name='Ruins of Lordaeron', margin=2, res=64, all_networks=True),
 }
 FLOOR_UP = 0.75            # |normal z| above this (upward): floor (~41 deg)
 INDOOR = 0x2000            # WMO group flag: indoor
 LIQUID_UNIT = 25 / 6       # yd per WMO liquid tile
 STEP = 1.2                 # yd; neighbouring floor pixels closer in height than this are connected (stairs)
 MIN_GAP = 30               # px; smaller holes in the floor are closed
-INSIDE_MARGIN = 16         # px added around the floor plan for its chunks (quest filter)
 ENVELOPE = 96              # px around the floor plan that belong to the set (hatch, then fade out)
 
 
@@ -47,12 +51,13 @@ def placement(wmo):
     raise SystemExit(f'no placement of {name} found')
 
 
-def load_groups(wmo, skip):
+def load_groups(wmo, skip=(), only=None):
     """Floor triangles (n, 3, 3) and liquid squares (n, 4, 3) of the indoor groups, model space (x, y, z up)."""
     d = json.load(open(os.path.join(EXPORT, wmo + '.json'), encoding='utf8'))
     floors, liquid = [], []
     for g in d['groups']:
-        if not g['flags'] & INDOOR or g.get('groupDescription') in skip:
+        desc = g.get('groupDescription')
+        if not g['flags'] & INDOOR or desc in skip or (only and desc not in only):
             continue
         path = os.path.join(EXPORT, f"{wmo}_{g['groupName']}.obj")
         if os.path.exists(path):
@@ -81,10 +86,11 @@ def load_groups(wmo, skip):
     return np.concatenate(floors), np.array(liquid, float).reshape(-1, 4, 3)
 
 
-def reachable_top(faces, to_px, H, W):
+def reachable_top(faces, to_px, H, W, all_networks=False):
     """Height raster (NaN = none) of the highest walkable floor per pixel. Floors are sampled per pixel on all
     levels; pixels next to each other with less than STEP height difference are connected (floors, ramps,
-    stairs). The largest network is the walkable city; the rest are tops of walls, arches and roof beams."""
+    stairs). The largest network is the walkable city; the rest are tops of walls, arches and roof beams.
+    all_networks: keep every network (small interiors, where the floor is split by elevators and doors)."""
     ys, xs, zs = [], [], []
     for poly, t in zip(to_px(faces), faces):
         x0, y0 = poly.min(0) // 4
@@ -122,7 +128,7 @@ def reachable_top(faces, to_px, H, W):
     n = len(nodes)
     _, lab = connected_components(coo_matrix((np.ones(e.shape[1]), (e[0], e[1])), shape=(n, n)), directed=False)
     size = np.bincount(lab)
-    keep = lab == np.argmax(size)
+    keep = np.ones(n, bool) if all_networks else lab == np.argmax(size)
     out = np.full(H * W, -np.inf, np.float32)
     np.maximum.at(out, key[keep], z[keep])
     out[np.isinf(out)] = np.nan
@@ -133,7 +139,7 @@ def reachable_top(faces, to_px, H, W):
 def build(set_id, cfg):
     row = placement(cfg['wmo'])
     xf = structures.world_xform(row)
-    floors, liquid = load_groups(cfg['wmo'], cfg['skip'])
+    floors, liquid = load_groups(cfg['wmo'], cfg.get('skip', ()), cfg.get('only'))
     fw = xf(floors.reshape(-1, 3)).reshape(-1, 3, 3)
     lw = xf(liquid.reshape(-1, 3)).reshape(-1, 4, 3) if len(liquid) else liquid
     allp = fw.reshape(-1, 3)
@@ -157,7 +163,7 @@ def build(set_id, cfg):
             cv2.fillConvexPoly(out, poly, float(h), cv2.LINE_8, shift=2)
         return out
 
-    floor = reachable_top(fw, to_px, H, W)
+    floor = reachable_top(fw, to_px, H, W, cfg.get('all_networks', False))
     level = top(lw, lw[..., 2].mean(1)) if len(lw) else np.full((H, W), np.nan, np.float32)
     with np.errstate(invalid='ignore'):
         # water where the liquid surface is the top: canal floors below it; bridges and walkways above stay
@@ -189,17 +195,24 @@ def build(set_id, cfg):
         pv[B.px(inner, P // 2)] = half(B.compose(dict(layers[P], fill=layers['fill'], blocked=layers['blocked'])))
     lua = os.path.join(out_dir, 'Tiles.lua')
     B.write_tiles_lua(lua, f'"{set_id}"', [cfg['name']], state)
-    # chunks (16 x 16 per tile, ~33 yd) the floor plan covers: quest areas and pins elsewhere belong to the surface
-    near = cv2.dilate(B.u8(walk | water), np.ones((2 * INSIDE_MARGIN + 1,) * 2, np.uint8))
-    inside = cv2.resize(near, (len(cols) * 16, len(rows) * 16), interpolation=cv2.INTER_AREA) > 0
+    # footprint: cells (res x res per tile) the floor plan covers. Quest areas and pins elsewhere belong to the
+    # surface; a set with `subzones` is shown only inside it.
+    m, res = cfg['margin'], cfg['res']
+    near = cv2.dilate(B.u8(walk | water), np.ones((2 * m + 1, 2 * m + 1), np.uint8))
+    inside = cv2.resize(near, (len(cols) * res, len(rows) * res), interpolation=cv2.INTER_AREA) > 0
+    ids = lambda k: '{ ' + ', '.join(map(str, cfg[k])) + ' }'
     with open(lua, 'a', newline='\n') as fh:
-        fh.write('-- Surface subzones (AreaTable IDs): there the addon keeps the map\'s own (surface) tiles\n')
-        fh.write(f'RunewayZones["{set_id}"].surface = {{ {", ".join(map(str, cfg["surface"]))} }}\n')
-        fh.write('-- Chunks of the floor plan per tile (row by row from north, "1" = inside): quests elsewhere belong to the surface\n')
-        fh.write(f'RunewayZones["{set_id}"].inside = {{\n')
+        fh.write('-- Shown on this uiMap; subzones (AreaTable IDs): only there and inside the footprint; notSubzones: never there\n')
+        fh.write(f'RunewayZones["{set_id}"].ui = {cfg["ui"]}\n')
+        if 'subzones' in cfg:
+            fh.write(f'RunewayZones["{set_id}"].subzones = {ids("subzones")}\n')
+        if 'not_subzones' in cfg:
+            fh.write(f'RunewayZones["{set_id}"].notSubzones = {ids("not_subzones")}\n')
+        fh.write(f'-- Footprint: {res} x {res} cells per tile (row by row from north, "1" = inside)\n')
+        fh.write(f'RunewayZones["{set_id}"].inside = {{\n    res = {res},\n')
         for j, r in enumerate(rows):
             for i, c in enumerate(cols):
-                g = inside[j * 16:(j + 1) * 16, i * 16:(i + 1) * 16]
+                g = inside[j * res:(j + 1) * res, i * res:(i + 1) * res]
                 if g.any():
                     fh.write(f'    ["{c}_{r}"] = "' + ''.join('1' if v else '0' for v in g.flatten()) + '",\n')
         fh.write('}\n')

@@ -182,11 +182,24 @@ L.execute('''
         tostring(NS.InChunks(inside, 1561.6, 240.7)), tostring(NS.InChunks(inside, 1456.7, 244.1)),
         tostring(NS.InChunks(inside, 1600, -150))))
     SUBZONE = "The Ruins of Lordaeron"          -- the client's subzone text may carry an article
-    later()
-    before = #TEXTURES
-    upd(RunewayFrame, 0.05)
-    print(("ruins of lordaeron: interior textures %d, surface textures %d"):format(newTextures(before)))
-    print("ruins of lordaeron: quest maps " .. table.concat(NS.NearbyMaps(), ","), "chunk filter " .. tostring(NS.InteriorChunks()))
+    local function tiles(label)
+        later()
+        local from = #TEXTURES
+        upd(RunewayFrame, 0.05)
+        local ruins, uc, surface = 0, 0, 0
+        for i = from + 1, #TEXTURES do
+            local t = TEXTURES[i] or ""
+            if t:find("0-1458-ruins", 1, true) then ruins = ruins + 1
+            elseif t:find("0-1458", 1, true) then uc = uc + 1
+            elseif t:find("tiles" .. string.char(92) .. "0" .. string.char(92), 1, true) then surface = surface + 1 end
+        end
+        print(("%s: ruins textures %d, undercity textures %d, surface textures %d, quest maps %s"):format(
+            label, ruins, uc, surface, table.concat(NS.NearbyMaps(), ",")))
+    end
+    POS[1], POS[2] = 1640, 240
+    tiles("throne room")
+    POS[1], POS[2] = 1772.1, 239.2
+    tiles("ruins courtyard")
     POS[1], POS[2], UI_MAP, SUBZONE = 1917.6, 84.9, 1420, ""
     later()
     SlashCmdList.RUNEWAY("reset")

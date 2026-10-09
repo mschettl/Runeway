@@ -1,0 +1,8 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\kalimdor\tanaris\passivedoodads\rocks\tanarisrock01.m2;19186.041015625;19.119577407836914;26214.88671875;0;309.1427001953125;0;;2.916015625;322587;m2;202677;0;
+..\..\world\kalimdor\tanaris\passivedoodads\rocks\tanarisrock01.m2;19200.271484375;11.876797676086426;26150.953125;0;87.16909790039062;0;;2.328125;322603;m2;202677;0;
+..\..\world\kalimdor\tanaris\passivedoodads\rocks\tanarisrock02.m2;19197.833984375;17.8409481048584;26209.95703125;0;6.28436279296875;0;;1.728515625;322586;m2;202678;0;
+..\..\world\kalimdor\tanaris\passivedoodads\rocks\tanarisrock04.m2;19193.1484375;17.390180587768555;26207.31640625;0;237.90521240234375;0;;2.7568359375;322589;m2;202680;0;
+..\..\world\kalimdor\tanaris\passivedoodads\rocks\tanarisrock01.m2;19199.0859375;14.968605995178223;26186.015625;0;276.0618896484375;0;;1.12890625;322584;m2;202677;0;
+..\..\world\kalimdor\tanaris\passivedoodads\rocks\tanarisrock04.m2;19196.16015625;16.93952178955078;26205.109375;0;239.89378356933594;0;;1.4619140625;322588;m2;202680;0;
+..\..\world\kalimdor\tanaris\passivedoodads\rocks\tanarisrock04.m2;19201.275390625;13.99124813079834;26180.51953125;0;275.4795837402344;0;;1.5732421875;322585;m2;202680;0;

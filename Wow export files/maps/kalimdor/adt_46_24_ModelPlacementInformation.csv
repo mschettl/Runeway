@@ -1,0 +1,14 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\generic\nightelf\passivedoodads\ruins\azrelfruin10.m2;24862.53125;-0.6828464865684509;12842.34375;0;76;0;;1;294447;m2;198817;0;
+..\..\world\generic\nightelf\passivedoodads\ruins\azrelfruin04.m2;24881.98828125;9.938483238220215;12882.2138671875;39.00000762939453;24.5;145.5;;1;294446;m2;198811;0;
+..\..\world\kalimdor\darkshore\passivedoodads\darkshorelogs\darkshorelog01.m2;24926.671875;2.0115034580230713;12833.029296875;0;0;0;;2.4091796875;298316;m2;201503;0;
+..\..\world\generic\nightelf\passivedoodads\ruins\azrelfruin05.m2;24901.5;0.6643549799919128;12849.9697265625;-15.999998092651367;0;-27.999998092651367;;1;294444;m2;198812;0;
+..\..\world\kalimdor\darkshore\passivedoodads\ruins\darkshoreruinwall02.m2;24841.56640625;5.617676734924316;12803.8203125;0;123.5;0;;1;295729;m2;201559;0;
+..\..\world\kalimdor\darkshore\passivedoodads\ruins\darkshoreruinwall04.m2;24843.52734375;5.726354598999023;12859.9296875;0;0;0;;1;295733;m2;201561;0;
+..\..\world\kalimdor\darkshore\passivedoodads\darkshorelogs\darkshorelog02.m2;24863.16015625;8.73978042602539;12877.677734375;-1.500000238418579;0;-0.5;;1;298317;m2;201504;0;
+..\..\world\kalimdor\darkshore\passivedoodads\ruins\darkshoreruinpillar05.m2;24906.33984375;5.415223121643066;12837.037109375;0;336.5;0;;1;295728;m2;201557;0;
+..\..\world\kalimdor\darkshore\passivedoodads\ruins\darkshoreruinpillar05.m2;24830.14453125;4.3252387046813965;12806.140625;0;0;0;;1;295732;m2;201557;0;
+..\..\world\azeroth\theblastedlands\passivedoodads\bones\blastedlandsbonepile02.m2;24874.98828125;5.56593656539917;12853.0166015625;0;0;0;;2.0390625;298319;m2;190437;0;
+..\..\world\azeroth\theblastedlands\passivedoodads\bones\blastedlandsbonepile03.m2;24885.931640625;11.455915451049805;12874.18359375;0;0;0;;1;298318;m2;190438;0;
+..\..\world\wmo\kalimdor\buildings\classicalelfruins\azrclassicalelfruin10.wmo;24910.306640625;6.824524402618408;12879.92578125;-3.499999761581421;36;1.999999761581421;0;1;283859;wmo;112711;0;Set_$DefaultGlobal
+..\..\world\wmo\kalimdor\buildings\classicalelfruins\azrclassicalelfruin08.wmo;24884.125;2.6236751079559326;12839.88671875;0;343.5;0;0;1;294445;wmo;112705;0;Set_$DefaultGlobal

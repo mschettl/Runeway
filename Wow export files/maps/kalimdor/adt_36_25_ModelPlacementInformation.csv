@@ -1,0 +1,4 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\kalimdor\kalidar\passivedoodads\kalidartrees\kalidartree08.m2;19266.173828125;297.10845947265625;13911.5498046875;0;231;0;;1;236375;m2;202057;0;
+..\..\world\kalimdor\kalidar\passivedoodads\kalidartrees\kalidartree01.m2;19710.03515625;290.6530456542969;13897.7529296875;0;51.5;0;;0.599609375;273193;m2;202050;0;
+..\..\world\kalimdor\kalidar\passivedoodads\kalidartrees\kalidartree01.m2;19737.412109375;298.4595031738281;13886.55078125;0;0;0;;0.4599609375;273192;m2;202050;0;

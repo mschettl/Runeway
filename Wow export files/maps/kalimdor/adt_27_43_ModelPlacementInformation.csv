@@ -1,0 +1,3 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\kalimdor\feralas\passivedoodads\tree\feralastree04.m2;14985.35546875;21.021928787231445;22915.03125;0;116.71884155273438;0;;0.8017578125;292136;m2;201938;0;
+..\..\world\kalimdor\feralas\passivedoodads\tree\feralastree03.m2;14995.482421875;44.49757766723633;23054.982421875;-0.5000001788139343;99.54058837890625;-0.5000001192092896;;1.1474609375;292143;m2;201937;0;

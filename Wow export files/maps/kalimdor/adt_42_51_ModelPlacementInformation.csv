@@ -1,0 +1,2 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\wmo\kalimdor\buildings\goblinhut\goblinhut.wmo;22702.4375;-503.4339904785156;27180.7109375;0;222.49998474121094;0;0;1;296216;wmo;112784;0;Set_$DefaultGlobal

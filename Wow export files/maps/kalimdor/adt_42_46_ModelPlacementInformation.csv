@@ -1,0 +1,15 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\generic\dwarf\passivedoodads\excavationbarrierplank\excavationbarrierplank.m2;22492.50390625;6.9896721839904785;25033.322265625;53.000003814697266;113.5;-93.50000762939453;;1.8798828125;389967;m2;197337;0;
+..\..\world\generic\human\passivedoodads\outposts\generaloutpost02.m2;22403.568359375;0.06915643811225891;25024.681640625;0;153.5;0;;1;386622;m2;198381;0;
+..\..\world\generic\human\passivedoodads\outposts\generaloutpost02.m2;22415.677734375;0.11722611635923386;25037.41015625;0;300.5;0;;1;386621;m2;198381;0;
+..\..\world\generic\human\passivedoodads\outposts\generaloutpost03.m2;22420.92578125;0.5626871585845947;25044.84375;0;25;0;;1;386620;m2;198382;0;
+..\..\world\generic\human\passivedoodads\outposts\generaloutpost03.m2;22411.6484375;0.3469342291355133;25029.103515625;0;316;0;;1;386623;m2;198382;0;
+..\..\world\generic\human\passivedoodads\cannon\cannon01.m2;22442.44140625;0.40248972177505493;25036.0234375;0;193;0;;1;386686;m2;198078;0;
+..\..\world\generic\human\passivedoodads\cannon\cannon01.m2;22448.541015625;0.40248972177505493;25041.703125;0;134.5;0;;1;386685;m2;198078;0;
+..\..\world\generic\dwarf\passivedoodads\excavationbarrierplank\excavationbarrierplank.m2;22525.849609375;13.16135311126709;25026.8359375;-89.00005340576172;222.49966430664062;179.00045776367188;;0.869140625;389968;m2;197337;0;
+..\..\world\generic\dwarf\passivedoodads\excavationbarrierplank\excavationbarrierplank.m2;22522.443359375;13.328020095825195;25021.328125;-85.00000762939453;270;128;;0.669921875;389969;m2;197337;0;
+..\..\world\generic\dwarf\passivedoodads\excavationbarrierplank\excavationbarrierplank.m2;22518.26953125;13.828020095825195;25014.56640625;-78.50000762939453;11;-151.99996948242188;;0.669921875;389970;m2;197337;0;
+..\..\world\generic\dwarf\passivedoodads\excavationbarrierplank\excavationbarrierplank.m2;22529.263671875;13.327706336975098;25029.77734375;-86.49993133544922;92.4998779296875;128.0000762939453;;0.669921875;389971;m2;197337;0;
+..\..\world\wmo\azeroth\collidabledoodads\wetlands\wetlandshumandock01\wetlandshumandock01.wmo;22491.796875;1.1204266548156738;25043.10546875;0;205;0;0;1;386598;wmo;108193;4;
+..\..\world\wmo\dungeon\md_pirateship\pirateship.wmo;22515.25;7.718703269958496;25034.822265625;0;211;0;0;1;386599;wmo;111402;0;Set_$DefaultGlobal
+..\..\world\wmo\dungeon\md_pirateship\pirateship.wmo;22535.984375;7.763882160186768;25015.984375;0;33;0;0;1;386600;wmo;111402;0;Set_$DefaultGlobal

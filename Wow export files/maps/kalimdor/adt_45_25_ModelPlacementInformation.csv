@@ -1,0 +1,6 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\generic\nightelf\passivedoodads\ruins\nightelfruins07.m2;24156.8046875;-24.333749771118164;13491.765625;0;0;0;;1;334619;m2;198839;0;
+..\..\world\wmo\kalimdor\buildings\classicalelfruins\azrclassicalelfruin02.wmo;24224.703125;-32.42969512939453;13654.091796875;-28;140.5;2.4999985694885254;0;1;290884;wmo;112692;0;Set_$DefaultGlobal
+..\..\world\wmo\kalimdor\buildings\classicalelfruins\azrclassicalelfruin09.wmo;24271.310546875;30.82678985595703;13131.4482421875;0;67;0;0;1;298611;wmo;112707;0;Set_$DefaultGlobal
+..\..\world\wmo\kalimdor\buildings\classicalelfruins\azrclassicalelfruin04.wmo;24400.138671875;-42.3564338684082;13538.1171875;3.000000238418579;330;21.499998092651367;0;1;317272;wmo;112696;0;Set_$DefaultGlobal
+..\..\world\wmo\kalimdor\buildings\classicalelfruins\azrclassicalelfruin03.wmo;23949.68359375;-35.85032272338867;13757.1474609375;0;0;0;0;1;334613;wmo;112694;0;Set_$DefaultGlobal

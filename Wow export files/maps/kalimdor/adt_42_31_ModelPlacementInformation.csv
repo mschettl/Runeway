@@ -1,0 +1,3 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\critter\birds\bird01.m2;22563.3984375;23.56483268737793;16959.71484375;-1.999999761581421;330.40191650390625;7.500000476837158;;0.908203125;328238;m2;190719;0;
+..\..\world\wmo\dungeon\md_shipwreck\shipwreck_b.wmo;22408.7734375;8.094043731689453;17010.654296875;13.000000953674316;318.5;-1.5000004768371582;0;1;181162;wmo;111516;0;Set_$DefaultGlobal

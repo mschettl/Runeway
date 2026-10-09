@@ -1,0 +1,13 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\generic\passivedoodads\particleemitters\blacksmith_smoke.m2;22454.390625;12.72165298461914;24266.28515625;0;0;0;;2.689453125;353151;m2;199929;0;
+..\..\world\generic\passivedoodads\particleemitters\blacksmith_smoke.m2;22452.55078125;12.930989265441895;24255.013671875;0;0;0;;1.3798828125;353150;m2;199929;0;
+..\..\world\generic\passivedoodads\particleemitters\blacksmith_smoke.m2;22477.244140625;17.92575454711914;24141.255859375;0;0;0;;1;353146;m2;199929;0;
+..\..\world\generic\passivedoodads\particleemitters\blacksmith_smoke.m2;22501.150390625;7.435329914093018;24168.927734375;0;0;0;;1;353148;m2;199929;0;
+..\..\world\generic\passivedoodads\particleemitters\blacksmith_smoke.m2;22475.24609375;19.63346290588379;24284.318359375;0;0;0;;1;353155;m2;199929;0;
+..\..\world\azeroth\burningsteppes\passivedoodads\bonfire\orcbonfire.m2;22458.56640625;11.00208854675293;24270.087890625;0;332;0;;1.689453125;353154;m2;189118;0;
+..\..\world\azeroth\burningsteppes\passivedoodads\bonfire\orcbonfire.m2;22470.24609375;15.25146484375;24283.869140625;0;0;0;;1.8896484375;353156;m2;189118;0;
+..\..\world\azeroth\burningsteppes\passivedoodads\bonfire\orcbonfire.m2;22479.9140625;10.726048469543457;24147.875;0;0;0;;1.6591796875;353147;m2;189118;0;
+..\..\world\azeroth\burningsteppes\passivedoodads\bonfire\orcbonfire.m2;22441.416015625;7.681125164031982;24256.759765625;0;345;0;;1;353152;m2;189118;0;
+..\..\world\azeroth\burningsteppes\passivedoodads\bonfire\orcbonfire.m2;22454.935546875;7.595458984375;24271.28515625;0;355.5;0;;1;353153;m2;189118;0;
+..\..\world\wmo\transports\passengership\transportship_a.wmo;22496.50390625;0.2238498330116272;24160.357421875;0;224.99998474121094;0;0;1;353145;wmo;116310;0;Set_$DefaultGlobal
+..\..\world\wmo\dungeon\md_pirateship\pirateship.wmo;22452.794921875;7.676568031311035;24256.21875;0;36;0;0;1;353149;wmo;111402;0;Set_$DefaultGlobal

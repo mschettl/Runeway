@@ -1,0 +1,4 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\kalimdor\barrens\passivedoodads\trees\barrenstree01.m2;14905.447265625;0.8130046129226685;27837.91015625;0;38.5;0;;1.2197265625;360785;m2;201394;0;
+..\..\world\kalimdor\barrens\passivedoodads\trees\barrenstree02.m2;14927.3955078125;-0.6576908826828003;27840.6875;0;104.5;0;;0.7998046875;360786;m2;201396;0;
+..\..\world\wmo\dungeon\md_mountaincave\md_mushroomcave09.wmo;14876.1171875;19.50383758544922;27809.00390625;0;341.5;0;0;1;360783;wmo;111239;0;Set_$DefaultGlobal

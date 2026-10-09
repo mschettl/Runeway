@@ -1,0 +1,2 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\wmo\dungeon\md_hive\mini-hive_f.wmo;21127.42578125;5.24571418762207;26164.3125;0;209.5;0;0;1;298596;wmo;110955;0;Set_$DefaultGlobal

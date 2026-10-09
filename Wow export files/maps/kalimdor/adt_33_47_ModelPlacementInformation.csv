@@ -1,0 +1,10 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\kalimdor\feralas\passivedoodads\tree\feralastree04.m2;18053.27734375;-269.71295166015625;25045.28515625;0;325.0666809082031;0;;1.162109375;304686;m2;201938;0;
+..\..\world\kalimdor\feralas\passivedoodads\tree\feralastree02.m2;18270.771484375;-275.1913146972656;25008.95703125;0;144.1312255859375;0;;0.9853515625;304684;m2;201936;0;
+..\..\world\kalimdor\feralas\passivedoodads\tree\feralastree03.m2;18181.892578125;-270.9442138671875;25109.890625;0;195.6505126953125;0;;1.17578125;304704;m2;201937;0;
+..\..\world\kalimdor\feralas\passivedoodads\tree\feralastree03.m2;18185.751953125;-215.5692901611328;25304.75390625;0;0;0;;1;454730;m2;201937;0;
+..\..\world\kalimdor\feralas\passivedoodads\tree\feralastree01.m2;18133.564453125;-201.8711700439453;25286.2265625;0;0;0;;1;454727;m2;201935;0;
+..\..\world\kalimdor\feralas\passivedoodads\tree\feralastree03.m2;18137.859375;-188.9153289794922;25339.984375;0;14;0;;0.279296875;454732;m2;201937;0;
+..\..\world\azeroth\stranglethorn\passivedoodads\trees\stranglethorntree02\stranglethorntree02.m2;18126.158203125;-184.8798370361328;25333.93359375;0;0;-1.500000238418579;;1.189453125;454737;m2;190319;0;
+..\..\world\azeroth\stranglethorn\passivedoodads\trees\stranglethorntree02\stranglethorntree02.m2;18139.9453125;-183.95138549804688;25353.46484375;0;13.5;0;;1;454735;m2;190319;0;
+..\..\world\wmo\dungeon\md_hive\mini-hive_b.wmo;18388.212890625;-284.0808410644531;25023.72265625;0;253.5;0;0;1;310138;wmo;110886;0;Set_$DefaultGlobal

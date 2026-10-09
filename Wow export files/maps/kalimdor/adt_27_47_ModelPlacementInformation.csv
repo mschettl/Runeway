@@ -1,0 +1,6 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\kalimdor\silithus\passivedoodads\ruins\silithusruinswall06.m2;14794.5654296875;101.45362854003906;25688.75390625;0;282;0;;0.669921875;24645874;m2;202578;0;
+..\..\world\kalimdor\silithus\passivedoodads\obsidianstatue\obsidianstatue.m2;14936.5322265625;137.79998779296875;25412.654296875;0;201.5;0;;3.0390625;24646080;m2;202533;0;
+..\..\world\wmo\dungeon\kl_ahnqiraj\40manenterance.wmo;15124.3583984375;96.12266540527344;25382.373046875;0;0;0;0;1;631324;wmo;109028;0;Set_$DefaultGlobal
+..\..\world\wmo\dungeon\kl_ahnqiraj\westernfrontlandscape.wmo;15296.3984375;183.6797332763672;25367.1328125;0;0;0;0;1;631329;wmo;109177;0;Set_$DefaultGlobal
+..\..\world\wmo\dungeon\kl_ahnqiraj\ahn_qiraj_facade.wmo;15002.8466796875;152.09500122070312;25463.0703125;0;21;0;0;1;24646084;wmo;109130;0;Set_$DefaultGlobal

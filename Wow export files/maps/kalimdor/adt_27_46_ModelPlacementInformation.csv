@@ -1,0 +1,2 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\wmo\dungeon\kl_ahnqiraj\westernfrontlandscape.wmo;15296.3984375;183.6797332763672;25367.1328125;0;0;0;0;1;631329;wmo;109177;0;Set_$DefaultGlobal

@@ -1,0 +1,11 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\kalimdor\azshara\passivedoodads\rocks\azshararock05.m2;23528.0859375;-66.84614562988281;13824.96484375;0;89;0;;4.9892578125;289179;m2;201309;0;
+..\..\world\generic\nightelf\passivedoodads\ruins\azrelfruin01.m2;23457.4609375;-27.0488224029541;13588.849609375;0;99;0;;1;298620;m2;198808;0;
+..\..\world\azeroth\theblastedlands\passivedoodads\ruins\blastedlandsportalruins01.m2;23787.359375;-65.99685668945312;13596.3095703125;-23.5;0;-0.5;;1;332944;m2;190462;0;
+..\..\world\wmo\dungeon\md_cavetunnels\md_cavetunnel01.wmo;23421.48046875;3.9197099208831787;13949.8701171875;0;310.5;0;0;1;289178;wmo;110553;0;Set_$DefaultGlobal
+..\..\world\wmo\kalimdor\buildings\classicalelfruins\azrclassicalelfruin05.wmo;23482.28515625;-48.07233428955078;13443.4140625;0;253.99998474121094;0;0;1;298619;wmo;112698;0;Set_$DefaultGlobal
+..\..\world\wmo\kalimdor\buildings\classicalelfruins\azrclassicalelfruin01.wmo;23678.619140625;-82.31092834472656;13549.6220703125;-0.4999924302101135;299;-34.999996185302734;0;1;332943;wmo;112690;0;Set_$DefaultGlobal
+..\..\world\wmo\kalimdor\buildings\classicalelfruins\azrclassicalelfruin03.wmo;23949.68359375;-35.85032272338867;13757.1474609375;0;0;0;0;1;334613;wmo;112694;0;Set_$DefaultGlobal
+..\..\world\wmo\kalimdor\buildings\classicalelfruins\azrclassicalelfruin10.wmo;23756.5390625;-27.0516357421875;13855.25390625;5.500001430511475;313.5;-8.500000953674316;0;1;334614;wmo;112711;0;Set_$DefaultGlobal
+..\..\world\wmo\kalimdor\buildings\classicalelfruins\azrclassicalelfruin02.wmo;23496.185546875;-24.000076293945312;13690.25;0;104.5;0;0;1;334615;wmo;112692;0;Set_$DefaultGlobal
+..\..\world\wmo\kalimdor\buildings\classicalelfruins\azrclassicalelfruin01.wmo;23946.453125;-38.8824462890625;13458.3759765625;-2.500000238418579;0;-8.000000953674316;0;1;334620;wmo;112690;0;Set_$DefaultGlobal

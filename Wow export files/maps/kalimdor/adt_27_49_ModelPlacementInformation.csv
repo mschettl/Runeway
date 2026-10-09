@@ -1,0 +1,8 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\kalimdor\silithus\passivedoodads\quirajruins\quirajruinblock02.m2;14992.8916015625;-60.26969528198242;26040.68359375;0;310.5;0;;19.3798828125;605722;m2;202556;0;
+..\..\world\kalimdor\silithus\passivedoodads\quirajruins\quirajtwall01.m2;14950.7197265625;-40.1455078125;26098.015625;0;310.5;0;;3.509765625;605752;m2;202560;0;
+..\..\world\kalimdor\silithus\passivedoodads\quirajruins\quirajtwall02.m2;14834.8515625;-8.366849899291992;26599.5390625;0;272;0;;4.26953125;606025;m2;202561;0;
+..\..\world\kalimdor\silithus\passivedoodads\quirajruins\quirajtower03roof.m2;14784.197265625;6.88658332824707;26699.03125;-15.000000953674316;338.5;-6.499999046325684;;3.509765625;24645880;m2;202558;0;
+..\..\world\kalimdor\silithus\passivedoodads\ruins\silithusruinsobelisk03.m2;14819.3642578125;-10.429089546203613;26656.419921875;0;246;0;;3.119140625;606029;m2;202571;0;
+..\..\world\kalimdor\silithus\passivedoodads\ahnqirajstones\ahn_qirajobelisk.m2;14821.619140625;42.58000946044922;26652.609375;0;4.28173828125;0;;1;606028;m2;202442;0;
+..\..\world\kalimdor\silithus\passivedoodads\pylons\silithuspylon.m2;14934.587890625;19.50633430480957;26586.900390625;0;4.31781005859375;0;;2.2099609375;606026;m2;202539;0;

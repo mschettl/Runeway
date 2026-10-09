@@ -1,0 +1,8 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\kalimdor\silithus\passivedoodads\ahnqirajstones\ahn_qirajobelisk.m2;15153.873046875;16.80008316040039;27028.87109375;0;58.28173828125;0;;1;606104;m2;202442;0;
+..\..\world\kalimdor\silithus\passivedoodads\ahnqirajstones\ahn_qirajobelisk.m2;15099.013671875;10.522347450256348;26996.150390625;0;56.781707763671875;0;;1;606087;m2;202442;0;
+..\..\world\kalimdor\silithus\passivedoodads\pylons\silithuspylon.m2;14934.6015625;19.280710220336914;26679.1015625;0;290.81781005859375;0;;2.2099609375;606035;m2;202539;0;
+..\..\world\kalimdor\silithus\passivedoodads\pylons\silithuspylon.m2;14941.556640625;17.099069595336914;26771.4375;0;232.8177947998047;0;;2.2099609375;606043;m2;202539;0;
+..\..\world\kalimdor\silithus\passivedoodads\pylons\silithuspylon.m2;15248.90234375;14.39489459991455;27091.669921875;0;72.3177490234375;0;;2.2099609375;606196;m2;202539;0;
+..\..\world\kalimdor\silithus\passivedoodads\pylons\silithuspylon.m2;14977.6884765625;16.242992401123047;26865.728515625;0;72.3177490234375;0;;2.2099609375;606048;m2;202539;0;
+..\..\world\kalimdor\silithus\passivedoodads\pylons\silithuspylon.m2;15246.662109375;19.081031799316406;27142.125;0;72.3177490234375;0;;2.2099609375;606271;m2;202539;0;

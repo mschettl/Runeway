@@ -1,0 +1,10 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\kalimdor\kalidar\passivedoodads\kalidartrees\kalidartree08.m2;20767.509765625;207.06930541992188;13258.1240234375;0;329.5;0;;1;274797;m2;202057;0;
+..\..\world\kalimdor\kalidar\passivedoodads\kalidartrees\kalidartree08.m2;20662.57421875;230.8412628173828;13448.5849609375;0;336.5;0;;1;274796;m2;202057;0;
+..\..\world\kalimdor\kalidar\passivedoodads\kalidartrees\kalidartree01.m2;20896.28515625;181.92042541503906;13304.9072265625;0;210.49998474121094;0;;1;332732;m2;202050;0;
+..\..\world\kalimdor\kalidar\passivedoodads\kalidartrees\kalidartree08.m2;20859.787109375;172.4679412841797;13143.380859375;0;271;0;;1;332731;m2;202057;0;
+..\..\world\kalimdor\kalidar\passivedoodads\kalidartrees\kalidartree01.m2;20924.63671875;171.9604034423828;13431.259765625;0;276.5;0;;1;274798;m2;202050;0;
+..\..\world\kalimdor\kalidar\passivedoodads\kalidartrees\kalidartree01.m2;20765.55859375;160.44422912597656;13453.9609375;0;0;0;;1;274017;m2;202050;0;
+..\..\world\generic\passivedoodads\particleemitters\steam04.m2;20279.595703125;676.5133056640625;13216.234375;0;0;0;;1;23456;m2;199972;0;
+..\..\world\generic\passivedoodads\particleemitters\steam04.m2;20468.775390625;542.6131591796875;13308.3447265625;0;0;0;;1;23457;m2;199972;0;
+..\..\world\wmo\dungeon\md_mountaincave\md_mountaincave_medium.wmo;20532.013671875;1010.706787109375;12690.1875;0;246.5;0;0;1;68204033;wmo;111137;0;Set_$DefaultGlobal

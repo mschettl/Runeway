@@ -1,0 +1,15 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\azeroth\theblastedlands\passivedoodads\ruins\brokengatearch.m2;19854.349609375;16.536653518676758;26721.72265625;0;4;0;;2.029296875;300319;m2;190470;0;
+..\..\world\azeroth\theblastedlands\passivedoodads\ruins\brokengatewall.m2;19899.095703125;5.724958896636963;26718.46484375;0;6;0;;3.3896484375;300317;m2;190476;0;
+..\..\world\azeroth\theblastedlands\passivedoodads\ruins\brokengatewall.m2;19806.849609375;4.761081218719482;26724.26953125;0;3;0;;3.3896484375;300318;m2;190476;0;
+..\..\world\azeroth\theblastedlands\passivedoodads\ruins\brokengateside02.m2;19842.291015625;7.148473262786865;26713.6171875;0;188.5;0;;2.919921875;300321;m2;190475;0;
+..\..\world\azeroth\burningsteppes\passivedoodads\lavapillar\lavapillar02.m2;19819.720703125;9.708613395690918;26701.96875;0;348.5;0;;4.2998046875;300322;m2;189159;0;
+..\..\world\azeroth\burningsteppes\passivedoodads\lavapillar\lavapillar02.m2;19903.025390625;8.545065879821777;26660.484375;0;348.5;0;;4.2998046875;300325;m2;189159;0;
+..\..\world\azeroth\burningsteppes\passivedoodads\lavapillar\lavapillar02.m2;19798.06640625;10.593505859375;26670.53515625;0;286;0;;4.2998046875;300323;m2;189159;0;
+..\..\world\azeroth\theblastedlands\passivedoodads\ruins\brokengateside01.m2;19864.05078125;7.877833843231201;26713.05078125;0;172;0;;2.8193359375;300320;m2;190474;0;
+..\..\world\azeroth\burningsteppes\passivedoodads\lavapillar\lavapillar03.m2;19885.568359375;11.42696475982666;26698.65625;0;319;0;;4.3095703125;300327;m2;189160;0;
+..\..\world\azeroth\theblastedlands\passivedoodads\ruins\brokengatechain02.m2;19808.595703125;41.318260192871094;26683.14453125;0;304;0;;0.7294921875;300328;m2;190472;0;
+..\..\world\wmo\khazmodan\buildings\greatwall\greatwall_wall_01.wmo;19858.89453125;63.36969757080078;26736.140625;0;3;0;0;1;300330;wmo;113970;0;Set_$DefaultGlobal
+..\..\world\wmo\khazmodan\buildings\greatwall\greatwall_tower_01.wmo;19909.412109375;93.60415649414062;26742.3515625;0;306.5;0;0;1;300331;wmo;113966;0;Set_$DefaultGlobal
+..\..\world\wmo\khazmodan\buildings\greatwall\greatwall_tower_01.wmo;19794.029296875;94.68728637695312;26744.71875;0;244.5;0;0;1;300332;wmo;113966;0;Set_$DefaultGlobal
+..\..\world\wmo\khazmodan\buildings\greatwall\greatwall_wall_03.wmo;19857.87890625;96.90773010253906;26757.8984375;0;3.5;0;0;1;300333;wmo;113974;0;Set_$DefaultGlobal

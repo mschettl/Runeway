@@ -1,0 +1,4 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\critter\birds\bird01.m2;21772.880859375;17.650218963623047;20988.455078125;0;322.5;0;;6.0693359375;116795;m2;190719;0;
+..\..\world\generic\human\passivedoodads\stormwind\stormwind_lighthousebeam_01.m2;21820.9375;29.83542823791504;20733.44140625;0;0;0;;0.2421875;69462889;m2;244188;0;
+..\..\world\critter\birds\bird01.m2;21865.06640625;27.559207916259766;20840.64453125;0;5.5;0;;1.439453125;303501;m2;190719;0;

@@ -1,0 +1,4 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\generic\nightelf\passivedoodads\ruins\azrelfruin01.m2;24165.8828125;-34.237220764160156;13883.8896484375;-60.9999885559082;226.50001525878906;-2.999993085861206;;1;334616;m2;198808;0;
+..\..\world\generic\nightelf\passivedoodads\ruins\azrelfruin02.m2;24193.587890625;-21.861352920532227;13939.724609375;2.4999990463256836;12;11.5;;1;334617;m2;198809;0;
+..\..\world\wmo\kalimdor\buildings\classicalelfruins\azrclassicalelfruin05.wmo;24078.83984375;-30.41229248046875;14068.7060546875;-5;0;14.999999046325684;0;1;334618;wmo;112698;0;Set_$DefaultGlobal

@@ -1,0 +1,4 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\kalimdor\durotar\passivedoodads\trees\durotartree03.m2;21993.544921875;52.18359375;15422.96484375;3.500000238418579;355.9349365234375;-8.5;;1.158203125;256833;m2;201805;0;
+..\..\world\kalimdor\durotar\passivedoodads\trees\durotartree03.m2;21862.234375;168.8895721435547;15420.8291015625;-1.999998927116394;66.46533203125;10.499999046325684;;0.91015625;256834;m2;201805;0;
+..\..\world\wmo\autogen-names\orgrimmar\21142.wmo;21484.859375;30.434814453125;15566.1640625;0;34;0;0;1;165042;wmo;7964229;0;DefaultGlobal

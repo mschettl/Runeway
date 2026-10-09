@@ -1,0 +1,2 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\wmo\dungeon\md_mountaincave\md_mushroomcave09.wmo;14876.1171875;19.50383758544922;27809.00390625;0;341.5;0;0;1;360783;wmo;111239;0;Set_$DefaultGlobal

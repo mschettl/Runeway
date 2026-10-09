@@ -1,0 +1,15 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\generic\nightelf\passivedoodads\statues\statueaszharaarm.m2;23992.69921875;118.98076629638672;14642.9873046875;-40.9999885559082;308;140;;2.689453125;294325;m2;198942;0;
+..\..\world\generic\nightelf\passivedoodads\statues\statueaszharafeet.m2;24015.81640625;100.3127212524414;14602.8291015625;3.000000238418579;281.5;1.5000001192092896;;4.3095703125;294324;m2;198943;0;
+..\..\world\azeroth\deadwindpass\passivedoodads\hangingtree\deadwindhangingtree.m2;24074.240234375;98.65071105957031;14450.0576171875;0;245;0;;1;388109;m2;189304;0;
+..\..\world\azeroth\deadwindpass\passivedoodads\trees\deadwindpassmidtree02.m2;24097.64453125;116.01345825195312;14628.8173828125;0;105.5;0;;2.109375;388096;m2;189337;0;
+..\..\world\azeroth\deadwindpass\passivedoodads\hangingtree\deadwindhangingtree.m2;23978.875;131.3456573486328;14778.619140625;0;358;0;;1;388085;m2;189304;0;
+..\..\world\azeroth\deadwindpass\passivedoodads\trees\deadwindpassmidtree02.m2;24042.416015625;103.9555435180664;14663.3271484375;0;0;0;;2.009765625;388097;m2;189337;0;
+..\..\world\azeroth\deadwindpass\passivedoodads\trees\deadwindpassmidtree02.m2;24033.669921875;118.43502044677734;14582.8642578125;0;0;0;;1.849609375;388094;m2;189337;0;
+..\..\world\azeroth\deadwindpass\passivedoodads\trees\deadwindpassmidtree01.m2;24006.17578125;129.4044952392578;14725.443359375;0;0;0;;2.189453125;388086;m2;189336;0;
+..\..\world\azeroth\deadwindpass\passivedoodads\trees\deadwindpassmidtree02.m2;24115.578125;131.0236358642578;14646.7822265625;0;0;0;;1.7392578125;388095;m2;189337;0;
+..\..\world\generic\gnome\passivedoodads\lights\gnomestructuralspotlight02.m2;24281.12890625;10.202580451965332;14802.427734375;1.5000001192092896;136;174;;1;394662;m2;197719;0;
+..\..\world\generic\gnome\passivedoodads\lights\gnomestructuralspotlight02.m2;24281.5625;11.599872589111328;14824.208984375;-2.500000238418579;232;178.5;;1;394664;m2;197719;0;
+..\..\world\generic\gnome\passivedoodads\lights\gnomestructuralspotlight02.m2;24297.546875;14.094136238098145;14825.041015625;1.5000001192092896;306;-179;;1;394665;m2;197719;0;
+..\..\world\generic\gnome\passivedoodads\lights\gnomestructuralspotlight02.m2;24300.37890625;9.96003532409668;14805.6171875;-1;42;179;;1;394663;m2;197719;0;
+..\..\world\wmo\kalimdor\collidabledoodads\stonetalon\landingpad\landingpad01.wmo;24288.740234375;0.01703474298119545;14812.8466796875;0;352;0;0;1;395805;wmo;113329;0;Set_$DefaultGlobal

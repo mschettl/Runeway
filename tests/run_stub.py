@@ -438,6 +438,21 @@ L.execute('''
         near[4242] and near[4243] and not near[9999] and apart[9999] and not apart[4242] and not apart[4243])
     -- a neighbouring map lists a quest of the combined outline (4243 on 1421): if its outline there is the
     -- better one (not cut), the combined outline still takes it, and every quest is drawn once
+    -- zoomed out: the neighbouring map 1421 is in reach again
+    local zoom0 = db.zoom
+    db.zoom = 0.2
+    for _ = 1, 400 do
+        for _, f in ipairs(FRAMES) do
+            local h = f:GetScript("OnUpdate")
+            if h and f ~= RunewayFrame then h(f, 0.05) end
+        end
+    end
+    check("merge: neighbouring map in reach", table.concat(NS.NearbyMaps(), ",") == "1420,1421")
+    local both = false
+    for _, e in ipairs(NS.QuestAreasRepublish()) do
+        if table.concat(e[2], ",") == "4242,4243" then both = true end
+    end
+    check("merge: zoomed out the overlapping quests are combined", both)
     local _, _, S = NS.QuestAreaState()
     local function once()
         local count, ok = {}, true
@@ -451,9 +466,28 @@ L.execute('''
     local cut1420, cut1421 = a1420.cut, a1421.cut
     a1420.cut, a1421.cut = true, false
     local ok = once()
-    local merged = false
-    for _, e in ipairs(NS.QuestAreasRepublish()) do if #e[2] == 2 then merged = true end end
-    check("merge: every quest drawn once with a neighbouring map", ok and merged)
+    check("merge: every quest drawn once with a neighbouring map", ok)
+    -- zoomed out: the neighbouring map lists only part of an overlapping set (4243, whole there, and 5001), the
+    -- player's map 4242, 4243 (cut there) and 9001: the set goes to the map that lists most of it
+    local O = select(4, NS.QuestAreaState())
+    local function copy(a, dn)
+        local loops = {}
+        for _, l in ipairs(a.loops) do
+            local c = {}
+            for m = 1, #l, 2 do c[m], c[m + 1] = l[m] + dn, l[m + 1] end
+            loops[#loops + 1] = c
+        end
+        local bx = a.box
+        return { loops = loops, box = { bx[1] + dn, bx[2] + dn, bx[3], bx[4] }, rect = a.rect, sig = "x", cut = false }
+    end
+    local d9 = (a1420.box[2] - a1420.box[1]) / 2
+    S[1420].areas[9001] = copy(a1420, d9)
+    a1420.cut, a1421.cut = true, false
+    NS.QuestAreasRepublish()
+    local same = O[4242] == 1420 and O[4243] == 1420 and O[9001] == 1420
+    S[1420].areas[9001] = nil
+    check("merge: a neighbouring map with part of a set does not split it", same)
+    db.zoom = zoom0
     -- flight masters: own faction and neutral, discovered and undiscovered with their own icons; tooltip.
     -- isUndiscovered is always false in the client: known nodes come from the taxi map of a flight master
     NS.RefreshQuests()

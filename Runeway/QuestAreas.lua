@@ -252,10 +252,15 @@ local function ToWorldLoop(xs, ys, box)
     return out
 end
 
--- Owner map per quest: prefer an outline that does not touch its map border (not cut off), then the nearer map
+-- Owner map per quest: prefer an outline that does not touch its map border (not cut off), then the nearer map.
+-- Combined outlines (option): quests whose outlines overlap (on a map, also through others) are drawn as one
+-- outline from the map that lists most of them (then fewest cut outlines, then nearest). So a neighbouring map
+-- that lists only some of them cannot split the group when it comes into reach (zoomed out).
 local pending = true      -- owners changed: publish the shown outlines once sampling has settled
+local want = {}           -- combined outlines to draw: { map =, members = {questID, ...}, key = }
 local function Resolve()
     wipe(owner)
+    wipe(want)
     for _, m in ipairs(maps) do
         local st = state[m]
         for qid, a in pairs(st and st.areas or {}) do
@@ -264,35 +269,88 @@ local function Resolve()
         end
     end
     pending = true
+    if not ns.db().questMerge then return end
+    -- overlapping outlines (boxes) on the same map, also through others
+    local parent = {}
+    local function root(q) while parent[q] do q = parent[q] end return q end
+    for _, m in ipairs(maps) do
+        local ids, areas = {}, state[m] and state[m].areas or {}
+        for qid, a in pairs(areas) do
+            if #a.loops > 0 then ids[#ids + 1] = qid end
+        end
+        table.sort(ids)
+        for i = 1, #ids do
+            local a = areas[ids[i]].box
+            for j = i + 1, #ids do
+                local b = areas[ids[j]].box
+                if a[1] <= b[2] and b[1] <= a[2] and a[3] <= b[4] and b[3] <= a[4] then
+                    local ri, rj = root(ids[i]), root(ids[j])
+                    if ri ~= rj then parent[rj] = ri end
+                end
+            end
+        end
+    end
+    local ids, sets = {}, {}
+    for qid in pairs(owner) do ids[#ids + 1] = qid end
+    table.sort(ids)
+    for _, qid in ipairs(ids) do
+        local r = root(qid)
+        sets[r] = sets[r] or {}
+        table.insert(sets[r], qid)
+    end
+    -- each set from the map that lists most of it (then fewest cut outlines, then nearest); the rest likewise
+    for _, rest in pairs(sets) do
+        while #rest > 1 do
+            local best, bestN, bestCut
+            for _, m in ipairs(maps) do
+                local areas, n, cut = state[m] and state[m].areas or {}, 0, 0
+                for _, qid in ipairs(rest) do
+                    local a = areas[qid]
+                    if a and #a.loops > 0 then
+                        n = n + 1
+                        if a.cut then cut = cut + 1 end
+                    end
+                end
+                if n > 1 and (not best or n > bestN or (n == bestN and cut < bestCut)) then
+                    best, bestN, bestCut = m, n, cut
+                end
+            end
+            if not best then break end
+            local areas, list, left, key = state[best].areas, {}, {}, {}
+            for _, qid in ipairs(rest) do
+                local a = areas[qid]
+                if a and #a.loops > 0 then
+                    owner[qid] = best
+                    list[#list + 1] = qid
+                    key[#key + 1] = qid .. "=" .. a.sig
+                else
+                    left[#left + 1] = qid
+                end
+            end
+            want[#want + 1] = { map = best, members = list, key = table.concat(key, ",") }
+            rest = left
+        end
+    end
 end
 
 -- The outlines on screen: { area, questIDs, state } per shown group or single quest area. Rebuilt only when
 -- sampling has settled (or after PUBLISH_MAX s of work), so new areas appear together and merged instead of
--- one by one. A combined outline takes all its quests (the first one not cut by its map border, nearest map
--- first); the other quests show their own outline on their owner map. So every quest is drawn exactly once,
--- also when a neighbouring map that lists the same quests comes into view.
+-- one by one. Combined outlines first (Resolve: one map per group), the other quests show their own outline on
+-- their owner map. So every quest is drawn exactly once, also when a neighbouring map that lists some of the
+-- same quests comes into view.
 local PUBLISH_MAX = 3
 local shown, shownQuest, published, publishedMerge = {}, {}, 0, nil
 local function Publish()
+    Resolve()
     pending, published = false, GetTime()
-    local merge = ns.db().questMerge     -- overlapping quests as one combined outline (option)
-    publishedMerge = merge
+    publishedMerge = ns.db().questMerge  -- overlapping quests as one combined outline (option)
     shown, shownQuest = {}, {}
-    if merge then
-        for pass = 1, 2 do
-            for _, m in ipairs(maps) do
-                local st = state[m]
-                for _, g in pairs(st and st.groups or {}) do
-                    if #g.loops > 0 and (pass == 2) == (g.cut == true) then
-                        local free = true
-                        for _, qid in ipairs(g.members) do free = free and not shownQuest[qid] end
-                        if free then
-                            for _, qid in ipairs(g.members) do shownQuest[qid] = true end
-                            shown[#shown + 1] = { g, g.members, st }
-                        end
-                    end
-                end
-            end
+    for _, g in ipairs(want) do
+        local st = state[g.map]
+        local area = st.groups[g.key]
+        if area and #area.loops > 0 then
+            for _, qid in ipairs(g.members) do shownQuest[qid] = true end
+            shown[#shown + 1] = { area, area.members, st }
         end
     end
     for _, m in ipairs(maps) do
@@ -387,53 +445,17 @@ local function Step(e)
 end
 
 -- Overlapping quest areas are sampled once more with all their blobs drawn, so they get one outline
-local function NextMapGroupJob(areas, groups)
-    if not ns.db().questMerge then return end
-    local ids = {}
-    for qid, a in pairs(areas) do
-        if a.rect then ids[#ids + 1] = qid end
-    end
-    table.sort(ids)
-    local parent = {}
-    local function root(q) while parent[q] do q = parent[q] end return q end
-    for i = 1, #ids do
-        for j = i + 1, #ids do
-            local a, b = areas[ids[i]].rect, areas[ids[j]].rect
-            if a[1] <= b[3] and b[1] <= a[3] and a[2] <= b[4] and b[2] <= a[4] then
-                local ri, rj = root(ids[i]), root(ids[j])
-                if ri ~= rj then parent[rj] = ri end
-            end
-        end
-    end
-    local sets = {}
-    for _, qid in ipairs(ids) do
-        local r = root(qid)
-        sets[r] = sets[r] or {}
-        table.insert(sets[r], qid)
-    end
-    for _, members in pairs(sets) do
-        if #members > 1 then
-            local key = {}
-            for _, qid in ipairs(members) do key[#key + 1] = qid .. "=" .. areas[qid].sig end
-            key = table.concat(key, ",")
-            if not groups[key] then
-                local x0, y0, x1, y1 = 1, 1, 0, 0
-                for _, qid in ipairs(members) do
-                    local r = areas[qid].rect
-                    x0, y0, x1, y1 = math.min(x0, r[1]), math.min(y0, r[2]), math.max(x1, r[3]), math.max(y1, r[4])
-                end
-                return key, members, x0, y0, x1, y1
-            end
-        end
-    end
-end
-
 local function NextGroupJob()
-    for _, m in ipairs(maps) do
-        local st = state[m]
-        if st then
-            local key, members, x0, y0, x1, y1 = NextMapGroupJob(st.areas, st.groups)
-            if key then return m, key, members, x0, y0, x1, y1 end
+    if not ns.db().questMerge then return end
+    for _, g in ipairs(want) do
+        local st = state[g.map]
+        if st and not st.groups[g.key] then
+            local x0, y0, x1, y1 = 1, 1, 0, 0
+            for _, qid in ipairs(g.members) do
+                local r = st.areas[qid].rect
+                x0, y0, x1, y1 = math.min(x0, r[1]), math.min(y0, r[2]), math.max(x1, r[3]), math.max(y1, r[4])
+            end
+            return g.map, g.key, g.members, x0, y0, x1, y1
         end
     end
 end

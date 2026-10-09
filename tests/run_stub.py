@@ -523,7 +523,7 @@ L.execute('''
     local atl = {}
     for _, t in ipairs(ALL_TEX) do
         local a = rawget(t, "_atlas")
-        if a and (a:find("TaxiNode") or a == "FlightMaster") and rawget(t, "_shown") then atl[#atl + 1] = a end
+        if a and (a:find("TaxiNode") or a:find("Taxi_Frame")) and rawget(t, "_shown") then atl[#atl + 1] = a end
     end
     table.sort(atl)
     local names = {}
@@ -534,7 +534,7 @@ L.execute('''
     for _, p in ipairs(NS.TaxiPins) do
         if p.shown and p.taxi.undiscovered then green = (rawget(p.icon, "_tex") or ""):find("Green") ~= nil end
     end
-    check("flight masters: own faction shown, discovered with the minimap icon", table.concat(atl, ",") == "FlightMaster,FlightMaster")
+    check("flight masters: own faction shown, discovered with the green node", table.concat(atl, ",") == "Taxi_Frame_Green,Taxi_Frame_Green")
     check("flight masters: missing undiscovered atlas falls back to the green icon", green)
     check("flight masters: /rnw taxi lists them", pcall(SlashCmdList.RUNEWAY, "taxi"))
     check("flight masters: /rnw taxi icons shows the candidates", pcall(SlashCmdList.RUNEWAY, "taxi icons"))

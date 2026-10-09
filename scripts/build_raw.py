@@ -17,7 +17,7 @@ import cv2
 from collections import defaultdict
 from PIL import Image
 from skimage.morphology import skeletonize
-from adt import read_area
+from adt import read_area, read_root
 from raw_mosaic import Mosaic, load_listfile, MAPS, LISTFILE
 from roads import prune
 import structures
@@ -71,6 +71,9 @@ ROAD_MIN = 0.3             # texture weight threshold for road pixels
 ROAD_MIN_LEN = 60          # px; shorter road skeleton pieces are dropped
 ZONE_SOFT = 32             # px; rounds the chunk-based (33 yd) zone border
 ZONE_FEATHER = 0.7         # chunks; soft transition between the zone parts of a border tile
+# chunks per map; smaller land patches without an area ID (0) join the nearest built zone. Not yet for map 0
+# (would change the tested Eastern Kingdoms tiles: 3 patches of 264-467 chunks and 3 small ones)
+GAP_MAX = {1: 300}
 EDGE_FADE = 160            # px (~165 yd); everything fades out towards the edge of the built zones
 
 
@@ -106,6 +109,47 @@ def area_index(map_id):
     os.makedirs(BUILD, exist_ok=True)
     np.savez_compressed(cache, **{f'{c}_{r}': a for (c, r), a in idx.items()})
     return idx
+
+
+def fill_gaps(map_id, idx, zone_of, zones):
+    """Small land patches without an area ID (0) between built zones (Kalimdor: zone borders) would be cut out
+    as holes: they get the area ID of the nearest built zone. Large ones (unused terrain) stay out."""
+    if map_id not in GAP_MAX:
+        return 0
+    name = MAP_NAMES[map_id]
+    gap = {}
+    for (c, r), a in idx.items():
+        if (a == 0).any():
+            top = read_root(os.path.join(MAPS, name, f'{name}_{c}_{r}.adt'))['inner'].reshape(16, 8, 16, 8).max(axis=(1, 3))
+            gap[(c, r)] = (a == 0) & (top > -100)        # the empty sea floor lies at about -520
+    if not gap:
+        return 0
+    n = 64 * 16
+    land0 = np.zeros((n, n), np.uint8)
+    zone = np.zeros((n, n), np.int32)
+    for (c, r), a in idx.items():
+        z = zone_of(a)
+        zone[r * 16:(r + 1) * 16, c * 16:(c + 1) * 16] = np.where(np.isin(z, list(zones)), z, 0)
+        if (c, r) in gap:
+            land0[r * 16:(r + 1) * 16, c * 16:(c + 1) * 16] = gap[(c, r)]
+    k, lab, st, _ = cv2.connectedComponentsWithStats(land0, connectivity=8)
+    small = np.zeros(k, bool)
+    small[1:] = st[1:, cv2.CC_STAT_AREA] <= GAP_MAX[map_id]
+    fill = small[lab]
+    if not fill.any():
+        return 0
+    _, near = cv2.distanceTransformWithLabels((zone == 0).astype(np.uint8), cv2.DIST_L2, 5,
+                                              labelType=cv2.DIST_LABEL_PIXEL)
+    ys, xs = np.nonzero(zone)
+    lut = np.zeros(near.max() + 1, np.int32)
+    lut[near[ys, xs]] = zone[ys, xs]
+    for (c, r) in gap:
+        f = fill[r * 16:(r + 1) * 16, c * 16:(c + 1) * 16]
+        if f.any():
+            a = idx[(c, r)].copy()
+            a[f] = lut[near[r * 16:(r + 1) * 16, c * 16:(c + 1) * 16][f]]
+            idx[(c, r)] = a
+    return int(fill.sum())
 
 
 # --- blocks -----------------------------------------------------------------
@@ -576,6 +620,7 @@ def main(map_id, zone_names):
         sys.exit(f'at most {len(ZONE_DIGITS)} zones per map')
     idx = area_index(map_id)
     zone_of = np.vectorize(lambda x: top.get(int(x), int(x)))
+    print(f'{fill_gaps(map_id, idx, zone_of, zones)} chunks without area ID joined the nearest zone', flush=True)
     land = lambda a: np.isin(zone_of(a), list(zones)) & ~np.isin(a, list(seas))
     tiles = {k for k, a in idx.items() if land(a).any()}
     if not tiles:

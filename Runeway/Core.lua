@@ -225,10 +225,13 @@ end
 -- One note for every map without data: the pack (link if installed, else its continent's name) and the area
 local PACK_LINK = "|cff66ccff|Haddon:Runeway:pack:%s|h[%s]|h|r"
 local function Blue(text) return ("|cff66ccff[%s]|r"):format(text or "?") end
+local noteState                                       -- values when the last note was written (/rnw pos)
 local function PackFailed(pack, name)
     -- in a dungeon its name; instance name and type from the same call (IsInInstance lags after leaving)
-    local iname, itype = GetInstanceInfo()
+    local iname, itype, _, _, _, _, _, iid = GetInstanceInfo()
     local area = itype and itype ~= "none" and iname or GetZoneText()
+    noteState = ("%s/%s/%s inInstance=%s zone=%s pos=%s"):format(tostring(iname), tostring(itype), tostring(iid),
+        tostring(IsInInstance()), tostring(GetZoneText()), tostring(select(4, UnitPosition("player"))))
     Print(L.PACK_FAILED:format(pack and PACK_LINK:format(pack, packTitle[pack]) or Blue(name), Blue(area ~= "" and area or name)))
 end
 
@@ -1244,11 +1247,12 @@ local function ContinentName()
     UpdateContinent()
     return lastContinent or GetRealZoneText()
 end
--- After a map change the note waits until the instance info belongs to the new position: on leaving a dungeon
--- the position arrives first, zone and instance info follow after the loading screen. At most SAY_MAX seconds;
--- now = at once (toggle).
+-- After a map change the note waits until the loading screen is over (PLAYER_ENTERING_WORLD + 1 s) and the
+-- instance info belongs to the new position: on leaving a dungeon the position arrives first, zone and instance
+-- info follow later. At most SAY_MAX seconds; now = at once (toggle).
 local SAY_MAX = 15
 local sayFor, sayAt
+local worldAt = 0                                     -- GetTime() of the last PLAYER_ENTERING_WORLD
 local function SayNoData(inst, now)
     local key = inst or false
     if noDataSaid == key then return end
@@ -1256,7 +1260,8 @@ local function SayNoData(inst, now)
         sayFor, sayAt = key, GetTime() + SAY_MAX
         return
     end
-    if now or select(8, GetInstanceInfo()) == inst or GetTime() >= sayAt then
+    local settled = GetTime() >= worldAt + 1 and select(8, GetInstanceInfo()) == inst
+    if now or settled or GetTime() >= sayAt then
         PackFailed(nil, ContinentName())
         noDataSaid, sayFor = key, nil
     end
@@ -1423,6 +1428,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         -- key bindings (re)loaded or changed by the player: take the map key over again
         if not binding then ApplyBindings() end
     elseif event == "PLAYER_ENTERING_WORLD" then
+        worldAt = GetTime()
         if not announced then                 -- once per login / reload: name and version in the chat
             announced = true
             Print(L.LOADED:format(ns.Version()))
@@ -1609,7 +1615,8 @@ SlashCmdList.RUNEWAY = function(msg)
         local iname, itype, _, _, _, _, _, iid = GetInstanceInfo()
         ShowCopy(("%s %s %s map=%s set=%s facing=%.3f instance=%s/%s/%s inInstance=%s zone=%s"):format(tostring(pn),
             tostring(pw), tostring(inst), tostring(mapID), tostring(inst and TileSet(inst)), GetPlayerFacing() or -1,
-            tostring(iname), tostring(itype), tostring(iid), tostring(IsInInstance()), tostring(GetZoneText())))
+            tostring(iname), tostring(itype), tostring(iid), tostring(IsInInstance()), tostring(GetZoneText()))
+            .. (noteState and (" | last note: " .. noteState) or ""))
     elseif (cmd == "taxi" or cmd == "quest") and arg == "icons" then   -- candidate icons side by side
         IconPreview(cmd == "taxi" and TAXI_ICONS or QUEST_ICONS)
     elseif cmd == "taxi" then                      -- flight masters: what the map draws, nearest first

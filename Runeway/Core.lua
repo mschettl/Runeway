@@ -1381,6 +1381,12 @@ end
 
 SLASH_RUNEWAY1 = "/runeway"
 SLASH_RUNEWAY2 = "/rnw"
+-- /rnw taxi icons: atlases of the retail client for flight masters, and two classic textures
+local TAXI_ICONS = { "FlightMaster", "FlightPath", "TaxiNode_Neutral", "TaxiNode_Horde", "TaxiNode_Alliance",
+    "TaxiNode_Continent_Neutral", "TaxiNode_Continent_Horde", "Taxi_Frame_Green", "Taxi_Frame_Gray", "Taxi_Frame_Yellow",
+    "TaxiNode_Undiscovered", "Crosshair_Taxi_32", "Interface\\Minimap\\Tracking\\FlightMaster",
+    "Interface\\TaxiFrame\\UI-Taxi-Icon-Green" }
+local taxiPreview
 SlashCmdList.RUNEWAY = function(msg)
     local cmd, arg = msg:lower():match("^(%S*)%s*(.-)$")
     local n = tonumber(arg)
@@ -1448,6 +1454,34 @@ SlashCmdList.RUNEWAY = function(msg)
         local mapID = C_Map.GetBestMapForUnit("player")
         ShowCopy(("%s %s %s map=%s set=%s facing=%.3f"):format(tostring(pn), tostring(pw), tostring(inst),
             tostring(mapID), tostring(inst and TileSet(inst)), GetPlayerFacing() or -1))
+    elseif cmd == "taxi" and arg == "icons" then   -- candidate flight master icons side by side (click hides)
+        local f = taxiPreview
+        if not f then
+            f = CreateFrame("Button", nil, UIParent, "BackdropTemplate")
+            f:SetPoint("CENTER", 0, 150)
+            f:SetFrameStrata("DIALOG")
+            if f.SetBackdrop then
+                f:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8" })
+                f:SetBackdropColor(0, 0, 0, 0.8)
+            end
+            f:SetScript("OnClick", f.Hide)
+            for i, a in ipairs(TAXI_ICONS) do
+                local x = ((i - 1) % 7) * 90 + 10
+                local y = -math.floor((i - 1) / 7) * 90 - 10
+                local t = f:CreateTexture(nil, "ARTWORK")
+                t:SetSize(40, 40)
+                t:SetPoint("TOPLEFT", x + 25, y)
+                local file = a:find("\\") and a
+                if file then t:SetTexture(file) else SetAtlasOr(t, a, "Interface\\Icons\\INV_Misc_QuestionMark") end
+                local l = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+                l:SetPoint("TOP", t, "BOTTOM", 0, -4)
+                l:SetWidth(88)
+                l:SetText(i .. ". " .. (file and a:match("[^\\]+$") or a) .. ((file or AtlasExists(a)) and "" or " (-)"))
+            end
+            f:SetSize(7 * 90 + 20, math.ceil(#TAXI_ICONS / 7) * 90 + 20)
+            taxiPreview = f
+        end
+        f:Show()
     elseif cmd == "taxi" then                      -- flight masters: what the map draws, nearest first
         local list = {}
         for _, t in ipairs(taxis) do list[#list + 1] = { t, math.sqrt((t[1] - pN) ^ 2 + (t[2] - pW) ^ 2) } end

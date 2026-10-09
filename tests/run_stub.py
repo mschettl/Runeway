@@ -537,6 +537,7 @@ L.execute('''
     check("flight masters: own faction shown, discovered with the minimap icon", table.concat(atl, ",") == "FlightMaster,FlightMaster")
     check("flight masters: missing undiscovered atlas falls back to the green icon", green)
     check("flight masters: /rnw taxi lists them", pcall(SlashCmdList.RUNEWAY, "taxi"))
+    check("flight masters: /rnw taxi icons shows the candidates", pcall(SlashCmdList.RUNEWAY, "taxi icons"))
     local tip = {}
     local tn, tw = NS.MapToWorld(1420, 0.4, 0.603)
     local pn, pw = POS[1], POS[2]

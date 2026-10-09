@@ -642,6 +642,66 @@ L.execute('''
     CURSOR[1], CURSOR[2] = 500, 400
     a1420.cut, a1421.cut = cut1420, cut1421
     NS.QuestAreasRepublish()
+    -- objective progress in combat: the member is queued for sampling, which waits for the end of combat; the
+    -- combined outline must stay (it split into single outlines when the publish timeout hit in combat)
+    local function sampler(n)
+        for _ = 1, n do
+            for _, f in ipairs(FRAMES) do
+                local h = f:GetScript("OnUpdate")
+                if h and f ~= RunewayFrame then h(f, 0.05) end
+            end
+        end
+    end
+    local function merged()
+        local together, alone = false, false
+        for _, e in ipairs(NS.QuestAreasRepublish()) do
+            local ids = table.concat(e[2], ",")
+            if ids == "4242,4243" then together = true elseif ids == "4242" or ids == "4243" then alone = true end
+        end
+        return together and not alone
+    end
+    sampler(400)
+    check("combat: overlapping quests combined before", merged())
+    local progress = 1
+    C_QuestLog.GetQuestObjectives = function(q) return q == 4243 and { { numFulfilled = progress } } or {} end
+    local lockdown = InCombatLockdown
+    InCombatLockdown = function() return true end
+    fire("QUEST_LOG_UPDATE")
+    sampler(100)
+    check("combat: objective progress keeps the combined outline", merged())
+    InCombatLockdown = lockdown
+    sampler(600)
+    local A, G = NS.QuestAreaState()
+    local ng = 0
+    for _ in pairs(G) do ng = ng + 1 end
+    check("combat: sampled after combat, new outline replaces the old", merged() and ng == 1
+        and A[4243].sig:find(":1$") ~= nil)
+    -- death: nothing is sampled while dead; afterwards the blob is not drawn for a while (empty samples): the
+    -- quest keeps its outline and is sampled again until the blob is back
+    STATE.dead = true
+    progress = 2
+    fire("QUEST_LOG_UPDATE")
+    sampler(400)
+    check("death: no sampling while dead, outline kept", #A[4243].loops > 0 and A[4243].sig:find(":1$") ~= nil)
+    local blob = BLOBS[4243]
+    BLOBS[4243] = nil
+    STATE.dead = false
+    fire("PLAYER_UNGHOST")
+    sampler(60)
+    local kept = #A[4243].loops > 0 and NS.HasQuestArea(4243)
+    BLOBS[4243] = blob
+    sampler(1200)
+    check("death: an empty sample keeps the outline", kept)
+    check("death: sampled again once the blob is drawn", #A[4243].loops > 0 and A[4243].sig:find(":2$") ~= nil
+        and merged())
+    -- an empty area already in the saved cache (0.6) is sampled again
+    A[4242].loops = {}
+    fire("QUEST_LOG_UPDATE")
+    sampler(1200)
+    check("cache: empty area of a quest with blobs sampled again", #A[4242].loops > 0 and merged())
+    C_QuestLog.GetQuestObjectives = nil
+    fire("QUEST_LOG_UPDATE")
+    sampler(1200)
     NS.QuestAreasAt(nil)
     rawset(view, "IsMouseOver", nil)
     if not wasShown then view:Hide() end

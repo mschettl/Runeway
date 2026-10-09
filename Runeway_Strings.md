@@ -82,14 +82,15 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `HIDE_MOUNTED` | Mounted, flying or on a taxi | Beritten, fliegend oder auf Flugroute |
 | `HIDE_CITY` | In cities and inns (resting) | In Städten und Gasthäusern (erholt) |
 | `ROTATE` | Rotate with the player | Mit dem Spieler drehen |
-| `LOCKED` | Locked (clicks pass through) | Gesperrt (Klicks gehen durch) |
-| `LOCKED_TIP` | Unlocked: drag to move, corner grip to resize. | Entsperrt: ziehen zum Verschieben, Ecke zum Vergrößern. |
+| `LOCKED` | Lock map | Karte sperren |
+| `LOCKED_TIP` | Locked: clicks pass through the map. Unlocked: drag to move, corner grip to resize. | Gesperrt: Klicks gehen durch die Karte hindurch. Entsperrt: ziehen zum Verschieben, Ecke zum Vergrößern. |
 | `WHEEL_ZOOM` | Zoom with the mouse wheel | Zoomen mit dem Mausrad |
 | `WHEEL_ZOOM_TIP` | Scrolling over the map changes the zoom (with Shift and unlocked: the size). Off: the mouse wheel goes to the game camera. | Scrollen über der Karte ändert den Zoom (mit Shift und entsperrt: die Größe). Aus: Das Mausrad steuert die Spielkamera. |
 | `HEIGHT` | Height | Höhe |
 | `WIDTH` | Width | Breite |
 | `MAP_OPACITY` | Map opacity | Kartendeckkraft |
 | `ZOOM` | Zoom (outdoors) | Zoom (Außenbereiche) |
+| `ZOOM_TIP` | Zoom outdoors. The mouse wheel changes the zoom of the area you are in. | Zoom im Freien. Das Mausrad ändert den Zoom des Bereichs, in dem du gerade bist. |
 | `ZOOM_INSIDE` | Zoom (interiors) | Zoom (Innenbereiche) |
 | `ZOOM_INSIDE_TIP` | Zoom inside cities, caves and other interior maps. The mouse wheel changes the zoom of the area you are in. | Zoom in Städten, Höhlen und anderen Innenkarten. Das Mausrad ändert den Zoom des Bereichs, in dem du gerade bist. |
 | `NEIGHBOUR_ZONES` | Adjacent zones opacity | Deckkraft angrenzender Zonen |
@@ -106,8 +107,10 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `QUEST_CLASSIC` | Classic quest icons | Klassische Questsymbole |
 | `QUEST_CLASSIC_TIP` | Quest icons in the classic look: symbol on a round badge. Off: the modern icons with their own ring. | Questsymbole im klassischen Aussehen: Symbol auf rundem Hintergrund. Aus: die modernen Symbole mit eigenem Ring. |
 | `QUEST_EDGE` | Quest area edge | Rand des Questbereichs |
+| `QUEST_EDGE_TIP` | Width of the quest area outlines. | Breite der Umrisslinien der Questbereiche. |
+| `QUEST_MERGE_LONG` | Merge overlapping quest areas | Überlagerte Questbereiche bündeln |
 | `QUEST_MERGE` | Merge overlapping areas | Überlagerte Bereiche bündeln |
-| `QUEST_MERGE_TIP` | Quests whose areas overlap get one shared outline. Off: every quest keeps its own outline. | Quests mit überlappenden Bereichen erhalten einen gemeinsamen Umriss. Deaktiviert: jede Quest behält ihren eigenen Umriss. |
+| `QUEST_MERGE_TIP` | Quests whose areas overlap get one shared outline. Off: every quest keeps its own outline. | Quests mit überlagernden Bereichen erhalten einen gemeinsamen Umriss. Deaktiviert: jede Quest behält ihren eigenen Umriss. |
 
 Werte-Formate (bleiben meist gleich): `%d px`, `%d %%`, `%.2f`, `%.2f x`.
 

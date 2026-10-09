@@ -172,7 +172,7 @@ Settings = {
     RegisterVerticalLayoutSubcategory = function() return {}, Layout() end,
     RegisterProxySetting = function(_, var, varType, name, default, get, set)
         assert(type(default) == varType, var .. ": default must be " .. varType)
-        local st = { variable = var, default = default, GetValue = function() return get() end,
+        local st = { variable = var, default = default, name = name, GetValue = function() return get() end,
                      GetVariable = function() return var end,
                      SetValue = function(_, v) set(v) end }
         SETTINGS[var] = st
@@ -187,7 +187,13 @@ Settings = {
     end,
     RegisterAddOnCategory = function() end,
     CreateSettingInitializer = function(template, data)
-        return { kind = "layerrow", template = template, data = data, AddSearchTags = function() end }
+        return { kind = template == "RunewayCheckboxSliderTemplate" and "checkslider" or "layerrow", template = template,
+                 data = data, setting = data.setting, AddSearchTags = function() end, SetParentInitializer = SetParent }
+    end,
+    CreateControlInitializer = function(template, setting, options, tooltip)
+        return { kind = template == "RunewayCheckboxTemplate" and "checkbox" or "slider", template = template,
+                 setting = setting, options = type(options) == "function" and options() or options,
+                 data = { setting = setting, name = setting.name, tooltip = tooltip }, SetParentInitializer = SetParent }
     end,
     CreateElementInitializer = function(template, data) return { kind = "element", template = template, data = data } end,
     OpenToCategory = function(id) OPENED = id end,
@@ -209,6 +215,8 @@ function CreateSettingsCheckboxSliderInitializer(cb, label, _, slider, options)
              AddSearchTags = function() end, SetParentInitializer = SetParent }
 end
 SettingsCheckboxSliderControlMixin = { OnLoad = function() end, Init = function() end }
+SettingsCheckboxControlMixin = { OnLoad = function() end, Init = function() end }
+SettingsSliderControlMixin = { OnLoad = function() end, Init = function() end }
 function CreateKeybindingEntryInitializer(i) return { kind = "binding", action = GetBinding(i) } end
 
 -- flight masters: one discovered (neutral), one undiscovered (Horde), one Alliance (not shown to a Horde player)

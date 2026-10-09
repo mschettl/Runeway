@@ -55,20 +55,44 @@ function RunewayTextRowMixin:Init(initializer)
     self.Body:SetText(initializer.data.text)
 end
 
+-- Rows of Runeway's pages: Blizzard's checkbox, slider and checkbox + slider rows with a wider label column (the
+-- controls start WIDE px further right), so the translated labels are not cut off. Own templates (Options.xml), so
+-- Blizzard's rows elsewhere stay as they are.
+local WIDE = 60
+local function Wide(base, control)
+    local m = CreateFromMixins(base)
+    function m:OnLoad()
+        base.OnLoad(self)
+        local c = self[control]
+        local _, _, _, _, y = c:GetPoint(1)
+        c:SetPoint("LEFT", self, "CENTER", -80 + WIDE, y or 0)
+    end
+    function m:Init(initializer)
+        base.Init(self, initializer)
+        if initializer.data.short then self.Text:SetText(initializer.data.short) end   -- tooltip keeps the full name
+        self.Text:SetPoint("RIGHT", self, "CENTER", -85 + WIDE, 0)
+        self.Tooltip:SetPoint("BOTTOMRIGHT", self, "BOTTOM", -80 + WIDE, 0)
+    end
+    return m
+end
+RunewayCheckboxMixin = Wide(SettingsCheckboxControlMixin, "Checkbox")
+RunewaySliderMixin = Wide(SettingsSliderControlMixin, "SliderWithSteppers")
+RunewayCheckboxSliderMixin = Wide(SettingsCheckboxSliderControlMixin, "Checkbox")
+
 -- Layer row: checkbox (shown), colour swatch and opacity slider in one row (template in Options.xml).
--- Builds on Blizzard's checkbox + slider row; the colour is its own proxy setting, so "Defaults" resets it.
-RunewayLayerRowMixin = CreateFromMixins(SettingsCheckboxSliderControlMixin)
+-- Builds on the checkbox + slider row; the colour is its own proxy setting, so "Defaults" resets it.
+RunewayLayerRowMixin = CreateFromMixins(RunewayCheckboxSliderMixin)
 function RunewayLayerRowMixin:OnLoad()
-    SettingsCheckboxSliderControlMixin.OnLoad(self)
+    RunewayCheckboxSliderMixin.OnLoad(self)
     self.ColorSwatch = CreateFrame("Button", nil, self, "ColorSwatchTemplate")
     self.ColorSwatch:SetPoint("LEFT", self.Checkbox, "RIGHT", 8, -2)
-    self.SliderWithSteppers:SetWidth(190)
+    self.SliderWithSteppers:SetWidth(170)
     self.SliderWithSteppers:ClearAllPoints()
     self.SliderWithSteppers:SetPoint("LEFT", self.ColorSwatch, "RIGHT", 8, 2)
 end
 
 function RunewayLayerRowMixin:Init(initializer)
-    SettingsCheckboxSliderControlMixin.Init(self, initializer)
+    RunewayCheckboxSliderMixin.Init(self, initializer)
     local setting, title = initializer.data.colorSetting, initializer.data.colorLabel
     local swatch = self.ColorSwatch
     local function Show() swatch:SetColor(CreateColorFromHexString(setting:GetValue())) end
@@ -90,7 +114,7 @@ function RunewayLayerRowMixin:Init(initializer)
     self.cbrHandles:SetOnValueChangedCallback(setting:GetVariable(), Show)   -- picker, Defaults
 end
 
-local category, cat                 -- main category; category the settings below are added to
+local category, cat, layout         -- main category; category and layout the settings below are added to
 local ours = {}                     -- [category] = true for the Runeway pages
 
 -- All proxy settings, so an import can refresh every row
@@ -110,8 +134,17 @@ local function Setting(path, varType, label, apply)
         function(v) ns.SetPath(ns.db(), path, v); if apply then apply(v) end end)
 end
 
-local function Check(path, label, tooltip, apply)
-    return Settings.CreateCheckbox(cat, Setting(path, Settings.VarType.Boolean, label, apply), tooltip)
+local function Add(initializer)
+    layout:AddInitializer(initializer)
+    return initializer
+end
+
+-- short: shorter text in the row than the setting's name (the tooltip title)
+local function Check(path, label, tooltip, apply, short)
+    local init = Settings.CreateControlInitializer("RunewayCheckboxTemplate",
+        Setting(path, Settings.VarType.Boolean, label, apply), nil, tooltip)
+    init.data.short = short
+    return Add(init)
 end
 
 local function SliderOptions(min, max, step, fmt)
@@ -121,8 +154,8 @@ local function SliderOptions(min, max, step, fmt)
 end
 
 local function Slider(path, label, min, max, step, fmt, apply, tooltip)
-    return Settings.CreateSlider(cat, Setting(path, Settings.VarType.Number, label, apply),
-        SliderOptions(min, max, step, fmt), tooltip)
+    return Add(Settings.CreateControlInitializer("RunewaySliderTemplate",
+        Setting(path, Settings.VarType.Number, label, apply), SliderOptions(min, max, step, fmt), tooltip))
 end
 
 local function Pct(v) return ("%d %%"):format(v * 100 + 0.5) end
@@ -152,7 +185,6 @@ local function Build()
         main:AddInitializer(Settings.CreateElementInitializer("RunewayCommandRowTemplate", { name = c[1], desc = c[2] }))
     end
 
-    local layout
     ours[category] = true
     local function Page(name)
         cat, layout = Settings.RegisterVerticalLayoutSubcategory(category, name)
@@ -185,7 +217,8 @@ local function Build()
     Page(L.HEADER_DISPLAY)
     Slider("alpha", L.MAP_OPACITY, 0.05, 1, 0.01, Pct, function() ns.ApplyAll() end)
     Slider("zoom", L.ZOOM, ns.ZOOM_MIN, ns.ZOOM_MAX, (ns.ZOOM_MAX - ns.ZOOM_MIN) / 100,
-        function(v) return ("%d %%"):format(ns.ZoomPct(v) + 0.5) end, function(v) ns.SetZoom(v, "zoom") end)
+        function(v) return ("%d %%"):format(ns.ZoomPct(v) + 0.5) end, function(v) ns.SetZoom(v, "zoom") end,
+        L.ZOOM_TIP)
     Slider("zoomInside", L.ZOOM_INSIDE, ns.ZOOM_MIN, ns.ZOOM_MAX, (ns.ZOOM_MAX - ns.ZOOM_MIN) / 100,
         function(v) return ("%d %%"):format(ns.ZoomPct(v) + 0.5) end, function(v) ns.SetZoom(v, "zoomInside") end,
         L.ZOOM_INSIDE_TIP)
@@ -196,21 +229,23 @@ local function Build()
     local function Marker(show, size, label, apply)
         local cb = Setting(show, Settings.VarType.Boolean, label, apply)
         local sizeLabel = L.MARKER_SIZE:format(label)
-        local row = CreateSettingsCheckboxSliderInitializer(cb, label, nil,
-            Setting(size, Settings.VarType.Number, sizeLabel), SliderOptions(12, 48, 1, Px), sizeLabel)
-        row.data.setting = cb               -- so rows below can follow the checkbox (SetParentInitializer)
+        local row = Settings.CreateSettingInitializer("RunewayCheckboxSliderTemplate", {
+            name = label, cbSetting = cb, cbLabel = label, sliderLabel = sizeLabel,
+            sliderSetting = Setting(size, Settings.VarType.Number, sizeLabel), sliderOptions = SliderOptions(12, 48, 1, Px),
+            setting = cb,                   -- so rows below can follow the checkbox (SetParentInitializer)
+        })
         row:AddSearchTags(label)
-        layout:AddInitializer(row)
-        return row
+        return Add(row)
     end
     Marker("showArrow", "arrowSize", L.PLAYER_ARROW)
     Marker("showCorpse", "corpseSize", L.CORPSE_MARKER)
     Marker("showTaxi", "taxiSize", L.FLIGHT_MASTERS, function() ns.RefreshQuests() end)
     local quests = Marker("showQuests", "pinSize", L.QUEST_MARKS)
     local function QuestsShown() return ns.db().showQuests end
-    Slider("questEdge", L.QUEST_EDGE, 0.5, 2.5, 0.05, function(v) return ("%.2f x"):format(v) end)
+    Slider("questEdge", L.QUEST_EDGE, 0.5, 2.5, 0.05, function(v) return ("%.2f x"):format(v) end, nil,
+        L.QUEST_EDGE_TIP)
         :SetParentInitializer(quests, QuestsShown)
-    Check("questMerge", L.QUEST_MERGE, L.QUEST_MERGE_TIP):SetParentInitializer(quests, QuestsShown)
+    Check("questMerge", L.QUEST_MERGE_LONG, L.QUEST_MERGE_TIP, nil, L.QUEST_MERGE):SetParentInitializer(quests, QuestsShown)
     Check("questClassic", L.QUEST_CLASSIC, L.QUEST_CLASSIC_TIP):SetParentInitializer(quests, QuestsShown)
 
     -- Layers: one row each with show, colour and opacity

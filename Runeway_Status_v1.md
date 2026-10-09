@@ -1,4 +1,4 @@
-# Runeway – Stand Version 1.6 und Übergabe
+# Runeway – Stand Version 0.6 und Übergabe
 
 Diese Datei fasst den kompletten Stand zusammen, damit eine neue Session nahtlos weitermachen kann. Sie ersetzt den Chatverlauf. Vorgaben und Ziele stehen in `Runeway_Prompt_v1.md`, Arbeitsregeln in `CLAUDE.md`, alle sichtbaren Texte in `Runeway_Strings.md`.
 
@@ -8,11 +8,11 @@ Diese Datei fasst den kompletten Stand zusammen, damit eine neue Session nahtlos
 
 Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forever** (Interface 16001) im Stil von Path of Exile und Diablo IV.
 
-**Funktionen (Stand 1.6, im Spiel getestet):**
+**Funktionen (Stand 0.6, im Spiel getestet):**
 - **Karte:** alle 27 Gebiete der Östlichen Königreiche aus den RAW-Spieldaten (Etappen 1–4, Abschnitt 8) mit begehbarer Fläche, Schraffur für nicht begehbare Bereiche, Gelände-, Wasser- und Weglinien; Ruinen von Lordaeron als Stadt. Angrenzende Zonen gedimmt, nahtloser Zoom, frei einstellbare Breite und Höhe, ovale Randausblendung.
 - **Quests:** Questbereiche wie auf der Weltkarte (auch aus angrenzenden Zonen), Questmarker für Punktziele, Tooltips und Hervorhebung beim Überfahren.
 - **Leichnam-Marker** im Tod, am Kartenrand in Richtung des Leichnams, wenn er außerhalb liegt.
-- **Flugmeister** (1.6): aus `C_TaxiMap.GetTaxiNodesForMap` der nahen Zonenkarten (wie die Weltkarte), eigene Fraktion und neutral, auf der Oberfläche zusätzlich die Karten der Innenbereiche (Fledermausführer von Unterstadt liegt auf 1458), Icon (Mario per `/rnw taxi icons` gewählt): entdeckt `Taxi_Frame_Gray`, unentdeckt `Taxi_Frame_Green` (Knoten der Flugkarte); fehlt der Atlas: entdeckt Blizzards Weltkarten-Atlas des Knotens, unentdeckt grünes Taxi-Icon. Entdeckt: `isUndiscovered` ist im Client immer `false` (Spieltest: alle 36 Knoten der Östlichen Königreiche, auch fremde). Runeway merkt sich daher beim Öffnen der Flugkarte (`TAXIMAP_OPENED`) die bekannten Knoten (`TaxiNodeGetType` = "CURRENT"/"REACHABLE"; "DISTANT" sind Zwischenstationen fremder Routen, die Blizzards Flugkarte ausblendet: Spieltest Tarrens Mühle und Das Grabmal fälschlich als entdeckt; "DISTANT"/"NONE" löschen ältere Einträge) pro Charakter nach Name (`RunewayDB.taxiKnown["Name-Realm"]`); vorher gelten alle als unentdeckt. `GetTaxiNodesForMap(18)` ist leer, 1458 liefert den ganzen Kontinent; „zzOLD…“-Knoten werden ausgelassen. Nicht über `ShouldMapShowTaxiNodes` gefiltert (sagt nur, ob Blizzards Weltkarte sie auf dieser Karte zeigt). `SetAtlas` meldet einen unbekannten Atlas nicht (kein Rückgabewert, Textur bleibt leer), daher prüft `SetAtlasOr` vorher `C_Texture.GetAtlasInfo`. Diagnose: `/rnw taxi` (abgefragte Karten, Anzahl, bekannte Knoten, die fünf nächsten mit Entfernung, Status und Atlas). Tooltip mit Name (deDE: erster Buchstabe nach dem Komma groß, `TaxiName`; die Client-Daten schreiben „östliche Pestländer“) und bei unentdeckten Blizzards Text „Unentdeckter Flugpunkt“. Zeile „Flugmeister“ (`showTaxi` + Größe `taxiSize`, Standard 20 px) unter Display; aktualisiert bei `TAXIMAP_OPENED`/`TAXI_NODE_STATUS_CHANGED`.
+- **Flugmeister** (0.6): aus `C_TaxiMap.GetTaxiNodesForMap` der nahen Zonenkarten (wie die Weltkarte), eigene Fraktion und neutral, auf der Oberfläche zusätzlich die Karten der Innenbereiche (Fledermausführer von Unterstadt liegt auf 1458), Icon (Mario per `/rnw taxi icons` gewählt): entdeckt `Taxi_Frame_Gray`, unentdeckt `Taxi_Frame_Green` (Knoten der Flugkarte); fehlt der Atlas: entdeckt Blizzards Weltkarten-Atlas des Knotens, unentdeckt grünes Taxi-Icon. Entdeckt: `isUndiscovered` ist im Client immer `false` (Spieltest: alle 36 Knoten der Östlichen Königreiche, auch fremde). Runeway merkt sich daher beim Öffnen der Flugkarte (`TAXIMAP_OPENED`) die bekannten Knoten (`TaxiNodeGetType` = "CURRENT"/"REACHABLE"; "DISTANT" sind Zwischenstationen fremder Routen, die Blizzards Flugkarte ausblendet: Spieltest Tarrens Mühle und Das Grabmal fälschlich als entdeckt; "DISTANT"/"NONE" löschen ältere Einträge) pro Charakter nach Name (`RunewayDB.taxiKnown["Name-Realm"]`); vorher gelten alle als unentdeckt. `GetTaxiNodesForMap(18)` ist leer, 1458 liefert den ganzen Kontinent; „zzOLD…“-Knoten werden ausgelassen. Nicht über `ShouldMapShowTaxiNodes` gefiltert (sagt nur, ob Blizzards Weltkarte sie auf dieser Karte zeigt). `SetAtlas` meldet einen unbekannten Atlas nicht (kein Rückgabewert, Textur bleibt leer), daher prüft `SetAtlasOr` vorher `C_Texture.GetAtlasInfo`. Diagnose: `/rnw taxi` (abgefragte Karten, Anzahl, bekannte Knoten, die fünf nächsten mit Entfernung, Status und Atlas). Tooltip mit Name (deDE: erster Buchstabe nach dem Komma groß, `TaxiName`; die Client-Daten schreiben „östliche Pestländer“) und bei unentdeckten Blizzards Text „Unentdeckter Flugpunkt“. Zeile „Flugmeister“ (`showTaxi` + Größe `taxiSize`, Standard 20 px) unter Display; aktualisiert bei `TAXIMAP_OPENED`/`TAXI_NODE_STATUS_CHANGED`.
 - **Bedienung:** drei Aufruf-Modi (eigene Taste, Kartentaste M, dauerhaft), automatisches Ausblenden, gesperrt/klickdurchlässig oder verschiebbar, Mausrad-Zoom abschaltbar, Ansichtsmodus (`/rnw view`) zum Betrachten anderer Orte, Slash-Befehle.
 - **Einstellungen** im Blizzard-Stil mit Unterpunkten, Profil-Export/-Import als Text, Lokalisierung in allen elf Client-Sprachen.
 
@@ -20,16 +20,16 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 
 | Version | Inhalt |
 |---|---|
-| 1.0 | Tirisfal aus RAW-Daten, Ebenen, Questbereiche, Diablo-Look, Ruinen von Lordaeron |
-| 1.1 | Einstellungsseite, Aufruf-Modi, automatisches Ausblenden, Fensterbedienung (Prompt 3.4) |
-| 1.2 | Etappe 1 (fünf Zonen), Questbereiche und Dimmung angrenzender Zonen, kleinere Kacheln, glatte Wege, Leichnam-Marker, Tooltips, Breite/Höhe, neue Einstellungsstruktur, Englisch/Deutsch |
-| 1.3 | Lokalisierung in elf Sprachen (außer Deutsch KI-Übersetzungen, Französisch im Spiel geprüft) |
-| 1.4 | Profil-Export und -Import |
-| 1.4.1 | Aufräumen (u. a. Fehler beim Hervorheben des Leichnams behoben), Version im Chat beim Login und oben in den Einstellungen |
-| 1.5 | Östliche Königreiche komplett (27 Gebiete, Etappen 2–4), Block-Build, Kachelliste pro Karten-ID, Schraffur-Maske und Saum nur in 128 px, offenes Meer ausgeblendet, Ansichtsmodus `/rnw view` |
-| 1.6 | Datenpakete (`Runeway_EasternKingdoms`, LoadOnDemand) mit Meldung bei fehlenden Kartendaten (Login/Reload/Zonenwechsel getrennt); Unterstadt und Zwischenmap der Ruinen als Innen-Kachelsätze mit eigenem Zoom; Flugmeister (entdeckt/unentdeckt); Questsymbole neu („?“ modern, „…“, klassisch per Option), Questbereiche kartenübergreifend gebündelt, Füllung beim Überfahren, Tooltips; Optionen: Kartenform (Rechteck–Oval–Kreis), weicher Rand in %, Marker-Zeilen mit Schalter und Größe, breitere Beschriftungen, neue Standardwerte; Rahmen beim Entsperren mit runden Ecken |
+| 0.0 | Tirisfal aus RAW-Daten, Ebenen, Questbereiche, Diablo-Look, Ruinen von Lordaeron |
+| 0.1 | Einstellungsseite, Aufruf-Modi, automatisches Ausblenden, Fensterbedienung (Prompt 3.4) |
+| 0.2 | Etappe 1 (fünf Zonen), Questbereiche und Dimmung angrenzender Zonen, kleinere Kacheln, glatte Wege, Leichnam-Marker, Tooltips, Breite/Höhe, neue Einstellungsstruktur, Englisch/Deutsch |
+| 0.3 | Lokalisierung in elf Sprachen (außer Deutsch KI-Übersetzungen, Französisch im Spiel geprüft) |
+| 0.4 | Profil-Export und -Import |
+| 0.4.1 | Aufräumen (u. a. Fehler beim Hervorheben des Leichnams behoben), Version im Chat beim Login und oben in den Einstellungen |
+| 0.5 | Östliche Königreiche komplett (27 Gebiete, Etappen 2–4), Block-Build, Kachelliste pro Karten-ID, Schraffur-Maske und Saum nur in 128 px, offenes Meer ausgeblendet, Ansichtsmodus `/rnw view` |
+| 0.6 | Datenpakete (`Runeway_EasternKingdoms`, LoadOnDemand) mit Meldung bei fehlenden Kartendaten (Login/Reload/Zonenwechsel getrennt); Unterstadt und Zwischenmap der Ruinen als Innen-Kachelsätze mit eigenem Zoom; Flugmeister (entdeckt/unentdeckt); Questsymbole neu („?“ modern, „…“, klassisch per Option), Questbereiche kartenübergreifend gebündelt, Füllung beim Überfahren, Tooltips; Optionen: Kartenform (Rechteck–Oval–Kreis), weicher Rand in %, Marker-Zeilen mit Schalter und Größe, breitere Beschriftungen, neue Standardwerte; Rahmen beim Entsperren mit runden Ecken |
 
-**Versionierung:** Zweite Stelle = abgeschlossener, im Spiel getesteter Schritt, der nach `main` geht; dritte Stelle = Korrekturen ohne neue Funktion; 2.0 = Route zum Questziel. Geplant: 1.7 Kalimdor, 1.8+ Städte, Höhlen/Minen, Dungeons. Eine öffentliche Veröffentlichung (z. B. CurseForge) wird davon getrennt entschieden, sinnvoll frühestens nach den Datenpaketen (Ordnerumbau).
+**Versionierung (seit 0.6, Mario):** drei Stellen. Vor dem Release 0.x.y: zweite Stelle = abgeschlossener, im Spiel getesteter Schritt, der nach `main` geht; dritte Stelle = Korrekturen ohne neue Funktion. Die früheren Versionen 1.0–1.6 heißen jetzt 0.0–0.6 (die Titel der alten PRs und Squash-Commits auf `main` tragen noch die alten Nummern). **1.0.0 = erstes öffentliches Release** (z. B. CurseForge); 2.0 = Route zum Questziel. Geplant: 0.7 Kalimdor, 0.8+ Städte, Höhlen/Minen, Dungeons.
 
 ---
 
@@ -37,7 +37,7 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 
 | Branch | Inhalt |
 |---|---|
-| `main` | Freigegebener Stand, je Version ein PR (zuletzt 1.5). |
+| `main` | Freigegebener Stand, je Version ein PR (zuletzt 0.5). |
 | `dev` | Entwicklungsbranch (Addon, Build-Skripte, Tests, diese Datei). |
 | `data` (orphan) | Rohdaten aus wow.export, nie auf `main`. ~1,6 GB. |
 
@@ -59,11 +59,11 @@ Der Ordner ist auf allen Code-Branches per `.gitignore` ausgeschlossen. Daten pf
 
 ## 3. Addon (Ordner `Runeway/`) und Datenpakete (`Runeway_<Kontinent>/`)
 
-Seit 1.6 besteht das Release aus zwei Ordnern, die beide nach `Interface\AddOns` gehören: das Kern-Addon `Runeway` (Code, Medien, Texte) und je Kontinent ein Datenpaket, bisher `Runeway_EasternKingdoms` (Karte 0, ~78 MB).
+Seit 0.6 besteht das Release aus zwei Ordnern, die beide nach `Interface\AddOns` gehören: das Kern-Addon `Runeway` (Code, Medien, Texte) und je Kontinent ein Datenpaket, bisher `Runeway_EasternKingdoms` (Karte 0, ~78 MB).
 
 | Datei | Inhalt |
 |---|---|
-| `Runeway.toc` | Interface 16001, Version 1.6, SavedVariables `RunewayDB`; lädt `Locales/*.lua`, `Core.lua`, `QuestAreas.lua`, `Profile.lua`, `Options.lua`, `Options.xml` |
+| `Runeway.toc` | Interface 16001, Version 0.6.0, SavedVariables `RunewayDB`; lädt `Locales/*.lua`, `Core.lua`, `QuestAreas.lua`, `Profile.lua`, `Options.lua`, `Options.xml` |
 | `Locales/` | Texte je Client-Sprache (`ns.L`): `enUS.lua` (Basis) und `deDE.lua` aus `Runeway_Strings.md` erzeugt, die übrigen neun von Hand gepflegt |
 | `Core.lua` | Fenster, Kacheln, Zoom, Drehung, Zonen-Dimmung, Questmarker, Leichnam, Mouse-over, Sichtbarkeit und Aufruf-Modi, Slash-Befehle, Standardwerte |
 | `QuestAreas.lua` | Questbereiche: Abtasten, Umriss, Zeichnen, Trefferprüfung für Mouse-over |
@@ -89,7 +89,7 @@ Seit 1.6 besteht das Release aus zwei Ordnern, die beide nach `Interface\AddOns`
 ### Datenpakete laden (`Core.lua`, `PackOf`/`LoadPack`)
 - **Zuordnung:** Beim ersten Bedarf liest der Kern alle installierten Addons (`C_AddOns.GetNumAddOns`/`GetAddOnInfo`) und deren Feld `X-Runeway-Maps` (Karten-IDs, durch Leerzeichen oder Komma getrennt). Paketnamen sind damit nicht im Code festgelegt; ein späteres Retail-Paket bräuchte zusätzlich eine Unterscheidung nach Spieltyp.
 - **Laden:** `C_AddOns.LoadAddOn(paket)` einmal je Paket, sobald eine Karte gebraucht wird: bei `PLAYER_ENTERING_WORLD` (hinter dem Ladebildschirm), sonst beim ersten Kachelzugriff (`TileIndex`) bzw. bei `/rnw view <Gebiet>`. Kachelpfade: `Interface\AddOns\<paket>\tiles\<id>\…`.
-- **Fehler:** Lädt das Paket der aktuellen Karte nicht (z. B. in der Addon-Liste deaktiviert), meldet der Chat „Data from pack <Name> not found. Map data could not be loaded for <Area>.“ (`L.PACK_FAILED`; Name = Titel des Pakets in der Client-Sprache ohne „Runeway - “, z. B. „Östliche Königreiche“). Der Name ist ein Addon-Link (`|Haddon:Runeway:pack:<Paket>|h[<Name>]|h`, Runeway-Blau); ein Klick zeigt im `ItemRefTooltip` Paket, Grund (Blizzard-Text `ADDON_<REASON>`) und Hinweis zur Behebung, ein zweiter Klick schließt ihn (`EventRegistry` „SetItemRef“). Im Spieltest öffnet der Client bei keinem Chat-Link einen Tooltip, auch ohne Runeway; Link-Darstellung (blau, eckige Klammern) reicht, Tooltip-Code bleibt für Clients, in denen Links funktionieren, beim Laden und bei jedem Öffnen der Karte. Die Karte bleibt ausgeblendet (`MissingPack` in `UpdateVisibility` und `Runeway_Toggle`), also auch keine Questbereiche, Marker oder Spielerpfeil; auf einer Karte mit Daten erscheint sie wieder. Bekanntes, aber nicht installiertes Paket (`KNOWN_PACKS` in Core.lua: Karte → Paket, Kontinent-uiMap für den Namen): wie ein nicht ladendes Paket (`PACK_FAILED`, Status `ADDON_MISSING`). Ohne Daten für die Karte (Kalimdor, Instanzen ohne Position): Karte ausgeblendet, einmal pro Karte dieselbe Meldung; Paketname = Name des Kontinents (`ContinentName`; in Instanzen der zuletzt besuchte Kontinent, da Dungeon-Karten nicht zum Kontinent führen – Flammenschlund hängt unter Orgrimmar). Gebiet in Instanzen = Instanzname (`GetInstanceInfo()`), aber nur wenn die Position auf der Karte dieser Instanz liegt und sie kein Kontinent ist (`WORLD_MAPS` 0/1/530/571): nach dem Verlassen nennen Name und Typ noch eine Weile den Dungeon (Spieltest), die Position ist schon zurück auf dem Kontinent. Die Meldung nach einem Kartenwechsel kommt nie während eines Ladebildschirms (`LOADING_SCREEN_ENABLED`/`_DISABLED`) und unterscheidet den letzten Ladebildschirm (`PLAYER_ENTERING_WORLD` isInitialLogin/isReloadingUi, Mario): Login = warten auf einen echten Zonennamen (kurz leer bzw. Kontinentname), Reload = sofort (0,5 s), Zonenwechsel (Dungeon rein/raus, Portal) = 1 s, echter Zonenname (auch hier kurz leer, Kontinentname oder noch der Name des verlassenen Dungeons, die Spielerkarte noch der Dungeon; Spieltest: je nach Ladezeit mal richtig, mal Ragefire) und bis die Instanz-ID aus `GetInstanceInfo()` zur Position passt; Name der Spielerkarte nur als Rückfall nach Ablauf; höchstens 15 s (`SayNoData`). `/rnw pos` zeigt die Werte beim letzten Hinweis. Umschalten meldet sofort. **Entscheidung (Mario, 1.6):** Dungeons und Raids kommen ins Paket ihres Kontinents (eigene Karten-IDs in `X-Runeway-Maps` und `KNOWN_PACKS`), kein eigenes Dungeon-Paket. Eine Meldung für alle Fälle (`L.PACK_FAILED`): „Daten aus Paket [Paket] nicht gefunden. Kartendaten konnten für [Gebiet] nicht geladen werden.“ (Gebiet = `GetZoneText()`), ein Umschalten wiederholt den Hinweis (Spieltest 1.6: vorher blieb die Karte mit Questgebieten und „No contours …“ sichtbar). „No contours for this area yet“ bleibt nur für Lücken innerhalb einer Karte mit Paket.
+- **Fehler:** Lädt das Paket der aktuellen Karte nicht (z. B. in der Addon-Liste deaktiviert), meldet der Chat „Data from pack <Name> not found. Map data could not be loaded for <Area>.“ (`L.PACK_FAILED`; Name = Titel des Pakets in der Client-Sprache ohne „Runeway - “, z. B. „Östliche Königreiche“). Der Name ist ein Addon-Link (`|Haddon:Runeway:pack:<Paket>|h[<Name>]|h`, Runeway-Blau); ein Klick zeigt im `ItemRefTooltip` Paket, Grund (Blizzard-Text `ADDON_<REASON>`) und Hinweis zur Behebung, ein zweiter Klick schließt ihn (`EventRegistry` „SetItemRef“). Im Spieltest öffnet der Client bei keinem Chat-Link einen Tooltip, auch ohne Runeway; Link-Darstellung (blau, eckige Klammern) reicht, Tooltip-Code bleibt für Clients, in denen Links funktionieren, beim Laden und bei jedem Öffnen der Karte. Die Karte bleibt ausgeblendet (`MissingPack` in `UpdateVisibility` und `Runeway_Toggle`), also auch keine Questbereiche, Marker oder Spielerpfeil; auf einer Karte mit Daten erscheint sie wieder. Bekanntes, aber nicht installiertes Paket (`KNOWN_PACKS` in Core.lua: Karte → Paket, Kontinent-uiMap für den Namen): wie ein nicht ladendes Paket (`PACK_FAILED`, Status `ADDON_MISSING`). Ohne Daten für die Karte (Kalimdor, Instanzen ohne Position): Karte ausgeblendet, einmal pro Karte dieselbe Meldung; Paketname = Name des Kontinents (`ContinentName`; in Instanzen der zuletzt besuchte Kontinent, da Dungeon-Karten nicht zum Kontinent führen – Flammenschlund hängt unter Orgrimmar). Gebiet in Instanzen = Instanzname (`GetInstanceInfo()`), aber nur wenn die Position auf der Karte dieser Instanz liegt und sie kein Kontinent ist (`WORLD_MAPS` 0/1/530/571): nach dem Verlassen nennen Name und Typ noch eine Weile den Dungeon (Spieltest), die Position ist schon zurück auf dem Kontinent. Die Meldung nach einem Kartenwechsel kommt nie während eines Ladebildschirms (`LOADING_SCREEN_ENABLED`/`_DISABLED`) und unterscheidet den letzten Ladebildschirm (`PLAYER_ENTERING_WORLD` isInitialLogin/isReloadingUi, Mario): Login = warten auf einen echten Zonennamen (kurz leer bzw. Kontinentname), Reload = sofort (0,5 s), Zonenwechsel (Dungeon rein/raus, Portal) = 1 s, echter Zonenname (auch hier kurz leer, Kontinentname oder noch der Name des verlassenen Dungeons, die Spielerkarte noch der Dungeon; Spieltest: je nach Ladezeit mal richtig, mal Ragefire) und bis die Instanz-ID aus `GetInstanceInfo()` zur Position passt; Name der Spielerkarte nur als Rückfall nach Ablauf; höchstens 15 s (`SayNoData`). `/rnw pos` zeigt die Werte beim letzten Hinweis. Umschalten meldet sofort. **Entscheidung (Mario, 0.6):** Dungeons und Raids kommen ins Paket ihres Kontinents (eigene Karten-IDs in `X-Runeway-Maps` und `KNOWN_PACKS`), kein eigenes Dungeon-Paket. Eine Meldung für alle Fälle (`L.PACK_FAILED`): „Daten aus Paket [Paket] nicht gefunden. Kartendaten konnten für [Gebiet] nicht geladen werden.“ (Gebiet = `GetZoneText()`), ein Umschalten wiederholt den Hinweis (Spieltest 0.6: vorher blieb die Karte mit Questgebieten und „No contours …“ sichtbar). „No contours for this area yet“ bleibt nur für Lücken innerhalb einer Karte mit Paket.
 
 ### Ebenen (Zeichenreihenfolge, Kennbuchstabe in `Tiles.lua`)
 `fill` (f, begehbar) → `hatch` (h, Schraffur nicht begehbar) → `shade` (s, dunkler Saum) → `terrain` (t) → `water` (w) → `roads` (r). Darüber `questAreas` (Linien aus `QuestAreas.lua`), Questmarker und Spielerpfeil.
@@ -154,7 +154,7 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
   - Ziehen verschiebt die Karte.
   - Der Griff unten rechts (6 px eingerückt, innerhalb der runden Rahmenecke) ändert Breite und Höhe unabhängig; die obere linke Ecke bleibt stehen.
   - Shift+Mausrad ändert die Größe.
-  - Beim Überfahren erscheint ein Rahmen (seit 1.6 immer, ohne Option): Rechteck mit runden Ecken (Radius 16 px), dünne weiche Linie (1 px, 55 %) über einem schwachen Glow (8 px, 10 %), helles Grau der Kartenlinien, Segmente mit `edge.tga`; statt der früheren harten 1-px-Linien.
+  - Beim Überfahren erscheint ein Rahmen (seit 0.6 immer, ohne Option): Rechteck mit runden Ecken (Radius 16 px), dünne weiche Linie (1 px, 55 %) über einem schwachen Glow (8 px, 10 %), helles Grau der Kartenlinien, Segmente mit `edge.tga`; statt der früheren harten 1-px-Linien.
 
 **Sichtbarkeit (`UpdateVisibility`):**
 - **Grundregel:** Angezeigt wird, wenn `mode == "permanent"` oder `shown` gesetzt ist und keine Bedingung zum automatischen Ausblenden greift.
@@ -287,7 +287,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
    - Breite = Kachelgröße ÷ 140 (2–7 px), folgt also dem Zoom.
    - Segmente überlappen nur bei voller Deckkraft um 1 px.
    - Ausblendung zum Rand pro Segment über `SetVertexColor`.
-7. **Nachbarzonen (1.2):**
+7. **Nachbarzonen (0.2):**
    - `ns.NearbyMaps()` (`Core.lua`): Karte des Spielers zuerst, dann die Zonen desselben Kontinents (`C_Map.GetMapInfo` bis `mapType` 2, `C_Map.GetMapChildrenInfo(Kontinent, 3)`), deren Kartenrechteck (Weltkoordinaten der Ecken, je Karte zwischengespeichert) näher als die Sichtweite + 200 yd liegt, nach Abstand sortiert.
    - `QuestAreas.lua` hält den Zustand je Karte (`state[mapID]`: Bereiche, Gruppen, Kartenecken). Die Warteschlange enthält Quests aller nahen Karten (Karte für Karte, je Karte nächste zuerst). `SetMapID` wechselt nur bei einem Kartenwechsel des Jobs (dann 1 s Wartezeit).
    - Jede Sekunde wird geprüft, ob sich die Liste naher Karten geändert hat (Bewegung, Zoom); dann werden Bereiche und Questmarker neu abgefragt.
@@ -296,7 +296,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
    - Cache-Version 3 (`cut` neu); alte Einträge werden einmal verworfen.
 8. **Questmarker (`Core.lua`):**
    - Nur Quests ohne Umriss bekommen einen Marker (punktuelle Ziele).
-   - Seit 1.6 (Mario, aus `interface/minimap/objecticonsatlas.blp`): Abgabe `quest-campaign-turnin` („?“, eigener Ring, ohne Hintergrund). In Bearbeitung (Punktziel ohne Gebiet) wie auf der Retail-Weltkarte immer rund `Quest-In-Progress-Icon-yellow` („…“) auf dem Hintergrund; „!“ bleibt verfügbaren Quests vorbehalten.
+   - Seit 0.6 (Mario, aus `interface/minimap/objecticonsatlas.blp`): Abgabe `quest-campaign-turnin` („?“, eigener Ring, ohne Hintergrund). In Bearbeitung (Punktziel ohne Gebiet) wie auf der Retail-Weltkarte immer rund `Quest-In-Progress-Icon-yellow` („…“) auf dem Hintergrund; „!“ bleibt verfügbaren Quests vorbehalten.
    - **Verfügbare Quests („!“): nicht möglich.** `C_QuestLine.GetAvailableQuestLines` liefert im Forever-Client 0 (Spieltest direkt vor einem Questgeber, nach `RequestQuestLinesForMap`); die Weltkarte zeigt keine, nur die Minimap (Server-Blips, für Addons nicht lesbar). Bliebe nur eine eigene Questgeber-Datenbank (wie Questie), eigenes Projekt. Option „Classic quest icons“ (`questClassic`, Standard aus, nach „Zusammenfassen“, folgt dem Questmarker-Schalter) oder fehlender Atlas: wie bisher `UI-QuestPoi-QuestNumber` (Kreis mit Goldrand) plus `UI-QuestIcon-TurnIn-Normal` bzw. `Quest-In-Progress-Icon-yellow`. Vorschau weiterer Kandidaten: `/rnw quest icons`.
 
 ---
@@ -326,11 +326,11 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
 
 | Punkt | Status |
 |---|---|
-| 3.1 RAW-Daten (Begehbarkeit aus Steigung, Wasser aus MH2O, Wege aus Texturen, Zonen-Zuschnitt, Tirisfal) | **erledigt** für Tirisfal; Etappe 1 (Silverpine, Western Plaguelands, Hillsbrad, Alterac) in 1.2 erledigt und im Spiel getestet; alle Östlichen Königreiche (Etappen 2–4) in 1.5 |
+| 3.1 RAW-Daten (Begehbarkeit aus Steigung, Wasser aus MH2O, Wege aus Texturen, Zonen-Zuschnitt, Tirisfal) | **erledigt** für Tirisfal; Etappe 1 (Silverpine, Western Plaguelands, Hillsbrad, Alterac) in 0.2 erledigt und im Spiel getestet; alle Östlichen Königreiche (Etappen 2–4) in 0.5 |
 | 3.2 Einfärbbare Ebenen | **erledigt**, erweitert um `fill` und `hatch` |
 | 3.3 Questgebiete | **erledigt**, über das Abtasten statt DB2 (die Tabellen sind leer) |
-| 3.4 Konfigurationsoberfläche und Bedienung | **erledigt** in 1.1, im Spiel getestet |
-| 3.5 Abschluss (Lua-Prüfung, Simulation, Version 1.0, ZIP) | **erledigt** (Tests mit Lua 5.1, `simulate.py`, Release-ZIP) |
+| 3.4 Konfigurationsoberfläche und Bedienung | **erledigt** in 0.1, im Spiel getestet |
+| 3.5 Abschluss (Lua-Prüfung, Simulation, Version 0.0, ZIP) | **erledigt** (Tests mit Lua 5.1, `simulate.py`, Release-ZIP) |
 | Zusätzlich | Diablo-IV-Stil, frei skalierbare ovale Karte, nahtloser Zoom, Ruinen von Lordaeron, Questmarker im Weltkarten-Stil, angrenzende Zonen, Leichnam-Marker, Mouse-over-Tooltips, Profil-Export/-Import, Lokalisierung |
 
 ---
@@ -358,14 +358,14 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
 
 **Reihenfolge:**
 1. **Fundament:** Block-Build mit Überlappung, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID im Addon. **Erledigt**, siehe unten.
-2. **Östliche Königreiche:** alle Gebiete in Etappen (Tabelle unten), plus Questbereiche angrenzender Zonen. **Erledigt** (1.5).
-3. **Daten-Addons:** Aufteilung in Pakete, die beim Betreten geladen werden. **Erledigt** (1.6).
+2. **Östliche Königreiche:** alle Gebiete in Etappen (Tabelle unten), plus Questbereiche angrenzender Zonen. **Erledigt** (0.5).
+3. **Daten-Addons:** Aufteilung in Pakete, die beim Betreten geladen werden. **Erledigt** (0.6).
 4. **Kalimdor:** dieselbe Pipeline.
 5. **WMO-Grundriss-Pipeline mit Etagen:** zuerst Städte (Ironforge, Stormwind), Undercity unterirdisch, dann Höhlen und Minen.
 6. **Dungeons und Raids.**
 7. **Version 2:** Route zum Questziel (A* auf dem Begehbarkeitsraster).
 
-**Gebiete der Östlichen Königreiche** (AreaTable-Hauptzonen mit Gelände-Chunks im ADT-Export; 1 Chunk ≈ 33 × 33 yd). 27 Gebiete; fertig (1.2): Tirisfal, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains; 22 offen. Fläche gesamt ≈ 9 × Tirisfal; mit der Kachel-Optimierung aus 1.2 hochgerechnet ≈ 70 MB.
+**Gebiete der Östlichen Königreiche** (AreaTable-Hauptzonen mit Gelände-Chunks im ADT-Export; 1 Chunk ≈ 33 × 33 yd). 27 Gebiete; fertig (0.2): Tirisfal, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains; 22 offen. Fläche gesamt ≈ 9 × Tirisfal; mit der Kachel-Optimierung aus 0.2 hochgerechnet ≈ 70 MB.
 
 | Chunks | Gebiet | | Chunks | Gebiet |
 |---:|---|---|---:|---|
@@ -408,7 +408,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
 
 | Etappe | Gebiete | Stand |
 |---|---|---|
-| 1 | Tirisfal Glades, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains | im Spiel getestet (1.2) |
+| 1 | Tirisfal Glades, Silverpine Forest, Western Plaguelands, Hillsbrad Foothills, Alterac Mountains | im Spiel getestet (0.2) |
 | 2 (Norden) | Eastern Plaguelands, The Hinterlands, Arathi Highlands, Gilneas, Ruins of Gilneas | gebaut (285 Kacheln, 28,2 MB, 3,3 min, 2,3 GB RAM), im Spiel per Ansichtsmodus geprüft |
 | 3 (Mitte) | Wetlands, Dun Morogh, Loch Modan, Searing Gorge, Badlands, Burning Steppes, Riverglades | gebaut (Etappen 1–3: 499 Kacheln, 50,2 MB, 5,9 min, 3,2 GB RAM), im Spiel per Ansichtsmodus geprüft |
 | 4 (Süden) | Elwynn Forest, Stormwind City, Westfall, Redridge Mountains, Duskwood, Deadwind Pass, Swamp of Sorrows, Blasted Lands, Stranglethorn Vale, Gillijim's Isle | gebaut (alle 27 Gebiete: 692 Kacheln, 69,7 MB, 8,7 min, 4,7 GB RAM), im Spiel per Ansichtsmodus geprüft |
@@ -432,7 +432,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
   - WMO als OBJ exportieren (wow.export, „Split WMO Groups“, ohne Texturen) und auf `data` legen.
   - Turm- oder Mauer-M2 in `M2_BLOCKERS` eintragen.
   - Die Ausrichtung je Stadt gegen die Minimap prüfen, weil die Drehrichtung erst nahe 0° kalibriert ist.
-- **Undercity unterirdisch:** erledigt (1.6, `build_wmo.py`). Grundriss: Bodenflächen (Normale > 0,75) der Innen-Gruppen (Flag 0x2000) ohne „Ruins of Lordaeron“, je Pixel und Höhe ein Knoten; Nachbarn mit < 1,2 yd Höhenunterschied sind verbunden (Treppen, Rampen). Das größte Netz ist die begehbare Stadt, die übrigen 929 Netze sind Mauerkronen, Bögen und Deckenträger. Je Pixel zählt der höchste Boden des Netzes; Wasser = WMO-Flüssigkeit (MLIQ, Kachel-Flag & 0xF ≠ 0xF), wo sie darüber liegt (Kanäle; Brücken bleiben begehbar). Mehrere Ebenen erscheinen übereinander von oben gesehen; Etagen-Umschaltung später.
+- **Undercity unterirdisch:** erledigt (0.6, `build_wmo.py`). Grundriss: Bodenflächen (Normale > 0,75) der Innen-Gruppen (Flag 0x2000) ohne „Ruins of Lordaeron“, je Pixel und Höhe ein Knoten; Nachbarn mit < 1,2 yd Höhenunterschied sind verbunden (Treppen, Rampen). Das größte Netz ist die begehbare Stadt, die übrigen 929 Netze sind Mauerkronen, Bögen und Deckenträger. Je Pixel zählt der höchste Boden des Netzes; Wasser = WMO-Flüssigkeit (MLIQ, Kachel-Flag & 0xF ≠ 0xF), wo sie darüber liegt (Kanäle; Brücken bleiben begehbar). Mehrere Ebenen erscheinen übereinander von oben gesehen; Etagen-Umschaltung später.
 - **Questbereiche (optional):** Innenschein bzw. Schraffur wie auf der Minimap. Mit Linien gab es Artefakte an den Stoßstellen, das bräuchte gefüllte Flächen, z. B. Dreiecks-Texturen.
 - **Version 2, Kalimdor, Instanzen:** siehe Roadmap oben.
 
@@ -458,9 +458,9 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway Runeway_EasternKingdoms
 
 **Installation:** Alte Ordner `Interface\AddOns\Runeway` und `Runeway_*` löschen, das ZIP dort entpacken (beide Ordner) und WoW komplett neu starten. Neue Dateien (Kacheln, Einträge in der `.toc`, `Bindings.xml`) lädt WoW erst nach einem Neustart; reine Lua-Änderungen an bestehenden Dateien reichen mit `/reload`.
 
-**Im Spiel geprüft (1.6):** beide Ordner installiert; Paket lädt beim Betreten; deaktiviertes Paket, Kalimdor und Dungeons → Karte ausgeblendet, Chat-Meldung mit Paket und Gebiet (Login, Reload, Dungeon rein/raus mehrfach geprüft); keine Lua-Fehler.
+**Im Spiel geprüft (0.6):** beide Ordner installiert; Paket lädt beim Betreten; deaktiviertes Paket, Kalimdor und Dungeons → Karte ausgeblendet, Chat-Meldung mit Paket und Gebiet (Login, Reload, Dungeon rein/raus mehrfach geprüft); keine Lua-Fehler.
 
-**Regressionsliste (vor jedem Release im Spiel prüfen, Stand 1.4 alles bestanden; 1.5: Punkte 1–2 für Etappen 2–4 über den Ansichtsmodus geprüft):**
+**Regressionsliste (vor jedem Release im Spiel prüfen, Stand 0.4 alles bestanden; 0.5: Punkte 1–2 für Etappen 2–4 über den Ansichtsmodus geprüft):**
 1. **Karte:** Look wie im Diablo-Screenshot; Zoom nahtlos ohne Flackern oder Kachelkanten; Schraffur deckungsgleich mit den Geländelinien; Ruinen von Lordaeron erkennbar.
 2. **Zonen:** Übergänge zwischen den gebauten Zonen ohne Kante oder Lücke; angrenzende Zonen gedimmt, beim Grenzübertritt weicher Tausch; Außenrand blendet weich aus.
 3. **Questbereiche:** durchgehend in jeder Zoomstufe, weich zum Kartenrand, korrekt bei Fortschritt; auch aus angrenzenden Zonen, grenzüberschreitende nicht abgeschnitten oder doppelt; Option „Combine overlapping quest areas“ an/aus.
@@ -480,9 +480,9 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway Runeway_EasternKingdoms
 ```text
 Projekt Runeway (WoW-Forever-Addon). Repo mschettl/Runeway, Entwicklungsbranch dev (Push mit git push -u origin dev).
 Lies zuerst CLAUDE.md, Runeway_Status_v1.md und Runeway_Prompt_v1.md.
-Version 1.6 ist im Spiel getestet und in main gemergt (PR #10): Datenpaket Runeway_EasternKingdoms, Meldung bei fehlenden Kartendaten, Unterstadt/Ruinen als Innen-Kachelsätze mit eigenem Zoom, Flugmeister, Questsymbole, Kartenform und weicher Rand.
+Version 0.6 (früher 1.6; Nummerierung siehe „Versionierung“) ist im Spiel getestet und in main gemergt (PR #10): Datenpaket Runeway_EasternKingdoms, Meldung bei fehlenden Kartendaten, Unterstadt/Ruinen als Innen-Kachelsätze mit eigenem Zoom, Flugmeister, Questsymbole, Kartenform und weicher Rand.
 Langfristziel, Architektur und Versionsplan: Runeway_Status_v1.md, Abschnitte 1 und 8.
-Aufgabe dieser Session: Kalimdor (Roadmap Schritt 4, Version 1.7) als Datenpaket Runeway_Kalimdor; Dungeons und Raids kommen später ins Paket ihres Kontinents (KNOWN_PACKS in Core.lua mitpflegen).
+Aufgabe dieser Session: Kalimdor (Roadmap Schritt 4, Version 0.7) als Datenpaket Runeway_Kalimdor; Dungeons und Raids kommen später ins Paket ihres Kontinents (KNOWN_PACKS in Core.lua mitpflegen).
 Rohdaten liegen auf dem Branch data (git fetch origin data, siehe Abschnitt 2). Tests: python tests/run_stub.py, andere Sprache mit RUNEWAY_LOCALE=deDE.
 Kommunikation Deutsch, Code Englisch. PR und Merge nur auf Marios Anweisung (Squash-Merge).
 ```

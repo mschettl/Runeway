@@ -222,9 +222,12 @@ end
 
 -- Chat note for a data pack that cannot be loaded. The pack shows as a link in Runeway blue with its localized
 -- title ("[Eastern Kingdoms]"); a click opens a tooltip with pack, reason and fix, a second click closes it.
+-- One note for every map without data: the pack (link if installed, else its continent's name) and the area
 local PACK_LINK = "|cff66ccff|Haddon:Runeway:pack:%s|h[%s]|h|r"
-local function PackFailed(pack)
-    Print(L.PACK_FAILED:format(PACK_LINK:format(pack, packTitle[pack])))
+local function Blue(text) return ("|cff66ccff[%s]|r"):format(text or "?") end
+local function PackFailed(pack, name)
+    local area = GetZoneText()
+    Print(L.PACK_FAILED:format(pack and PACK_LINK:format(pack, packTitle[pack]) or Blue(name), Blue(area ~= "" and area or name)))
 end
 
 -- ItemRefTooltip comes with Blizzard_UIPanels_Game, which may load after this addon: look it up on the click
@@ -1222,9 +1225,17 @@ local function NoMapData()
     local inst = select(4, UnitPosition("player"))
     return not (inst and (PackOf(inst) or KNOWN_PACKS[inst])), inst
 end
+-- no pack at all: the continent names the pack that would hold the data (Kalimdor)
+local function ContinentName()
+    local m = C_Map.GetBestMapForUnit("player")
+    local info = m and C_Map.GetMapInfo(m)
+    while info and info.mapType ~= UIMAP_CONTINENT and (info.parentMapID or 0) > 0 do
+        info = C_Map.GetMapInfo(info.parentMapID)
+    end
+    return info and info.mapType == UIMAP_CONTINENT and info.name or GetRealZoneText()
+end
 local function SayNoData(inst)
-    local zone = GetZoneText() or ""
-    if noDataSaid ~= (inst or false) then Print(L.NO_MAP_DATA:format(("|cff66ccff[%s]|r"):format(zone))) end
+    if noDataSaid ~= (inst or false) then PackFailed(nil, ContinentName()) end
     noDataSaid = inst or false
 end
 

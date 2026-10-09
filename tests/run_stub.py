@@ -454,8 +454,13 @@ L.execute('''
     local merged = false
     for _, e in ipairs(NS.QuestAreasRepublish()) do if #e[2] == 2 then merged = true end end
     check("merge: every quest drawn once with a neighbouring map", ok and merged)
-    -- flight masters: own faction and neutral, discovered and undiscovered with their own icons; tooltip
+    -- flight masters: own faction and neutral, discovered and undiscovered with their own icons; tooltip.
+    -- isUndiscovered is always false in the client: known nodes come from the taxi map of a flight master
     NS.RefreshQuests()
+    local allUnknown = true
+    for _, t in ipairs(NS.Taxis) do allUnknown = allUnknown and t.undiscovered end
+    check("flight masters: unknown before a flight master was visited", allUnknown)
+    fire("TAXIMAP_OPENED")
     view:GetScript("OnUpdate")(view, 0.05)
     local atl = {}
     for _, t in ipairs(ALL_TEX) do

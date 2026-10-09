@@ -666,6 +666,23 @@ local function NearbyMaps()
 end
 ns.NearbyMaps = NearbyMaps
 
+-- Discovered flight points: isUndiscovered of GetTaxiNodesForMap is always false in this client, so the
+-- nodes a flight master lists as known (taxi map, type ~= "NONE") are kept per character by name
+local UNDISCOVERED_ATLAS = "TaxiNode_Undiscovered"
+local function KnownTaxiNodes()
+    db.taxiKnown = db.taxiKnown or {}
+    local key = (UnitName("player") or "?") .. "-" .. (GetRealmName and GetRealmName() or "")
+    db.taxiKnown[key] = db.taxiKnown[key] or {}
+    return db.taxiKnown[key]
+end
+local function LearnTaxiNodes()
+    if not (NumTaxiNodes and TaxiNodeName and TaxiNodeGetType) then return end
+    local known = KnownTaxiNodes()
+    for i = 1, NumTaxiNodes() do
+        if TaxiNodeGetType(i) ~= "NONE" then known[TaxiNodeName(i)] = true end
+    end
+end
+
 local function RefreshQuests()
     wipe(quests)
     local maps = NearbyMaps()
@@ -690,7 +707,7 @@ local function RefreshQuests()
     -- On the surface also those of the interior maps (Undercity's bat handler), as they are reached from there.
     wipe(taxis)
     if not (db.showTaxi and C_TaxiMap and C_TaxiMap.GetTaxiNodesForMap) then return end
-    local faction, seenNode = UnitFactionGroup("player"), {}
+    local faction, seenNode, known = UnitFactionGroup("player"), {}, KnownTaxiNodes()
     local FP = Enum and Enum.FlightPathFaction or {}
     local inst = select(4, UnitPosition("player"))
     if not inside and inst then
@@ -708,10 +725,12 @@ local function RefreshQuests()
             for _, t in ipairs(C_TaxiMap.GetTaxiNodesForMap(mapID) or {}) do
                 local own = (t.faction ~= FP.Horde or faction == "Horde") and (t.faction ~= FP.Alliance or faction == "Alliance")
                 local n, w = MapToWorld(mapID, t.position.x, t.position.y)
-                if n and own and not seenNode[t.nodeID] and ns.InChunks(inside, n, w) then
+                -- "zzOLD..." = retired nodes still in the client data
+                if n and own and not seenNode[t.nodeID] and not t.name:find("^zz") and ns.InChunks(inside, n, w) then
                     seenNode[t.nodeID] = true
-                    taxis[#taxis + 1] = { n, w, name = t.name, atlas = t.atlasName, undiscovered = t.isUndiscovered,
-                                          faction = t.faction }
+                    local undiscovered = t.isUndiscovered or not known[t.name]
+                    taxis[#taxis + 1] = { n, w, name = t.name, atlas = undiscovered and UNDISCOVERED_ATLAS or t.atlasName,
+                                          undiscovered = undiscovered, faction = t.faction }
                 end
             end
         end
@@ -1300,6 +1319,9 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         -- taint diagnostics: name the protected function the game blocked under our name
         local func = ...                       -- payload: addon name, function name
         if arg1 == ADDON then Print(("%s: %s"):format(event, tostring(func))) end
+    elseif event == "TAXIMAP_OPENED" or event == "TAXI_NODE_STATUS_CHANGED" then
+        LearnTaxiNodes()
+        if view:IsShown() then RefreshQuests() end
     elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
         if bindPending and event == "PLAYER_REGEN_ENABLED" then ApplyBindings() end
         UpdateVisibility()

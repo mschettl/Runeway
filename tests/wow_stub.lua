@@ -199,6 +199,13 @@ Enum = Enum or {}
 Enum.FlightPathFaction = { Neutral = 0, Horde = 1, Alliance = 2 }
 function UnitFactionGroup() return "Horde" end
 UNDISCOVERED_FACTION_FLIGHTPOINT, FACTION_HORDE = "Undiscovered %s flight point", "Horde"
+-- taxi map of a flight master: the nodes the character knows (classic TaxiFrame API)
+TAXI_KNOWN = { "Brill", "Undercity" }
+function NumTaxiNodes() return #TAXI_KNOWN + 1 end
+function TaxiNodeName(i) return TAXI_KNOWN[i] or "Bulwark" end
+function TaxiNodeGetType(i) return TAXI_KNOWN[i] and "REACHABLE" or "NONE" end
+function UnitName() return "Tester" end
+function GetRealmName() return "Realm" end
 C_TaxiMap = {
     ShouldMapShowTaxiNodes = function() return true end,
     GetTaxiNodesForMap = function(m)
@@ -208,7 +215,8 @@ C_TaxiMap = {
         if m ~= 1420 then return {} end
         return {
             { nodeID = 11, name = "Brill", atlasName = "TaxiNode_Neutral", faction = 0, isUndiscovered = false, position = { x = 0.41, y = 0.6 } },
-            { nodeID = 12, name = "Bulwark", atlasName = "TaxiNode_Undiscovered", faction = 1, isUndiscovered = true, position = { x = 0.4, y = 0.603 } },
+            { nodeID = 12, name = "Bulwark", atlasName = "TaxiNode_Horde", faction = 1, isUndiscovered = false, position = { x = 0.4, y = 0.603 } },
+            { nodeID = 15, name = "zzOLDBulwark", atlasName = "TaxiNode_Horde", faction = 1, isUndiscovered = false, position = { x = 0.4, y = 0.6 } },
             { nodeID = 13, name = "Southshore", atlasName = "TaxiNode_Alliance", faction = 2, isUndiscovered = false, position = { x = 0.5, y = 0.5 } },
         }
     end,

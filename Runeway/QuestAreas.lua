@@ -253,6 +253,7 @@ local function ToWorldLoop(xs, ys, box)
 end
 
 -- Owner map per quest: prefer an outline that does not touch its map border (not cut off), then the nearer map
+local pending = true      -- owners changed: publish the shown outlines once sampling has settled
 local function Resolve()
     wipe(owner)
     for _, m in ipairs(maps) do
@@ -260,6 +261,48 @@ local function Resolve()
         for qid, a in pairs(st and st.areas or {}) do
             local o = owner[qid]
             if #a.loops > 0 and (not o or (state[o].areas[qid].cut and not a.cut)) then owner[qid] = m end
+        end
+    end
+    pending = true
+end
+
+-- The outlines on screen: { area, questIDs, state } per shown group or single quest area. Rebuilt only when
+-- sampling has settled (or after PUBLISH_MAX s of work), so new areas appear together and merged instead of
+-- one by one. A combined outline takes all its quests (the first one not cut by its map border, nearest map
+-- first); the other quests show their own outline on their owner map. So every quest is drawn exactly once,
+-- also when a neighbouring map that lists the same quests comes into view.
+local PUBLISH_MAX = 3
+local shown, shownQuest, published, publishedMerge = {}, {}, 0, nil
+local function Publish()
+    pending, published = false, GetTime()
+    local merge = ns.db().questMerge     -- overlapping quests as one combined outline (option)
+    publishedMerge = merge
+    shown, shownQuest = {}, {}
+    if merge then
+        for pass = 1, 2 do
+            for _, m in ipairs(maps) do
+                local st = state[m]
+                for _, g in pairs(st and st.groups or {}) do
+                    if #g.loops > 0 and (pass == 2) == (g.cut == true) then
+                        local free = true
+                        for _, qid in ipairs(g.members) do free = free and not shownQuest[qid] end
+                        if free then
+                            for _, qid in ipairs(g.members) do shownQuest[qid] = true end
+                            shown[#shown + 1] = { g, g.members, st }
+                        end
+                    end
+                end
+            end
+        end
+    end
+    for _, m in ipairs(maps) do
+        local st = state[m]
+        for qid, a in pairs(st and st.areas or {}) do
+            if owner[qid] == m and #a.loops > 0 and not shownQuest[qid] then
+                a.qids = a.qids or { qid }
+                shownQuest[qid] = true
+                shown[#shown + 1] = { a, a.qids, st }
+            end
         end
     end
 end
@@ -518,12 +561,17 @@ local function Refresh()
 end
 
 local driver = CreateFrame("Frame")
-local MAP_CHECK = 1        -- seconds between checks whether other zone maps came into view
+local MAP_CHECK = 0.25     -- seconds between checks whether other zone maps came into view
 local mapCheck = 0
 driver:SetScript("OnUpdate", function(_, e)
     if dirty > 0 then
         dirty = dirty - e
         if dirty <= 0 then Refresh() end
+    end
+    if ns.db().questMerge ~= publishedMerge then pending = true end
+    if pending and ((not job and #queue == 0 and not (blobFrame and NextGroupJob()))
+            or GetTime() - published > PUBLISH_MAX) then
+        Publish()
     end
     if not ns.view:IsShown() then return end
     mapCheck = mapCheck - e
@@ -585,38 +633,21 @@ function ns.HideQuestAreas()
     shownLines = 0
 end
 
--- true if the quest has an outline (its pin is then hidden)
+ns.QuestAreasRepublish = function() Resolve() Publish() return shown end   -- for tests
+
+-- true if the quest has an outline on screen (its pin is then hidden)
 function ns.HasQuestArea(questID)
-    local st = state[owner[questID] or 0]
-    if not st then return false end
-    local a, g = st.areas[questID], ns.db().questMerge and st.groups[st.inGroup[questID] or ""]
-    return (a and #a.loops > 0) or (g and #g.loops > 0) or false
+    return shownQuest[questID] or false
 end
 
 local px, py, qx, qy, qa = {}, {}, {}, {}, {}   -- reused buffers: screen points, subdivided points, fade
 
 -- The outlines that are drawn: fn(area, questIDs, state) for every shown group or single quest area
 local function ForEachShown(fn)
-    local merge = ns.db().questMerge     -- overlapping quests as one combined outline (option)
     local inside = ns.InteriorChunks()   -- inside Undercity: only areas within the city
-    local function Inside(b) return ns.InChunks(inside, (b[1] + b[2]) / 2, (b[3] + b[4]) / 2) end
-    for _, m in ipairs(maps) do
-        local st = state[m]
-        -- a group is drawn on its map if that map owns one of its members
-        if merge then
-            for _, g in pairs(st.groups) do
-                local own = false
-                for _, qid in ipairs(g.members) do own = own or owner[qid] == m end
-                if own and #g.loops > 0 and Inside(g.box) then fn(g, g.members, st) end
-            end
-        end
-        for qid, a in pairs(st.areas) do
-            local g = merge and st.groups[st.inGroup[qid] or ""]
-            if owner[qid] == m and #a.loops > 0 and not (g and #g.loops > 0) and Inside(a.box) then
-                a.qids = a.qids or { qid }
-                fn(a, a.qids, st)
-            end
-        end
+    for _, e in ipairs(shown) do
+        local b = e[1].box
+        if ns.InChunks(inside, (b[1] + b[2]) / 2, (b[3] + b[4]) / 2) then fn(e[1], e[2], e[3]) end
     end
 end
 

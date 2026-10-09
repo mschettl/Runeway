@@ -672,10 +672,13 @@ local function RefreshQuests()
     for _, mapID in ipairs(maps) do
         for _, q in ipairs(C_QuestLog.GetQuestsOnMap(mapID) or {}) do
             local n, w = MapToWorld(mapID, q.x, q.y)
-            if n and not seen[q.questID] and ns.InChunks(inside, n, w) then
+            local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
+                or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
+            -- inside an interior only quests with an area are filtered by its footprint (areas of the surface
+            -- around it); turn-ins and talk-to targets of the interior always show
+            local area = not done and GetQuestPOIBlobCount and GetQuestPOIBlobCount(q.questID) > 0
+            if n and not seen[q.questID] and (not area or ns.InChunks(inside, n, w)) then
                 seen[q.questID] = true
-                local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
-                    or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
                 quests[#quests + 1] = { n, w, questID = q.questID, done = done and true or false }
             end
         end

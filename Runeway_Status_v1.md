@@ -82,7 +82,7 @@ Seit 1.6 besteht das Release aus zwei Ordnern, die beide nach `Interface\AddOns`
 - Grund: Hof, Thronsaal, Aufzug und Stadt melden alle uiMap 1458 und Zone „Undercity“; `UnitPosition` liefert keine Höhe, die WMO-Gruppe ist für Addons nicht abfragbar. Unterzone „Ruins of Lordaeron“ (Area 153) + Position im Grundriss der Innen-Gruppen trennt Thronsaal/Aufzug (Zwischenkarte) vom Hof (Oberfläche); andere Unterzonen = Undercity. Im Spieltest schaltet die Minimap am Eingang des Thronsaals (66.0 32.8) um.
 - Unterzonen-Vergleich: Name über `C_Map.GetAreaInfo(id)`, enthält-Prüfung ohne Groß-/Kleinschreibung, weil der Client „Die Ruinen von Lordaeron“ meldet. Die Satzwahl wird 0,2 s zwischengespeichert.
 - Unten am Aufzug meldet der Client außerhalb des Schachts weiter die Unterzone „Ruinen“ (dauerhaft, z. B. beim Warten auf den Aufzug bei 65.9 54.1). Eine Höhe gibt es für Addons nicht (`UnitPosition` z = 0). Darum gilt `notSubzones` von Undercity nur auf der Außenfläche der Ruinen (`surfaceArea`: Bodenflächen der Außen-Gruppen „Ruins of Lordaeron“ = Hof, Rosengang, Außeneingang, Raster 64) oder außerhalb des Undercity-Grundrisses; sonst Undercity.
-- Questbereiche und -marker (`NearbyMaps`): In einem Innenraum-Satz nur die uiMap des Innenraums und nur innerhalb seines Grundrisses (`ns.InChunks`; die uiMap 1458 listet auch Tirisfal-Quests 370/374), an der Oberfläche alle Zonen außer denen mit Innenraum-Sätzen.
+- Questbereiche und -marker (`NearbyMaps`): In einem Innenraum-Satz nur die uiMap des Innenraums, an der Oberfläche alle Zonen außer denen mit Innenraum-Sätzen. Die uiMap 1458 listet auch Tirisfal-Quests mit Gebiet (370/374): Im Innenraum gelten Bereiche und die Marker von Quests mit Gebiet nur innerhalb des Grundrisses (`ns.InChunks`); Abgabe- und Ansprech-Marker immer.
 - `/rnw pos` zeigt den aktiven Satz (`set=`).
 
 ### Datenpakete laden (`Core.lua`, `PackOf`/`LoadPack`)
@@ -273,6 +273,9 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
    - Umrechnung in Weltkoordinaten über die Kartenecken.
    - Je Umriss wird gespeichert, auf welcher Seite die Fläche liegt (`inward`).
 4. **Überlappende Quests:** Sie werden zusätzlich gemeinsam abgetastet und bekommen einen einzigen Umriss (`groups`). Abschaltbar über die Option „Combine overlapping quest areas“ (`questMerge`); dann wird nicht gemeinsam abgetastet und jede Quest behält ihren Umriss.
+   - **Anzeige (`Publish`):** Die gezeigten Umrisse sind eine feste Liste, neu aufgebaut erst, wenn die Abtastung fertig ist (keine Warteschlange, keine offene Gruppe) oder spätestens nach 3 s Arbeit. Neue Bereiche erscheinen dadurch gemeinsam und schon zusammengefasst statt einzeln.
+   - **Jede Quest genau einmal:** Ein gemeinsamer Umriss beansprucht alle seine Quests (zuerst Umrisse, die nicht am Kartenrand abgeschnitten sind, nächste Karte zuerst); die übrigen Quests zeigen ihren eigenen Umriss auf ihrer Eigentümer-Karte. Vorher bestimmte die Eigentümer-Karte jede Quest einzeln: Kam beim Rauszoomen eine Nachbarkarte mit denselben Quests dazu, wurde eine Quest dort einzeln und zusätzlich im gemeinsamen Umriss gezeichnet (doppelte Tooltip-Einträge).
+   - Neue Karten in Sichtweite werden alle 0,25 s geprüft (vorher 1 s).
 5. **Neu abtasten:** nur, wenn sich die Signatur ändert (Anzahl Teilbereiche, Questpunkt, Zielfortschritt). Auslöser: `QUEST_LOG_UPDATE` (0,3 s gebündelt), `QUEST_POI_UPDATE`, Zonenwechsel. Ergebnisse werden je Karte in `RunewayDB.questAreaCache` gespeichert und sind nach `/reload` sofort da.
 6. **Zeichnen:**
    - Linien-Objekte mit `media/edge.tga` (WoW glättet Linienkanten nicht, die Textur schon).

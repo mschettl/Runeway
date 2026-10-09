@@ -396,6 +396,26 @@ L.execute('''
         end
     end
     check("hover: merged areas list only the hovered quests", db.questMerge and only and both)
+    -- a neighbouring map lists a quest of the combined outline (4243 on 1421): if its outline there is the
+    -- better one (not cut), the combined outline still takes it, and every quest is drawn once
+    local _, _, S = NS.QuestAreaState()
+    local function once()
+        local count, ok = {}, true
+        for _, e in ipairs(NS.QuestAreasRepublish()) do
+            for _, qid in ipairs(e[2]) do count[qid] = (count[qid] or 0) + 1 end
+        end
+        for _, c in pairs(count) do ok = ok and c == 1 end
+        return ok, count[4242], count[4243]
+    end
+    local a1420, a1421 = S[1420].areas[4243], S[1421].areas[4243]
+    local cut1420, cut1421 = a1420.cut, a1421.cut
+    a1420.cut, a1421.cut = true, false
+    local ok = once()
+    local merged = false
+    for _, e in ipairs(NS.QuestAreasRepublish()) do if #e[2] == 2 then merged = true end end
+    check("merge: every quest drawn once with a neighbouring map", ok and merged)
+    a1420.cut, a1421.cut = cut1420, cut1421
+    NS.QuestAreasRepublish()
     NS.QuestAreasAt(nil)
     rawset(view, "IsMouseOver", nil)
     if not wasShown then view:Hide() end

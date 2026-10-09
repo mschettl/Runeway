@@ -333,7 +333,11 @@ end
 -- (subzones: in one of them and inside the set's footprint; notSubzones: in none of them), else the map's own.
 -- Undercity and the Ruins of Lordaeron above it both report uiMap 1458: in the Ruins subzone the throne room,
 -- mausoleum and elevators have their own set, the courtyard shows the surface.
-local setCache, setTime = {}, {}
+-- Leaving an interior set for the surface waits SURFACE_DELAY s: the subzone text lags behind the player (at
+-- the bottom of the Undercity elevators it still reads "Ruins of Lordaeron" for a moment outside their footprint).
+-- A switch to another interior set in that time happens at once.
+local SURFACE_DELAY = 1.5
+local setCache, setTime, surfaceSince = {}, {}, {}
 local function TileSet(inst)
     local now = GetTime()
     if setTime[inst] and now - setTime[inst] < 0.2 then return setCache[inst] end   -- called several times a frame
@@ -350,9 +354,18 @@ local function TileSet(inst)
         end
         if ok then result = set break end
     end
+    local prev = setCache[inst]
+    if result == inst and prev and prev ~= inst then
+        surfaceSince[inst] = surfaceSince[inst] or now
+        if now - surfaceSince[inst] < SURFACE_DELAY then result = prev end
+    else
+        surfaceSince[inst] = nil
+    end
     setCache[inst] = result
     return result
 end
+
+ns.TileSet = function() return TileSet(select(4, UnitPosition("player"))) end   -- for tests
 
 -- Inside an interior set: its footprint. The interior's uiMap can also list quests of the surface around it
 -- (Undercity: Scarlet Crusade quests of Tirisfal); areas and pins outside are left out.

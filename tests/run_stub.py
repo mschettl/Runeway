@@ -184,22 +184,25 @@ L.execute('''
     SUBZONE = "The Ruins of Lordaeron"          -- the client's subzone text may carry an article
     local function tiles(label)
         later()
-        local from = #TEXTURES
         upd(RunewayFrame, 0.05)
-        local ruins, uc, surface = 0, 0, 0
-        for i = from + 1, #TEXTURES do
-            local t = TEXTURES[i] or ""
-            if t:find("0-1458-ruins", 1, true) then ruins = ruins + 1
-            elseif t:find("0-1458", 1, true) then uc = uc + 1
-            elseif t:find("tiles" .. string.char(92) .. "0" .. string.char(92), 1, true) then surface = surface + 1 end
-        end
-        print(("%s: ruins textures %d, undercity textures %d, surface textures %d, quest maps %s"):format(
-            label, ruins, uc, surface, table.concat(NS.NearbyMaps(), ",")))
+        print(("%s: tile set %s, quest maps %s"):format(label, tostring(NS.TileSet()), table.concat(NS.NearbyMaps(), ",")))
     end
+    POS[1], POS[2] = 1640, 240
+    tiles("throne room")
+    -- bottom of the south elevator: out of the shaft the subzone still reads Ruins for a moment
+    POS[1], POS[2] = 1540, 241
+    tiles("elevator shaft")
+    POS[1], POS[2] = 1515, 241
+    tiles("below the shaft, subzone lagging")
+    SUBZONE = "Trade Quarter"
+    tiles("below the shaft, subzone updated")
+    SUBZONE = "The Ruins of Lordaeron"
     POS[1], POS[2] = 1640, 240
     tiles("throne room")
     POS[1], POS[2] = 1772.1, 239.2
     tiles("ruins courtyard")
+    for _ = 1, 6 do later() end
+    tiles("ruins courtyard, 1.8 s later")
     POS[1], POS[2], UI_MAP, SUBZONE = 1917.6, 84.9, 1420, ""
     later()
     SlashCmdList.RUNEWAY("reset")

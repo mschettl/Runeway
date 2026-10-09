@@ -1,6 +1,7 @@
 # Zones of map 1 (Kalimdor) built by scripts/build_raw.py (AreaTable names), extended stage by stage.
 # Zone number = line order; append new zones at the end.
-# Not built: Mount Hyjal (terrain present, not reachable in Forever), GM Island, UNUSEDAlcaz Island, instances.
+# Not built: GM Island, UNUSEDAlcaz Island, instances. Forever is not pure Classic: it adds zones (Mount Hyjal,
+# Shen'dralas, Riverglades, Gillijim's Isle), so check the chunk counts of every top-level zone, not a Classic zone list.
 # Southfury River and Caverns of Time have no terrain chunks of their own (part of the surrounding zones).
 # Stage 1 (north)
 Teldrassil
@@ -11,6 +12,7 @@ Winterspring
 Felwood
 Ashenvale
 Azshara
+Mount Hyjal
 # Stage 2 (centre)
 Durotar
 Orgrimmar

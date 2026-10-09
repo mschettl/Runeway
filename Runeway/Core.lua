@@ -761,7 +761,7 @@ end
 ns.RefreshQuests = RefreshQuests
 
 -- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
--- Look: the minimap's campaign quest icons ("!" open, "?" turn-in); without them the world map pins (dark round
+-- Look: turn-in = the minimap's campaign "?" (own ring); in progress and classic = the world map pins (dark round
 -- badge with gold rim, "?" for turn-in, yellow "..." in progress).
 local function AtlasExists(atlas)
     return not (C_Texture and C_Texture.GetAtlasInfo) or C_Texture.GetAtlasInfo(atlas) ~= nil
@@ -824,7 +824,7 @@ local function UpdateCorpse()
     corpse:Show()
 end
 
-local QUEST_OPEN, QUEST_TURNIN = "quest-campaign-available", "quest-campaign-turnin"
+local QUEST_TURNIN = "quest-campaign-turnin"
 local tipKey                          -- what the tooltip shows now (avoids rebuilding it every update)
 
 local function AddQuestLines(questID)
@@ -890,15 +890,14 @@ local function UpdateQuestPins()
             end
             if p.done ~= q.done or p.classic ~= db.questClassic then
                 p.done, p.classic = q.done, db.questClassic
-                -- the minimap's campaign quest icons have their own ring (Mario's choice); classic (option) or
-                -- without them: icon on the badge
-                local own = q.done and QUEST_TURNIN or QUEST_OPEN
-                p.badge = db.questClassic or not AtlasExists(own)
+                -- turn-in: the minimap's campaign "?" with its own ring (Mario's choice); classic (option), quests
+                -- in progress (round "..." as on the retail world map) or without the atlas: icon on the badge
+                p.badge = db.questClassic or not q.done or not AtlasExists(QUEST_TURNIN)
                 if p.badge then
                     SetAtlasOr(p.icon, q.done and "UI-QuestIcon-TurnIn-Normal" or "Quest-In-Progress-Icon-yellow",
                         "Interface\\GossipFrame\\ActiveQuestIcon")
                 else
-                    p.icon:SetAtlas(own)
+                    p.icon:SetAtlas(QUEST_TURNIN)
                 end
             end
             local x, y = ToScreen(q[1], q[2])

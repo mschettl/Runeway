@@ -294,7 +294,8 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
    - Cache-Version 3 (`cut` neu); alte Einträge werden einmal verworfen.
 8. **Questmarker (`Core.lua`):**
    - Nur Quests ohne Umriss bekommen einen Marker (punktuelle Ziele).
-   - Seit 1.6 (Mario, aus `interface/minimap/objecticonsatlas.blp`): `quest-campaign-available` („!“, läuft) und `quest-campaign-turnin` („?“, Abgabe), mit eigenem Ring, ohne Hintergrund. Option „Classic quest icons“ (`questClassic`, Standard aus, nach „Zusammenfassen“, folgt dem Questmarker-Schalter) oder fehlender Atlas: wie bisher `UI-QuestPoi-QuestNumber` (Kreis mit Goldrand) plus `UI-QuestIcon-TurnIn-Normal` bzw. `Quest-In-Progress-Icon-yellow`. Vorschau weiterer Kandidaten: `/rnw quest icons`.
+   - Seit 1.6 (Mario, aus `interface/minimap/objecticonsatlas.blp`): Abgabe `quest-campaign-turnin` („?“, eigener Ring, ohne Hintergrund). In Bearbeitung (Punktziel ohne Gebiet) wie auf der Retail-Weltkarte immer rund `Quest-In-Progress-Icon-yellow` („…“) auf dem Hintergrund; „!“ bleibt verfügbaren Quests vorbehalten.
+   - **Verfügbare Quests („!“): nicht möglich.** `C_QuestLine.GetAvailableQuestLines` liefert im Forever-Client 0 (Spieltest direkt vor einem Questgeber, nach `RequestQuestLinesForMap`); die Weltkarte zeigt keine, nur die Minimap (Server-Blips, für Addons nicht lesbar). Bliebe nur eine eigene Questgeber-Datenbank (wie Questie), eigenes Projekt. Option „Classic quest icons“ (`questClassic`, Standard aus, nach „Zusammenfassen“, folgt dem Questmarker-Schalter) oder fehlender Atlas: wie bisher `UI-QuestPoi-QuestNumber` (Kreis mit Goldrand) plus `UI-QuestIcon-TurnIn-Normal` bzw. `Quest-In-Progress-Icon-yellow`. Vorschau weiterer Kandidaten: `/rnw quest icons`.
 
 ---
 

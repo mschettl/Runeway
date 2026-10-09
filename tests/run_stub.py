@@ -616,7 +616,7 @@ L.execute('''
             campaign = a:find("^quest%-campaign%-") ~= nil and not rawget(p.back, "_shown")
         end
     end
-    check("quest pins: campaign icons without the badge", campaign)
+    check("quest pins: turn-in with the campaign icon, without the badge", campaign)
     SETTINGS.RUNEWAY_QUESTCLASSIC:SetValue(true)
     view:GetScript("OnUpdate")(view, 0.05)
     local classic = false

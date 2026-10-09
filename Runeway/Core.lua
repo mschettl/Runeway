@@ -346,7 +346,7 @@ end
 -- Without its data the map stays hidden (no quest areas or player arrow on an empty map).
 -- Data packs that exist (map -> pack, continent uiMap for its name): a known pack that is not installed is
 -- reported like one that does not load; a map without a known pack has no data at all (NoMapData)
-local KNOWN_PACKS = { [0] = { "Runeway_EasternKingdoms", 1415 } }
+local KNOWN_PACKS = { [0] = { "Runeway_EasternKingdoms", 1415 }, [1] = { "Runeway_Kalimdor", 1414 } }
 local function MissingPack()
     local inst = select(4, UnitPosition("player"))
     LoadPack(inst)
@@ -1293,14 +1293,14 @@ local function AutoHideReason()
 end
 
 -- A toggle while auto-hidden (or in permanent mode) overrides until the auto-hide state changes
--- No data pack for the player's map (Kalimdor for now, instances without a position): the map stays hidden, with
+-- No data pack for the player's map (instances without a position): the map stays hidden, with
 -- one chat note per map
 local noDataSaid
 local function NoMapData()
     local inst = select(4, UnitPosition("player"))
     return not (inst and (PackOf(inst) or KNOWN_PACKS[inst])), inst
 end
--- no pack at all: the continent names the pack that would hold the data (Kalimdor). Dungeons belong to the pack
+-- no pack at all: the continent names the pack that would hold the data. Dungeons belong to the pack
 -- of their continent; their maps do not lead to it, so the last continent the player was on counts
 local lastContinent, continentOf
 local function UpdateContinent()

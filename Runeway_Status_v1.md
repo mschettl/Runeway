@@ -360,7 +360,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
 1. **Fundament:** Block-Build mit Überlappung, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID im Addon. **Erledigt**, siehe unten.
 2. **Östliche Königreiche:** alle Gebiete in Etappen (Tabelle unten), plus Questbereiche angrenzender Zonen. **Erledigt** (0.5).
 3. **Daten-Addons:** Aufteilung in Pakete, die beim Betreten geladen werden. **Erledigt** (0.6).
-4. **Kalimdor:** dieselbe Pipeline.
+4. **Kalimdor:** dieselbe Pipeline. **In Arbeit** (0.7), wartet auf die ADT-Daten, siehe „Kalimdor“ unten.
 5. **WMO-Grundriss-Pipeline mit Etagen:** zuerst Städte (Ironforge, Stormwind), Undercity unterirdisch, dann Höhlen und Minen.
 6. **Dungeons und Raids.**
 7. **Version 2:** Route zum Questziel (A* auf dem Begehbarkeitsraster).
@@ -402,7 +402,8 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
 - **Block-Build:** siehe Abschnitt 4. Etappe 1 bitgleich zum alten Gesamtbau. Probelauf mit allen 27 Gebieten in einem Lauf: 9,6 min, 4,7 GB Spitzen-RAM (alter Gesamtbau hochgerechnet ~22 GB), 769 Kacheln, 106,5 MB.
 - **Schraffur in Weltkoordinaten:** unverändert gültig. Das Muster hat eine ganze Zahl Linien pro Kachel und ist damit an Kachelgrenzen (= Weltkoordinaten) ausgerichtet; Blöcke beginnen immer an Kachelgrenzen.
 - **Kachelliste pro Karten-ID:** `tiles/<id>/Tiles.lua` setzt `RunewayTiles[id]` und `RunewayZones[id]`; Build mit `--map <id>` und `zones_<id>.txt`. Die Laufzeit indiziert die Liste einmal nach `"c_r"` und besucht pro Frame nur die Kacheln um den Spieler. Zonen-Chunks: ein Zeichen je Chunk (`1-9A-Za-z`), bis 61 Zonen je Karte.
-- **Kalimdor später:** Ordner `kalimdor` (Karte 1) mit ADTs auf `data` ablegen, `zones_1.txt` anlegen, `build_raw.py --map 1`; Paket `Runeway_Kalimdor` samt `.toc` entsteht dabei.
+- **Kalimdor (0.7, in Arbeit):** vorbereitet: `scripts/zones_1.txt` (25 Gebiete in 4 Etappen, alle Namen in der AreaTable mit `ContinentID` 1 geprüft), `KNOWN_PACKS[1] = Runeway_Kalimdor` (Kontinent-uiMap 1414; ohne installiertes Paket kommt jetzt `PACK_FAILED` mit Status `ADDON_MISSING`), `simulate.py --map <id>`. **Blockiert:** auf `data` fehlen die Kalimdor-ADTs (nur `maps/azeroth`). Export wie für die Östlichen Königreiche: wow.export, Karte Kalimdor, RAW (Root, `_tex0`, `_obj0/1`, `_lod`, WDT/WDL) ohne Modelle nach `Wow export files/maps/kalimdor/`, optional Minimap-PNGs (`maps/kalimdor/minimap/`, nur für `preview_over_minimap.png`); dann auf `data` committen und `python scripts/build_raw.py --map 1`.
+  - Zonenwahl: Top-Level-Gebiete, die in anderen liegen, sind eigene Zonen, sonst blieben dort Löcher: `Southfury River` (Fluss zwischen Durotar und Brachland), `Caverns of Time` (Tanaris), `Gates of Ahn'Qiraj` (Silithus); Städte Orgrimmar, Thunder Bluff, Darnassus wie Stormwind City. `Shen'dralas` ist Forever-spezifisch (Unterzonen aus Desolace/Feralas). Nicht gebaut: Mount Hyjal (in Forever nicht erreichbar), GM Island, UNUSEDAlcaz Island. Nach dem ersten Lauf Chunk-Zahlen je Gebiet prüfen (wie Tabelle oben) und die Liste ggf. anpassen.
 
 **Etappen** (Gruppen von Nord nach Süd; immer alle Zonen aus `zones_0.txt` zusammen bauen, neue Zonen unten anhängen, weil die Zeilennummer die Zonennummer ist):
 

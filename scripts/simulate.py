@@ -1,6 +1,6 @@
 # Reproduces the Lua rendering: layer tiles in world coordinates, tinted like SetVertexColor,
 # player in the centre, rotation. Reads the generated TGAs, so it also checks orientation and paths.
-#   python scripts/simulate.py [north west [zoom [out.png]]]      default: north-east of Undercity, zoom 1.5
+#   python scripts/simulate.py [--map ID] [north west [zoom [out.png]]]   default: map 0, north-east of Undercity, zoom 1.5
 import os
 import re
 import sys
@@ -8,6 +8,7 @@ import math
 import numpy as np
 import cv2
 from PIL import Image
+from build_raw import PACKS
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 T = 1600 / 3
@@ -15,14 +16,19 @@ LAYERS = ('fill', 'hatch', 'shade', 'terrain', 'water', 'roads')
 COLORS = dict(fill=(0, 0, 0, 0.10), hatch=(0.80, 0.84, 0.88, 0.20), shade=(0, 0, 0, 0.45),
               terrain=(0.82, 0.86, 0.89, 0.85), water=(0.82, 0.86, 0.89, 0.80), roads=(0.92, 0.72, 0.28, 0.65))     # defaults in Core.lua
 W, H = 600, 600
-pN, pW = (float(sys.argv[1]), float(sys.argv[2])) if len(sys.argv) > 2 else (1917.6, 84.9)
-k = float(sys.argv[3]) if len(sys.argv) > 3 else 1.5
-OUT = sys.argv[4] if len(sys.argv) > 4 else os.path.join(ROOT, 'build', 'sim.png')
+args = sys.argv[1:]
+MAP = 0
+if args[:1] == ['--map']:
+    MAP, args = int(args[1]), args[2:]
+TILES = os.path.join(ROOT, PACKS[MAP][0], 'tiles', str(MAP))
+pN, pW = (float(args[0]), float(args[1])) if len(args) > 1 else (1917.6, 84.9)
+k = float(args[2]) if len(args) > 2 else 1.5
+OUT = args[3] if len(args) > 3 else os.path.join(ROOT, 'build', 'sim.png')
 
 FILE_LOD = dict(fill={128: 128, 256: 128, 512: 128}, shade={128: 128, 256: 128, 512: 128})   # as in Core.lua
 HATCH_MASK_LOD = 128
 # tile keys: "c_r", or "c_r_z<zone>" for the zone parts of a border tile (RunewayZones is not needed here)
-lua = open(os.path.join(ROOT, 'Runeway_EasternKingdoms', 'tiles', '0', 'Tiles.lua')).read().split('RunewayZones')[0]
+lua = open(os.path.join(TILES, 'Tiles.lua')).read().split('RunewayZones')[0]
 tiles = dict(re.findall(r'\["(\d+_\d+(?:_z\d+)?)"\] = "(\w+)"', lua))
 
 
@@ -31,7 +37,7 @@ def render(facing):
     can = np.full((H, W, 3), 30, np.float32)
     size = T * k
     lod = 128 if size < 160 else 256 if size < 360 else 512
-    path = lambda lo, key, layer: os.path.join(ROOT, 'Runeway_EasternKingdoms', 'tiles', '0', '' if lo == 512 else str(lo), f'{key}_{layer}.tga')
+    path = lambda lo, key, layer: os.path.join(TILES, '' if lo == 512 else str(lo), f'{key}_{layer}.tga')
     rgba = lambda p: np.array(Image.open(p).convert('RGBA')).astype(np.float32) / 255
     for layer in LAYERS:
         for key, have in tiles.items():

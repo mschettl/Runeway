@@ -159,8 +159,12 @@ L.execute('''
     -- a map without any data pack (Kalimdor): hidden with one chat note (after a second), a toggle repeats it
     local function settle() poll() for _ = 1, 110 do debugprofilestop() end poll() end
     UI_MAP0 = UI_MAP
-    POS[4], ZONE, CONTINENT, UI_MAP = 1000, "The Barrens", "Kalimdor", 1413
+    POS[4], ZONE, CONTINENT, UI_MAP = 1000, "", "Kalimdor", 1413   -- logging in: no zone text for a moment,
     settle()
+    ZONE = "Kalimdor"                                                -- then the continent's name
+    poll()
+    ZONE = "The Barrens"
+    poll()
     print("map without any pack shown:", tostring(RunewayFrame:IsShown()))
     SlashCmdList.RUNEWAY("toggle")
     poll()

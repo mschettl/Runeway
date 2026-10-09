@@ -230,6 +230,11 @@ local function PackFailed(pack, name)
     -- in a dungeon its name; instance name and type from the same call (IsInInstance lags after leaving)
     local iname, itype, _, _, _, _, _, iid = GetInstanceInfo()
     local area = itype and itype ~= "none" and iname or GetZoneText()
+    if area == "" or area == name then                  -- zone text not there yet: the name of the player's map
+        local m = C_Map.GetBestMapForUnit("player")
+        local info = m and C_Map.GetMapInfo(m)
+        area = info and info.name or ""
+    end
     noteState = ("%s/%s/%s inInstance=%s zone=%s pos=%s"):format(tostring(iname), tostring(itype), tostring(iid),
         tostring(IsInInstance()), tostring(GetZoneText()), tostring(select(4, UnitPosition("player"))))
     Print(L.PACK_FAILED:format(pack and PACK_LINK:format(pack, packTitle[pack]) or Blue(name), Blue(area ~= "" and area or name)))
@@ -1260,7 +1265,10 @@ local function SayNoData(inst, now)
         sayFor, sayAt = key, GetTime() + SAY_MAX
         return
     end
-    local settled = GetTime() >= worldAt + 1 and select(8, GetInstanceInfo()) == inst
+    -- after logging in the zone text is empty or the continent's name for a moment
+    local zone = GetZoneText()
+    local settled = GetTime() >= worldAt + 1 and select(8, GetInstanceInfo()) == inst and zone ~= ""
+        and zone ~= ContinentName()
     if now or settled or GetTime() >= sayAt then
         PackFailed(nil, ContinentName())
         noDataSaid, sayFor = key, nil

@@ -740,7 +740,8 @@ end
 ns.RefreshQuests = RefreshQuests
 
 -- Quest pins only for point targets (talk to someone, turn in): quests with an area outline get no pin.
--- Same look as the world map pins: dark round badge with gold rim, "?" for turn-in, yellow "..." in progress.
+-- Look: the minimap's campaign quest icons ("!" open, "?" turn-in); without them the world map pins (dark round
+-- badge with gold rim, "?" for turn-in, yellow "..." in progress).
 local function AtlasExists(atlas)
     return not (C_Texture and C_Texture.GetAtlasInfo) or C_Texture.GetAtlasInfo(atlas) ~= nil
 end
@@ -802,6 +803,7 @@ local function UpdateCorpse()
     corpse:Show()
 end
 
+local QUEST_OPEN, QUEST_TURNIN = "quest-campaign-available", "quest-campaign-turnin"
 local tipKey                          -- what the tooltip shows now (avoids rebuilding it every update)
 
 local function AddQuestLines(questID)
@@ -867,8 +869,15 @@ local function UpdateQuestPins()
             end
             if p.done ~= q.done then
                 p.done = q.done
-                SetAtlasOr(p.icon, q.done and "UI-QuestIcon-TurnIn-Normal" or "Quest-In-Progress-Icon-yellow",
-                    "Interface\\GossipFrame\\ActiveQuestIcon")
+                -- the minimap's campaign quest icons have their own ring (Mario's choice); else icon on the badge
+                local own = q.done and QUEST_TURNIN or QUEST_OPEN
+                p.badge = not AtlasExists(own)
+                if p.badge then
+                    SetAtlasOr(p.icon, q.done and "UI-QuestIcon-TurnIn-Normal" or "Quest-In-Progress-Icon-yellow",
+                        "Interface\\GossipFrame\\ActiveQuestIcon")
+                else
+                    p.icon:SetAtlas(own)
+                end
             end
             local x, y = ToScreen(q[1], q[2])
             p.x, p.y, p.questID, p.shown = x, y, q.questID, true
@@ -877,6 +886,7 @@ local function UpdateQuestPins()
                 t:SetPoint("CENTER", view, "CENTER", x, y)
                 t:Show()
             end
+            p.back:SetShown(p.badge)
         end
     end
     for i = n + 1, #qpins do

@@ -294,7 +294,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
    - Cache-Version 3 (`cut` neu); alte Einträge werden einmal verworfen.
 8. **Questmarker (`Core.lua`):**
    - Nur Quests ohne Umriss bekommen einen Marker (punktuelle Ziele).
-   - Atlas `UI-QuestPoi-QuestNumber` (Kreis mit Goldrand) plus `UI-QuestIcon-TurnIn-Normal` (Abgabe) bzw. `Quest-In-Progress-Icon-yellow` (läuft), 26 px.
+   - Seit 1.6 (Mario, aus `interface/minimap/objecticonsatlas.blp`): `quest-campaign-available` („!“, läuft) und `quest-campaign-turnin` („?“, Abgabe), mit eigenem Ring, ohne Hintergrund. Fehlt der Atlas: wie bisher `UI-QuestPoi-QuestNumber` (Kreis mit Goldrand) plus `UI-QuestIcon-TurnIn-Normal` bzw. `Quest-In-Progress-Icon-yellow`. Vorschau weiterer Kandidaten: `/rnw quest icons`.
 
 ---
 

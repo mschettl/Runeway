@@ -586,6 +586,15 @@ L.execute('''
     NS.QuestAreasAt(nil)
     check("option: quest marks off hides pins and areas, greys out edge and merge",
         off and edge.enabled() and pinsShown == 0 and hits == 0)
+    view:GetScript("OnUpdate")(view, 0.05)
+    local campaign = false
+    for _, p in ipairs(NS.QuestPins) do
+        if p.shown then
+            local a = rawget(p.icon, "_atlas") or ""
+            campaign = a:find("^quest%-campaign%-") ~= nil and not rawget(p.back, "_shown")
+        end
+    end
+    check("quest pins: campaign icons without the badge", campaign)
     SETTINGS.RUNEWAY_SHOWARROW:SetValue(false)
     view:GetScript("OnUpdate")(view, 0.05)
     local arrowTex2 = TEXTURE_OBJECTS[("Interface/AddOns/Runeway/media/arrow.tga"):gsub("/", string.char(92))]

@@ -464,6 +464,8 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway Runeway_EasternKingdoms
 
 **Im Spiel geprüft (0.6):** beide Ordner installiert; Paket lädt beim Betreten; deaktiviertes Paket, Kalimdor und Dungeons → Karte ausgeblendet, Chat-Meldung mit Paket und Gebiet (Login, Reload, Dungeon rein/raus mehrfach geprüft); keine Lua-Fehler.
 
+**Im Spiel geprüft (0.6.1):** gebündelte Questbereiche bleiben im Kampf zusammen, nach zweimal Sterben (Geist, Wiederbeleben) bleiben alle Bereiche sichtbar; keine Lua-Fehler (`scriptErrors` an). Hinweis: Bis dahin lief bei Mario ein Zwischenstand von 0.6 (09:12, noch `fade1-5.tga` statt `media/mask`); der gemergte 0.6-Stand wurde erst mit diesem Test im Spiel geprüft. Ein über den alten Ordner entpacktes ZIP zeigte keine Questbereiche, sauber installiert (Ordner löschen, WoW neu starten) lief es.
+
 **Regressionsliste (vor jedem Release im Spiel prüfen, Stand 0.4 alles bestanden; 0.5: Punkte 1–2 für Etappen 2–4 über den Ansichtsmodus geprüft):**
 1. **Karte:** Look wie im Diablo-Screenshot; Zoom nahtlos ohne Flackern oder Kachelkanten; Schraffur deckungsgleich mit den Geländelinien; Ruinen von Lordaeron erkennbar.
 2. **Zonen:** Übergänge zwischen den gebauten Zonen ohne Kante oder Lücke; angrenzende Zonen gedimmt, beim Grenzübertritt weicher Tausch; Außenrand blendet weich aus.

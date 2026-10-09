@@ -76,7 +76,7 @@ ZONE_FEATHER = 0.7         # chunks; soft transition between the zone parts of a
 GAP_MAX = {1: 300}
 # larger patches that are playable anyway, given by one tile (col, row) inside them; they join the nearest zone too
 # (Kalimdor: A = Silithus behind the Scarab Wall 29_50, B = north of Winterspring 40_17, C = between Felwood,
-# Mount Hyjal and Ashenvale 37_25, D = between Feralas, Thousand Needles and Un'Goro 32_42; A, B, D stay out, C open)
+# Mount Hyjal and Ashenvale 37_25, D = between Feralas, Thousand Needles and Un'Goro 32_42; all four stay out: not passable)
 GAP_JOIN = {1: []}
 EDGE_FADE = 160            # px (~165 yd); everything fades out towards the edge of the built zones
 

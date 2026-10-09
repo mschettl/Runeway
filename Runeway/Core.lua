@@ -226,6 +226,7 @@ end
 local PACK_LINK = "|cff66ccff|Haddon:Runeway:pack:%s|h[%s]|h|r"
 local function Blue(text) return ("|cff66ccff[%s]|r"):format(text or "?") end
 local noteState                                       -- values when the last note was written (/rnw pos)
+local lastDungeon                                     -- name of the last dungeon a note was written for
 local WORLD_MAPS = { [0] = true, [1] = true, [530] = true, [571] = true }   -- continents: never a dungeon
 ns.WORLD_MAPS = WORLD_MAPS                            -- for tests
 local function PackFailed(pack, name, late)       -- late: waited in vain, the player's map may name the area
@@ -235,6 +236,7 @@ local function PackFailed(pack, name, late)       -- late: waited in vain, the p
     local inst = select(4, UnitPosition("player"))
     local dungeon = itype and itype ~= "none" and iid == inst and not WORLD_MAPS[inst]
     local area = dungeon and iname or GetZoneText()
+    if dungeon then lastDungeon = iname end
     if late and (area == "" or area == name) then       -- zone text not there yet: the name of the player's map
         local m = C_Map.GetBestMapForUnit("player")
         local info = m and C_Map.GetMapInfo(m)
@@ -1283,6 +1285,11 @@ local function SayNoData(inst, now)
         local zone = GetZoneText()
         settled = zone ~= "" and zone ~= ContinentName()
             and (worldKind == "login" or select(8, GetInstanceInfo()) == inst)
+        -- back on a continent the zone text may still name the dungeon just left
+        if settled and WORLD_MAPS[inst] then
+            local iname, itype = GetInstanceInfo()
+            settled = zone ~= lastDungeon and not (itype ~= "none" and zone == iname)
+        end
     end
     if now or settled or GetTime() >= sayAt then
         PackFailed(nil, ContinentName(), not (now or settled))

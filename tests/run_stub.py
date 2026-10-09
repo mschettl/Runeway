@@ -207,7 +207,9 @@ L.execute('''
     poll()
     INFO_LAG, ZONE = true, ""                                        -- zone text empty, map still the dungeon's
     wait(2)
-    ZONE = "Kalimdor"                                                 -- then the continent's name
+    ZONE = "Kalimdor"                                                 -- then the continent's name,
+    wait(2)
+    ZONE = "Ragefire Chasm"                                           -- then still the dungeon's name
     wait(2)
     INFO_LAG = nil
     STATE.instance, ZONE, CONTINENT, UI_MAP = false, "Orgrimmar", "Kalimdor", 1454

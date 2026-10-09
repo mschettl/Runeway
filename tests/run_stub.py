@@ -705,7 +705,7 @@ L.execute('''
         local n = 0
         for _, l in ipairs(ALL_LINES) do
             local c = rawget(l, "_color")
-            if rawget(l, "_shown") and c and c[4] == 0.35 then n = n + 1 end
+            if rawget(l, "_shown") and c and c[4] == 0.55 then n = n + 1 end
         end
         return n
     end
@@ -719,7 +719,7 @@ L.execute('''
     local out = frameLines()
     rawset(view, "IsMouseOver", nil)
     db.locked = locked0
-    check("unlocked: oval frame while the mouse is over the map", over == 128 and out == 0)
+    check("unlocked: rounded frame while the mouse is over the map", over == 36 and out == 0)
     -- option: mouse wheel zoom off -> the map does not take the wheel
     SETTINGS.RUNEWAY_WHEELZOOM:SetValue(false)
     local wheelOff = rawget(view, "_wheel") == false

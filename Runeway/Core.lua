@@ -129,33 +129,49 @@ top:SetFrameLevel(canvas:GetFrameLevel() + 5)
 local status = top:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 status:SetPoint("BOTTOM", 0, 6)
 
--- Frame while the mouse is over the unlocked map: a soft oval line along the map's faded rim (the map is an
--- oval; a rectangle looked foreign). Segments with the soft edge texture of the quest outlines.
-local RING_SEGMENTS, RING_WIDTH, RING_ALPHA = 128, 3, 0.35
-local ring = {}
+-- Frame while the mouse is over the unlocked map: a thin soft line with rounded corners and a faint glow, in the
+-- light grey of the map lines. Line segments with the soft edge texture of the quest outlines.
+local FRAME_RADIUS, FRAME_ARC = 20, 8                -- corner radius (px), segments per corner
+local FRAME_PASSES = { { 8, 0.10 }, { 2, 0.55 } }   -- { width, alpha }: glow, then the line
+local FRAME_COLOR = { 0.85, 0.88, 0.92 }
+local framePts, frameLines = {}, {}
 local function UpdateBorder()
     local on = not db.locked and view:IsMouseOver()
-    local W, H = view:GetSize()
-    local rx, ry = W / 2 - RING_WIDTH, H / 2 - RING_WIDTH
-    for i = 1, RING_SEGMENTS do
-        local l = ring[i]
-        if on then
-            if not l then
-                l = top:CreateLine(nil, "BORDER")
-                l:SetTexture(MEDIA .. "edge.tga")
-                l:SetThickness(RING_WIDTH)
-                l:SetVertexColor(1, 1, 1, RING_ALPHA)   -- not SetAlpha: it overwrites the vertex alpha
-                NoSnap(l)
-                ring[i] = l
+    local n = 0
+    if on then
+        -- rounded rectangle, 1 px inside the window, as a closed list of points
+        local W, H = view:GetSize()
+        local hw, hh = W / 2 - 1, H / 2 - 1
+        local r = math.min(FRAME_RADIUS, hw, hh)
+        local k = 0
+        for c, q in ipairs({ { 1, 1 }, { -1, 1 }, { -1, -1 }, { 1, -1 } }) do   -- corners: top right, counter-clockwise
+            local cx, cy = q[1] * (hw - r), q[2] * (hh - r)
+            for i = 0, FRAME_ARC do
+                local a = ((c - 1) + i / FRAME_ARC) * math.pi / 2
+                k = k + 1
+                framePts[2 * k - 1], framePts[2 * k] = cx + r * math.cos(a), cy + r * math.sin(a)
             end
-            local a0, a1 = (i - 1) / RING_SEGMENTS * 2 * math.pi, i / RING_SEGMENTS * 2 * math.pi
-            l:SetStartPoint("CENTER", view, rx * math.cos(a0), ry * math.sin(a0))
-            l:SetEndPoint("CENTER", view, rx * math.cos(a1), ry * math.sin(a1))
-            l:Show()
-        elseif l then
-            l:Hide()
+        end
+        for _, pass in ipairs(FRAME_PASSES) do
+            for i = 1, k do
+                local j = i % k + 1
+                n = n + 1
+                local l = frameLines[n]
+                if not l then
+                    l = top:CreateLine(nil, "BORDER")
+                    l:SetTexture(MEDIA .. "edge.tga")
+                    NoSnap(l)
+                    frameLines[n] = l
+                end
+                l:SetThickness(pass[1])
+                l:SetVertexColor(FRAME_COLOR[1], FRAME_COLOR[2], FRAME_COLOR[3], pass[2])   -- not SetAlpha
+                l:SetStartPoint("CENTER", view, framePts[2 * i - 1], framePts[2 * i])
+                l:SetEndPoint("CENTER", view, framePts[2 * j - 1], framePts[2 * j])
+                l:Show()
+            end
         end
     end
+    for i = n + 1, #frameLines do frameLines[i]:Hide() end
 end
 
 -- Resize grip, bottom right (unlocked only); changes the size only, the zoom stays
@@ -1141,7 +1157,7 @@ local function ApplySize()
     db.w = math.floor(math.max(SIZE_MIN, math.min(SIZE_MAX, db.w)) + 0.5)
     db.h = math.floor(math.max(SIZE_MIN, math.min(SIZE_MAX, db.h)) + 0.5)
     view:SetSize(db.w, db.h)
-    UpdateBorder()                       -- the ring follows while sizing
+    UpdateBorder()                       -- the frame follows while sizing
 end
 
 -- Mouse wheel zooms locked and unlocked (option); clicks only reach the map when unlocked (locked: they pass through)

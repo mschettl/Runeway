@@ -153,7 +153,7 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
   - Ziehen verschiebt die Karte.
   - Der Griff unten rechts ändert Breite und Höhe unabhängig; die obere linke Ecke bleibt stehen.
   - Shift+Mausrad ändert die Größe.
-  - Beim Überfahren erscheint ein Rahmen (seit 1.6 immer, ohne Option): weiche ovale Linie entlang des ausgeblendeten Kartenrands (128 Segmente mit `edge.tga`, 3 px, Weiß 35 %), statt der früheren harten 1-px-Rechtecklinien.
+  - Beim Überfahren erscheint ein Rahmen (seit 1.6 immer, ohne Option): Rechteck mit runden Ecken (Radius 20 px), dünne weiche Linie (2 px, 55 %) über einem schwachen Glow (8 px, 10 %), helles Grau der Kartenlinien, Segmente mit `edge.tga`; statt der früheren harten 1-px-Linien.
 
 **Sichtbarkeit (`UpdateVisibility`):**
 - **Grundregel:** Angezeigt wird, wenn `mode == "permanent"` oder `shown` gesetzt ist und keine Bedingung zum automatischen Ausblenden greift.

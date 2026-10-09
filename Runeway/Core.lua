@@ -27,13 +27,13 @@ local STYLE = 6            -- bump when the default colours change: resets the s
 local LINE = { 0xD1 / 255, 0xDB / 255, 0xE3 / 255 }
 local defaults = {
     x = nil, y = nil, w = 800, h = 600, -- map width and height
-    zoom = 0.5, alpha = 0.7, rotate = true, locked = false, shown = false,
+    zoom = 0.66, alpha = 0.7, rotate = true, locked = false, shown = false,
     mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
     autoHide = { combat = false, instance = false, mounted = false, city = false },
     hover = true,            -- unlocked: subtle frame while the mouse is over the map
     wheelZoom = true,        -- mouse wheel over the map zooms (off: the wheel goes to the game camera)
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
-    arrowSize = 25, pinSize = 25, corpseSize = 25, taxiSize = 20, showTaxi = true, showArrow = true, showCorpse = true, showQuests = true, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
+    arrowSize = 25, pinSize = 20, corpseSize = 25, taxiSize = 20, showTaxi = true, showArrow = true, showCorpse = true, showQuests = true, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
     questMerge = true,       -- overlapping quest areas as one combined outline
     zoneDim = 0.3,           -- opacity factor of the adjacent zones (the player is not in)
     colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,
@@ -680,10 +680,23 @@ end
 local function LearnTaxiNodes()
     if not (NumTaxiNodes and TaxiNodeName and TaxiNodeGetType) then return end
     local known = KnownTaxiNodes()
+    -- only nodes the flight master offers (or where it stands) are known; "DISTANT" nodes are hops of routes the
+    -- character has not discovered (Blizzard's taxi map hides them), so they and "NONE" also clear older entries
     for i = 1, NumTaxiNodes() do
-        if TaxiNodeGetType(i) ~= "NONE" then known[TaxiNodeName(i)] = true end
+        local kind = TaxiNodeGetType(i)
+        known[TaxiNodeName(i)] = (kind == "CURRENT" or kind == "REACHABLE") or nil
     end
 end
+
+-- Flight point names "Node, zone": the German client data writes some zones in lower case ("östliche
+-- Pestländer"); zone names are proper names, so the first letter after the comma is capitalised
+local UPPER = { ["ä"] = "Ä", ["ö"] = "Ö", ["ü"] = "Ü" }
+local function TaxiName(name)
+    if GetLocale() ~= "deDE" then return name end
+    return (name:gsub(", (%l)", function(c) return ", " .. c:upper() end)
+        :gsub(", (\195[\164\182\188])", function(c) return ", " .. UPPER[c] end))
+end
+ns.TaxiName = TaxiName   -- for tests
 
 local function RefreshQuests()
     wipe(quests)
@@ -979,7 +992,7 @@ local function UpdateHover()
     elseif type(target) == "table" and target.taxi then
         local t = target.taxi
         ShowTip("t" .. t.name, function()
-            GameTooltip:AddLine(t.name, 1, 1, 1)
+            GameTooltip:AddLine(TaxiName(t.name), 1, 1, 1)
             if t.undiscovered then             -- Blizzard's world map texts
                 local FP = Enum and Enum.FlightPathFaction or {}
                 local f = (t.faction == FP.Horde and FACTION_HORDE) or (t.faction == FP.Alliance and FACTION_ALLIANCE)
@@ -1526,7 +1539,7 @@ SlashCmdList.RUNEWAY = function(msg)
             known, tostring(db.showTaxi)))
         for i = 1, math.min(5, #list) do
             local t = list[i][1]
-            Print(("  %s %.0f yd undiscovered=%s atlas=%s(%s) icon=%s"):format(t.name, list[i][2], tostring(t.undiscovered),
+            Print(("  %s %.0f yd undiscovered=%s atlas=%s(%s) icon=%s"):format(TaxiName(t.name), list[i][2], tostring(t.undiscovered),
                 tostring(t.atlas), AtlasExists(t.atlas or "") and "ok" or "missing", TaxiAtlas(t)))
         end
     elseif cmd == "view" then

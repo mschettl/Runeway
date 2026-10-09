@@ -211,9 +211,11 @@ UNDISCOVERED_FACTION_FLIGHTPOINT, FACTION_HORDE = "Undiscovered %s flight point"
 C_Texture = { GetAtlasInfo = function(a) if a == "" or a == "Taxi_Frame_Green" then return nil end return {} end }
 -- taxi map of a flight master: the nodes the character knows (classic TaxiFrame API)
 TAXI_KNOWN = { "Brill", "Undercity" }
-function NumTaxiNodes() return #TAXI_KNOWN + 1 end
-function TaxiNodeName(i) return TAXI_KNOWN[i] or "Bulwark" end
-function TaxiNodeGetType(i) return TAXI_KNOWN[i] and "REACHABLE" or "NONE" end
+function NumTaxiNodes() return #TAXI_KNOWN + 2 end
+function TaxiNodeName(i) return TAXI_KNOWN[i] or (i == #TAXI_KNOWN + 1 and "Bulwark" or "Tarren Mill") end
+function TaxiNodeGetType(i)   -- Tarren Mill: hop of a route, not discovered ("DISTANT")
+    return TAXI_KNOWN[i] and "REACHABLE" or (i == #TAXI_KNOWN + 1 and "NONE" or "DISTANT")
+end
 function UnitName() return "Tester" end
 function GetRealmName() return "Realm" end
 C_TaxiMap = {

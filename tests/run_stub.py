@@ -518,7 +518,15 @@ L.execute('''
     local allUnknown = true
     for _, t in ipairs(NS.Taxis) do allUnknown = allUnknown and t.undiscovered end
     check("flight masters: unknown before a flight master was visited", allUnknown)
+    RunewayDB.taxiKnown = { ["Tester-Realm"] = { ["Tarren Mill"] = true } }   -- learned by the old rule
     fire("TAXIMAP_OPENED")
+    local kn = RunewayDB.taxiKnown["Tester-Realm"]
+    local tn1 = "Turm der Kronenwache, östliche Pestländer"
+    check("flight masters: German zone names capitalised", NS.TaxiName(tn1) == (GetLocale() == "deDE"
+        and "Turm der Kronenwache, Östliche Pestländer" or tn1) and NS.TaxiName("Brill, tirisfal") == (GetLocale() == "deDE"
+        and "Brill, Tirisfal" or "Brill, tirisfal"))
+    check("flight masters: only offered nodes count as discovered", kn.Brill and kn.Undercity and not kn["Tarren Mill"]
+        and not kn.Bulwark)
     view:GetScript("OnUpdate")(view, 0.05)
     local atl = {}
     for _, t in ipairs(ALL_TEX) do
@@ -647,7 +655,7 @@ L.execute('''
     check("opacity and auto-hide write the db", db.colors.roads.a == 0.5 and db.autoHide.combat == true)
     for _, st in pairs(SETTINGS) do st:SetValue(st.default) end
     check("defaults restored", db.edge == 3 and db.w == 800 and db.h == 600 and db.mode == "key" and db.colors.roads.a == 0.65
-        and math.abs(db.colors.fill.r) < 0.01 and db.zoom == 0.5 and db.questMerge == true and db.corpseSize == 25)
+        and math.abs(db.colors.fill.r) < 0.01 and db.zoom == 0.66 and db.questMerge == true and db.corpseSize == 25)
     view:GetScript("OnUpdate")(view, 0.05)
 ''')
 

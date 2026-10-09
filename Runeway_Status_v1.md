@@ -118,7 +118,6 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `layers.*` | alle true |
 | `mode` | `"key"` (eigene Taste), `"mapkey"` (Kartentaste M öffnet das Overlay), `"permanent"` |
 | `autoHide.combat/instance/mounted/city` | alle false (`city` = ausgeruht, also Städte und Gasthäuser) |
-| `hover` | true (Rahmen bei Mausüberfahrt, nur entsperrt) |
 | `wheelZoom` | true (Mausrad über der Karte zoomt) |
 | `edge` | 3 (Randstärke 1–5, Breite 0,12 / 0,25 / 0,38 / 0,55 / 0,75 des Radius) |
 | `arrowSize`, `pinSize`, `corpseSize`, `taxiSize`, `questEdge` | 25, 20, 25, 20, 0.8 (Faktor für die Breite der Questränder) |
@@ -154,7 +153,6 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
   - Ziehen verschiebt die Karte.
   - Der Griff unten rechts ändert Breite und Höhe unabhängig; die obere linke Ecke bleibt stehen.
   - Shift+Mausrad ändert die Größe.
-  - Beim Überfahren erscheint ein Rahmen, abschaltbar.
 
 **Sichtbarkeit (`UpdateVisibility`):**
 - **Grundregel:** Angezeigt wird, wenn `mode == "permanent"` oder `shown` gesetzt ist und keine Bedingung zum automatischen Ausblenden greift.

@@ -30,7 +30,6 @@ local defaults = {
     zoom = 0.66, zoomInside = 0.8, alpha = 0.7, rotate = true, locked = false, shown = false,
     mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
     autoHide = { combat = false, instance = false, mounted = false, city = false },
-    hover = true,            -- unlocked: subtle frame while the mouse is over the map
     wheelZoom = true,        -- mouse wheel over the map zooms (off: the wheel goes to the game camera)
     edge = 3,                -- soft edge strength, index into FADE_WIDTH
     arrowSize = 25, pinSize = 20, corpseSize = 25, taxiSize = 20, showTaxi = true, showArrow = true, showCorpse = true, showQuests = true, questClassic = false, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
@@ -129,21 +128,6 @@ top:SetFrameLevel(canvas:GetFrameLevel() + 5)
 
 local status = top:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 status:SetPoint("BOTTOM", 0, 6)
-
--- Hover frame (unlocked only): 1 px lines along the edges
-local border = {}
-for i, pts in ipairs({ { "TOPLEFT", "TOPRIGHT" }, { "BOTTOMLEFT", "BOTTOMRIGHT" }, { "TOPLEFT", "BOTTOMLEFT" }, { "TOPRIGHT", "BOTTOMRIGHT" } }) do
-    local t = top:CreateTexture(nil, "BORDER")
-    t:SetColorTexture(1, 1, 1, 0.3)
-    t:SetPoint(pts[1])
-    t:SetPoint(pts[2])
-    if i <= 2 then t:SetHeight(1) else t:SetWidth(1) end
-    t:Hide()
-    border[i] = t
-end
-local function ShowBorder(on)
-    for _, t in ipairs(border) do t:SetShown(on) end
-end
 
 -- Resize grip, bottom right (unlocked only); changes the size only, the zoom stays
 local grip = CreateFrame("Button", nil, top)
@@ -1104,7 +1088,6 @@ local function ApplyLock()
     view:EnableMouse(unlocked or viewAt ~= nil)      -- view mode: dragging pans, also when locked
     view:EnableMouseWheel(db.wheelZoom)
     grip:SetShown(unlocked)
-    ShowBorder(unlocked and db.hover and view:IsMouseOver())
 end
 
 local function SetZoom(z, key)                 -- key: "zoom" / "zoomInside", default the current level
@@ -1142,13 +1125,6 @@ view:SetScript("OnMouseWheel", function(_, delta)
 end)
 view:SetScript("OnShow", RefreshQuests)
 
-local function UpdateBorder()
-    ShowBorder(not db.locked and db.hover and view:IsMouseOver())
-end
-view:SetScript("OnEnter", UpdateBorder)
-view:SetScript("OnLeave", UpdateBorder)
-grip:SetScript("OnEnter", UpdateBorder)
-grip:SetScript("OnLeave", UpdateBorder)
 
 -- Sizing from the top left corner, width and height follow the cursor
 local sizeLeft, sizeTop
@@ -1168,7 +1144,6 @@ grip:SetScript("OnMouseUp", function()
     grip:SetScript("OnUpdate", nil)
     SavePos()
     ApplyPos()
-    UpdateBorder()
 end)
 
 ---------------------------------------------------------------------------
@@ -1329,6 +1304,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         if (db.style or 0) < STYLE then db.colors = nil end   -- default look changed: colours back to defaults
         db.style = STYLE
         ApplyDefaults(db, defaults)
+        db.hover = nil                 -- option removed in 1.6
         SetZoom(db.zoom, "zoom")       -- zoom range changed in 1.6
         SetZoom(db.zoomInside, "zoomInside")
         canvas:SetAlpha(db.alpha)      -- map layers only; player arrow, quest marks and areas stay opaque

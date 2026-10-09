@@ -178,7 +178,6 @@ local function Build()
     Check("locked", L.LOCKED, L.LOCKED_TIP, function() ns.ApplyAll() end)
     Check("wheelZoom", L.WHEEL_ZOOM, L.WHEEL_ZOOM_TIP, function() ns.ApplyAll() end)
     Check("rotate", L.ROTATE)
-    Check("hover", L.HOVER, nil, function() ns.ApplyAll() end)
     local function Px(v) return ("%d px"):format(v) end
     Slider("h", L.HEIGHT, ns.SIZE_MIN, ns.SIZE_MAX, 10, Px, function() ns.ApplyAll() end)
     Slider("w", L.WIDTH, ns.SIZE_MIN, ns.SIZE_MAX, 10, Px, function() ns.ApplyAll() end)

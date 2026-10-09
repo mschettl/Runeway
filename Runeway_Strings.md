@@ -86,7 +86,6 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `LOCKED_TIP` | Unlocked: drag to move, corner grip to resize. | Entsperrt: ziehen zum Verschieben, Ecke zum Vergrößern. |
 | `WHEEL_ZOOM` | Zoom with the mouse wheel | Zoomen mit dem Mausrad |
 | `WHEEL_ZOOM_TIP` | Scrolling over the map changes the zoom (with Shift and unlocked: the size). Off: the mouse wheel goes to the game camera. | Scrollen über der Karte ändert den Zoom (mit Shift und entsperrt: die Größe). Aus: Das Mausrad steuert die Spielkamera. |
-| `HOVER` | Frame on mouse-over (unlocked) | Rahmen bei Mauskontakt (entsperrt) |
 | `HEIGHT` | Height | Höhe |
 | `WIDTH` | Width | Breite |
 | `MAP_OPACITY` | Map opacity | Kartendeckkraft |

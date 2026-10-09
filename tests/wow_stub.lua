@@ -1,3 +1,4 @@
+BORDER_TEX = {}
 -- Minimal WoW API stub to load and exercise the addon outside the game (lupa / Lua 5.x)
 unpack = unpack or table.unpack
 tinsert = table.insert
@@ -22,6 +23,8 @@ local function obj(name)
         if k == "SetAtlas" then return function(self, a) self._atlas = a return true end end
         if k == "SetStartPoint" then return function(self, _, _, x, y) self._p0 = { x, y } end end
         if k == "SetEndPoint" then return function(self, _, _, x, y) self._p1 = { x, y } end end
+        if k == "SetColorTexture" then return function(self, r, g, b, a)   -- the frame lines of the unlocked map
+            if a == 0.3 then BORDER_TEX[#BORDER_TEX + 1] = self end end end
         if k == "SetVertexColor" then return function(self, r, g, b, a) self._color = { r, g, b, a } end end
         if k == "EnableMouseWheel" then return function(self, v) self._wheel = not not v end end
         if k == "SetSize" then return function(self, w, h) self._w, self._h = w, h end end

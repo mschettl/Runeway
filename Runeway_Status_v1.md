@@ -153,6 +153,7 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
   - Ziehen verschiebt die Karte.
   - Der Griff unten rechts ändert Breite und Höhe unabhängig; die obere linke Ecke bleibt stehen.
   - Shift+Mausrad ändert die Größe.
+  - Beim Überfahren erscheint ein Rahmen (seit 1.6 immer, ohne Option).
 
 **Sichtbarkeit (`UpdateVisibility`):**
 - **Grundregel:** Angezeigt wird, wenn `mode == "permanent"` oder `shown` gesetzt ist und keine Bedingung zum automatischen Ausblenden greift.

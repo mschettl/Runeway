@@ -637,6 +637,23 @@ L.execute('''
     SETTINGS.RUNEWAY_SHOWARROW:SetValue(true)
     view:GetScript("OnUpdate")(view, 0.05)
     check("option: player arrow can be switched off", hidden and rawget(arrowTex2, "_shown"))
+    -- unlocked map: frame while the mouse is over it (no option)
+    local function frameLines()
+        local n = 0
+        for _, t in ipairs(BORDER_TEX) do if rawget(t, "_shown") then n = n + 1 end end
+        return n
+    end
+    local locked0 = db.locked
+    db.locked = false
+    rawset(view, "IsMouseOver", function() return true end)
+    view:GetScript("OnEnter")(view)
+    local over = frameLines()
+    rawset(view, "IsMouseOver", function() return false end)
+    view:GetScript("OnLeave")(view)
+    local out = frameLines()
+    rawset(view, "IsMouseOver", nil)
+    db.locked = locked0
+    check("unlocked: frame while the mouse is over the map", over == 4 and out == 0)
     -- option: mouse wheel zoom off -> the map does not take the wheel
     SETTINGS.RUNEWAY_WHEELZOOM:SetValue(false)
     local wheelOff = rawget(view, "_wheel") == false

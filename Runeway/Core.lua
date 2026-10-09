@@ -129,6 +129,22 @@ top:SetFrameLevel(canvas:GetFrameLevel() + 5)
 local status = top:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 status:SetPoint("BOTTOM", 0, 6)
 
+-- Frame while the mouse is over the unlocked map: 1 px lines along the edges
+local border = {}
+for i, pts in ipairs({ { "TOPLEFT", "TOPRIGHT" }, { "BOTTOMLEFT", "BOTTOMRIGHT" }, { "TOPLEFT", "BOTTOMLEFT" }, { "TOPRIGHT", "BOTTOMRIGHT" } }) do
+    local t = top:CreateTexture(nil, "BORDER")
+    t:SetColorTexture(1, 1, 1, 0.3)
+    t:SetPoint(pts[1])
+    t:SetPoint(pts[2])
+    if i <= 2 then t:SetHeight(1) else t:SetWidth(1) end
+    t:Hide()
+    border[i] = t
+end
+local function UpdateBorder()
+    local on = not db.locked and view:IsMouseOver()
+    for _, t in ipairs(border) do t:SetShown(on) end
+end
+
 -- Resize grip, bottom right (unlocked only); changes the size only, the zoom stays
 local grip = CreateFrame("Button", nil, top)
 grip:SetSize(16, 16)
@@ -1088,6 +1104,7 @@ local function ApplyLock()
     view:EnableMouse(unlocked or viewAt ~= nil)      -- view mode: dragging pans, also when locked
     view:EnableMouseWheel(db.wheelZoom)
     grip:SetShown(unlocked)
+    UpdateBorder()
 end
 
 local function SetZoom(z, key)                 -- key: "zoom" / "zoomInside", default the current level
@@ -1124,6 +1141,10 @@ view:SetScript("OnMouseWheel", function(_, delta)
     end
 end)
 view:SetScript("OnShow", RefreshQuests)
+view:SetScript("OnEnter", UpdateBorder)
+view:SetScript("OnLeave", UpdateBorder)
+grip:SetScript("OnEnter", UpdateBorder)
+grip:SetScript("OnLeave", UpdateBorder)
 
 
 -- Sizing from the top left corner, width and height follow the cursor
@@ -1144,6 +1165,7 @@ grip:SetScript("OnMouseUp", function()
     grip:SetScript("OnUpdate", nil)
     SavePos()
     ApplyPos()
+    UpdateBorder()
 end)
 
 ---------------------------------------------------------------------------

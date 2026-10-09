@@ -675,10 +675,8 @@ local function Inside(a, n, w)
     return inside
 end
 
--- Mouse-over: quests whose area contains the world point (n, w). Only the loops under the cursor are
--- highlighted. A combined outline can join areas that lie far apart (its quests are grouped through
--- overlapping bounding boxes), so each member is checked against its own area for the tooltip.
--- n = nil clears the hover.
+-- Mouse-over: quests whose area contains the world point (n, w); for a combined outline all its quests.
+-- Only the loops under the cursor are highlighted. n = nil clears the hover.
 local hoverLoops, hoverQuests = {}, {}
 function ns.QuestAreasAt(n, w)
     wipe(hoverLoops)
@@ -689,12 +687,8 @@ function ns.QuestAreasAt(n, w)
             for _, loop in ipairs(a.loops) do
                 if InLoop(loop, n, w) then hoverLoops[loop] = true end
             end
-            for _, qid in ipairs(qids) do
-                local own = st.areas[qid]
-                if #qids == 1 or not (own and #own.loops > 0) or Inside(own, n, w) then
-                    hoverQuests[#hoverQuests + 1] = qid
-                end
-            end
+            -- a combined outline sums up its quests: the tooltip lists all of them, wherever it is hovered
+            for _, qid in ipairs(qids) do hoverQuests[#hoverQuests + 1] = qid end
         end)
     end
     return hoverQuests

@@ -136,6 +136,8 @@ function SetOverrideBinding(_, _, key, cmd) BINDINGS[key] = cmd end
 function ClearOverrideBindings() wipe(BINDINGS) end
 function GetBindingAction(key, override) return override and BINDINGS[key] or (key == "M" and "TOGGLEWORLDMAP" or "") end
 GameTooltip = obj("GameTooltip")
+GameTooltipTextLeft1, GameTooltipText, GameTooltipHeaderText = obj("Line1"), { "normal font" }, { "header font" }
+function GameTooltipTextLeft1:SetFontObject(f) self._font = f end
 ItemRefTooltip = obj("ItemRefTooltip")          -- tooltip of chat links: keeps its lines for the tests
 function ItemRefTooltip:ClearLines() self.lines = {} end
 function ItemRefTooltip:AddLine(text) self.lines[#self.lines + 1] = text end

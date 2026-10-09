@@ -386,16 +386,17 @@ L.execute('''
     local hits = qa and NS.QuestAreasAt((qa.box[1] + qa.box[2]) / 2, (qa.box[3] + qa.box[4]) / 2) or {}
     check("hover: quest area hit test finds its quest", #hits > 0)
     check("hover: point far outside finds nothing", #NS.QuestAreasAt(qa.box[2] + 500, qa.box[4] + 500) == 0)
-    -- combined outline (4242 + 4243 overlap): the tooltip lists only the quests whose own area is hovered
-    local only, both = false, false
+    -- combined outline (4242 + 4243 overlap): the tooltip lists both quests wherever the outline is hovered
+    local one, both = false, false
     local b = A[4242].box
     for i = 0, 20 do
         for j = 0, 20 do
             local h = NS.QuestAreasAt(b[1] + (b[2] - b[1]) * i / 20, b[3] + (b[4] - b[3]) * j / 20)
-            if #h == 1 then only = true elseif #h == 2 then both = true end
+            if #h == 1 then one = true elseif #h == 2 then both = true end
         end
     end
-    check("hover: merged areas list only the hovered quests", db.questMerge and only and both)
+    check("hover: merged areas list all their quests", db.questMerge and both and not one)
+    check("hover: tooltip title in the normal font", GameTooltipTextLeft1._font == GameTooltipText)
     -- a neighbouring map lists a quest of the combined outline (4243 on 1421): if its outline there is the
     -- better one (not cut), the combined outline still takes it, and every quest is drawn once
     local _, _, S = NS.QuestAreaState()

@@ -779,6 +779,9 @@ local function AddQuestLines(questID)
     end
 end
 
+-- The first tooltip line uses the larger header font; Runeway's tooltips list quest titles of equal rank, so
+-- line 1 gets the normal font. Restored when the tooltip is cleared for its next owner.
+local tipLine1, tipSmall, tipHooked
 local function ShowTip(key, fill)
     if tipKey == key then return end
     tipKey = key
@@ -788,6 +791,18 @@ local function ShowTip(key, fill)
     end
     GameTooltip:SetOwner(view, "ANCHOR_CURSOR")
     fill()
+    tipLine1 = tipLine1 or _G[(GameTooltip:GetName() or "GameTooltip") .. "TextLeft1"]
+    if tipLine1 and GameTooltipText then
+        if not tipHooked and GameTooltip.HookScript then
+            tipHooked = true
+            GameTooltip:HookScript("OnTooltipCleared", function()
+                if tipSmall and GameTooltipHeaderText then tipLine1:SetFontObject(GameTooltipHeaderText) end
+                tipSmall = false
+            end)
+        end
+        tipLine1:SetFontObject(GameTooltipText)
+        tipSmall = true
+    end
     GameTooltip:Show()
 end
 

@@ -460,7 +460,7 @@ cd <repo> && zip -r build/Runeway-<version>.zip Runeway Runeway_EasternKingdoms
 1. **Karte:** Look wie im Diablo-Screenshot; Zoom nahtlos ohne Flackern oder Kachelkanten; Schraffur deckungsgleich mit den Geländelinien; Ruinen von Lordaeron erkennbar.
 2. **Zonen:** Übergänge zwischen den gebauten Zonen ohne Kante oder Lücke; angrenzende Zonen gedimmt, beim Grenzübertritt weicher Tausch; Außenrand blendet weich aus.
 3. **Questbereiche:** durchgehend in jeder Zoomstufe, weich zum Kartenrand, korrekt bei Fortschritt; auch aus angrenzenden Zonen, grenzüberschreitende nicht abgeschnitten oder doppelt; Option „Combine overlapping quest areas“ an/aus.
-4. **Questmarker und Mouse-over:** Marker nur für Punktziele, kein Springen beim Gehen; Tooltips wie auf der Minimap, bei überlappenden Bereichen nur die betroffenen Quests; Hervorhebung von Pfeil, Leichnam, Markern und Bereichen.
+4. **Questmarker und Mouse-over:** Marker nur für Punktziele, kein Springen beim Gehen; Tooltips wie auf der Minimap, alle Questtitel in normaler Schrift (keine größere erste Zeile); ein zusammengefasster Bereich listet überall alle seine Quests; Hervorhebung von Pfeil, Leichnam, Markern und Bereichen.
 5. **Leichnam:** im Tod markiert, außerhalb am Rand in seiner Richtung, nach der Wiederbelebung weg.
 6. **Fenster:** Gesperrt = klickdurchlässig; entsperrt verschieben, Griff ändert Breite und Höhe; Mausrad-Zoom an/aus; Position und Größe bleiben über Logout; Regler zeigen Änderungen per Mausrad/Griff sofort.
 7. **Aufruf-Modi:** eigene Taste; Kartentaste M (Weltkarte über „World map (map key mode)“, auch nach Kampf und `/reload`); dauerhaft; automatisches Ausblenden (Kampf, Instanz, Reittier/Flug, Stadt).

@@ -1,6 +1,7 @@
 # Zones of map 1 (Kalimdor) built by scripts/build_raw.py (AreaTable names), extended stage by stage.
 # Zone number = line order; append new zones at the end.
-# Not built: Mount Hyjal (not reachable in Forever), GM Island, UNUSEDAlcaz Island, instances.
+# Not built: Mount Hyjal (terrain present, not reachable in Forever), GM Island, UNUSEDAlcaz Island, instances.
+# Southfury River and Caverns of Time have no terrain chunks of their own (part of the surrounding zones).
 # Stage 1 (north)
 Teldrassil
 Darnassus
@@ -13,7 +14,6 @@ Azshara
 # Stage 2 (centre)
 Durotar
 Orgrimmar
-Southfury River
 The Barrens
 Mulgore
 Thunder Bluff
@@ -26,7 +26,6 @@ Thousand Needles
 Dustwallow Marsh
 # Stage 4 (south)
 Tanaris
-Caverns of Time
 Un'Goro Crater
 Silithus
 Gates of Ahn'Qiraj

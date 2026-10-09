@@ -1490,14 +1490,14 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
         db = RunewayDB
         if (db.style or 0) < STYLE then db.colors = nil end   -- default look changed: colours back to defaults
         db.style = STYLE
-        if db.edge then                -- 1.6: soft edge strength 1-5 -> percent (5 = 100 %)
+        if db.edge then                -- 0.6: soft edge strength 1-5 -> percent (5 = 100 %)
             db.edgeSoft = Step((({ 0.12, 0.25, 0.38, 0.55, 0.75 })[db.edge] or 0.38) / FADE_MAX) / 10
             db.edge = nil
         end
         ApplyDefaults(db, defaults)
-        db.questEdge = math.max(0.5, math.min(1.5, db.questEdge))   -- 1.6: range 0.5-1.5 (was up to 2.5)
-        db.hover = nil                 -- option removed in 1.6
-        SetZoom(db.zoom, "zoom")       -- zoom range changed in 1.6
+        db.questEdge = math.max(0.5, math.min(1.5, db.questEdge))   -- 0.6: range 0.5-1.5 (was up to 2.5)
+        db.hover = nil                 -- option removed in 0.6
+        SetZoom(db.zoom, "zoom")       -- zoom range changed in 0.6
         SetZoom(db.zoomInside, "zoomInside")
         canvas:SetAlpha(db.alpha)      -- map layers only; player arrow, quest marks and areas stay opaque
         ApplyEdge()

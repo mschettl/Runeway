@@ -33,6 +33,8 @@ local owner = {}          -- [questID] = map whose outline is drawn (a quest can
 local queue = {}          -- quests to sample: { questID = , map = , x = , y = , sig = }
 local job                 -- quest being sampled
 local dirty = 0           -- > 0: refresh the quest list after this many seconds
+local emptyTries = {}     -- ["map:questID"] = empty samples in a row of a quest that has an area
+local EMPTY_TRIES, EMPTY_RETRY = 3, 5   -- tries before an empty result is kept; seconds until the next try
 local lines, shownLines = {}, 0
 local fills, shownFills = {}, 0   -- hovered area: horizontal spans that fill its loop
 local FILL_ALPHA, FILL_STEP = 0.15, 2
@@ -346,13 +348,48 @@ local function Publish()
     Resolve()
     pending, published = false, GetTime()
     publishedMerge = ns.db().questMerge  -- overlapping quests as one combined outline (option)
+    -- Combined outlines are only ever replaced, never split: while the new combined outline of a set is not sampled
+    -- yet (whatever the reason: objective progress in combat, a completed or abandoned member, another owner map),
+    -- the combined outline drawn before stays for its members, then the cached older groups of the set's map
+    -- (after /reload). Members without an outline do not block an old outline; a member that is drawn in another
+    -- set does. A quest that no longer overlaps any other is not in a set and gets its own outline.
+    local before = {}
+    for _, e in ipairs(shown) do
+        if #e[2] > 1 then before[#before + 1] = e end
+    end
     shown, shownQuest = {}, {}
+    local waiting = {}
     for _, g in ipairs(want) do
         local st = state[g.map]
         local area = st.groups[g.key]
         if area and #area.loops > 0 then
             for _, qid in ipairs(g.members) do shownQuest[qid] = true end
             shown[#shown + 1] = { area, area.members, st }
+        else
+            waiting[#waiting + 1] = g
+        end
+    end
+    for _, g in ipairs(waiting) do
+        local st = state[g.map]
+        local isMember, old = {}, {}
+        for _, qid in ipairs(g.members) do isMember[qid] = true end
+        for _, e in ipairs(before) do old[#old + 1] = e end
+        for _, a in pairs(st.groups) do old[#old + 1] = { a, a.members, st } end
+        for _, e in ipairs(old) do
+            local ok, list = #e[1].loops > 0, {}
+            for _, qid in ipairs(e[2]) do
+                if isMember[qid] then
+                    ok = ok and not shownQuest[qid]
+                    list[#list + 1] = qid
+                elseif owner[qid] then
+                    ok = false          -- still drawn, but in another set or on its own
+                end
+            end
+            if ok and #list > 0 then
+                for _, qid in ipairs(list) do shownQuest[qid] = true end
+                for _, l in ipairs(e[1].loops) do l.qids = nil end   -- hover lists only the current members
+                shown[#shown + 1] = { e[1], list, e[3] }
+            end
         end
     end
     for _, m in ipairs(maps) do
@@ -386,11 +423,33 @@ local function Finish()
         area.cut = r[1] <= e or r[2] <= e or r[3] >= 1 - e or r[4] >= 1 - e
     end
     if job.group then
+        -- the new combined outline replaces older ones of its members (kept until now, see Publish)
+        local isMember = {}
+        for _, qid in ipairs(job.members) do isMember[qid] = true end
+        for key, old in pairs(st.groups) do
+            for _, qid in ipairs(old.members) do
+                if isMember[qid] then st.groups[key] = nil break end
+            end
+        end
         area.members = job.members
         st.groups[job.group] = area
         for _, qid in ipairs(job.members) do st.inGroup[qid] = job.group end
     else
-        st.areas[job.questID] = area
+        -- an empty result for a quest that has an area means the blob was not drawn (game test: after dying): keep the
+        -- previous outline and sample again later; only after EMPTY_TRIES empty results the area counts as empty
+        -- completed quests (turn-in) lose their area: an empty result is final for them
+        local key, old, qid = job.map .. ":" .. job.questID, st.areas[job.questID], job.questID
+        local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(qid))
+            or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(qid))
+        if #area.loops > 0 or done or not (GetQuestPOIBlobCount and GetQuestPOIBlobCount(qid) > 0) then
+            emptyTries[key] = nil
+        else
+            emptyTries[key] = (emptyTries[key] or 0) + 1
+            if emptyTries[key] < EMPTY_TRIES and dirty <= 0 then dirty = EMPTY_RETRY end
+        end
+        if not (old and #old.loops > 0 and #area.loops == 0 and (emptyTries[key] or EMPTY_TRIES) < EMPTY_TRIES) then
+            st.areas[job.questID] = area
+        end
     end
     job = nil
     Resolve()
@@ -529,34 +588,45 @@ end
 
 local function RefreshMap(m, st, rank)
     local areas, groups, inGroup = st.areas, st.groups, st.inGroup
-    local onMap, queued = {}, {}
+    -- while dead the known areas stay as they are (game test 0.6.1: as a ghost all areas vanished); the quest log
+    -- is checked again on PLAYER_ALIVE / PLAYER_UNGHOST
+    if UnitIsDeadOrGhost("player") then return end
+    local onMap = {}
     local pN, pW = UnitPosition("player")
     for _, q in ipairs(C_QuestLog.GetQuestsOnMap(m) or {}) do
         onMap[q.questID] = true
         local blobs = GetQuestPOIBlobCount and GetQuestPOIBlobCount(q.questID)
         local sig = Signature(q)
+        local a = areas[q.questID]
+        -- an empty area of a quest with blobs is sampled again (EMPTY_TRIES per session, see Finish)
+        local done = (C_QuestLog.IsComplete and C_QuestLog.IsComplete(q.questID))
+            or (C_QuestLog.ReadyForTurnIn and C_QuestLog.ReadyForTurnIn(q.questID))
+        local empty = a and #a.loops == 0 and blobs and blobs > 0 and not done
+            and (emptyTries[m .. ":" .. q.questID] or 0) < EMPTY_TRIES
         if blobs == 0 then
             areas[q.questID] = nil
-        elseif not (areas[q.questID] and areas[q.questID].sig == sig)
+        elseif not (a and a.sig == sig and not empty)
             and not (job and job.map == m and job.questID == q.questID) then
             -- nearest quests first (world distance), maps in order
             local n, w = ns.MapToWorld(m, q.x or 0.5, q.y or 0.5)
             local d = (n and pN) and (n - pN) ^ 2 + (w - pW) ^ 2 or 0
             queue[#queue + 1] = { questID = q.questID, map = m, x = q.x, y = q.y, sig = sig, rank = rank, d = d }
-            queued[q.questID] = true
         end
     end
     for qid in pairs(areas) do
         if not onMap[qid] then areas[qid] = nil end
     end
-    -- a group stays valid only while all members are unchanged and not queued
+    -- a group stays while at least two members have an outline; when a member is sampled again (objective progress,
+    -- also in combat) or completed, the group is kept and drawn until its new combined outline replaces it (Finish),
+    -- so it never splits
     for key, g in pairs(groups) do
+        local n = 0
         for _, qid in ipairs(g.members) do
-            if not areas[qid] or queued[qid] then
-                for _, mm in ipairs(g.members) do if inGroup[mm] == key then inGroup[mm] = nil end end
-                groups[key] = nil
-                break
-            end
+            if areas[qid] and #areas[qid].loops > 0 then n = n + 1 end
+        end
+        if n < 2 then
+            for _, mm in ipairs(g.members) do if inGroup[mm] == key then inGroup[mm] = nil end end
+            groups[key] = nil
         end
     end
 end
@@ -607,7 +677,8 @@ driver:SetScript("OnUpdate", function(_, e)
             ns.RefreshQuests()
         end
     end
-    if InCombatLockdown() then return end
+    -- no sampling in combat, nor while dead (after dying a quest area was sampled empty and stayed hidden)
+    if InCombatLockdown() or UnitIsDeadOrGhost("player") then return end
     if not job and #queue > 0 then
         blobFrame:Show()
         StartJob(table.remove(queue, 1))
@@ -628,7 +699,11 @@ driver:RegisterEvent("PLAYER_ENTERING_WORLD")
 driver:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 driver:RegisterEvent("QUEST_LOG_UPDATE")
 driver:RegisterEvent("QUEST_POI_UPDATE")
-driver:SetScript("OnEvent", function()
+driver:RegisterEvent("PLAYER_ALIVE")
+driver:RegisterEvent("PLAYER_UNGHOST")
+driver:SetScript("OnEvent", function(_, event)
+    -- alive again: areas found empty meanwhile get new tries
+    if event == "PLAYER_ALIVE" or event == "PLAYER_UNGHOST" then wipe(emptyTries) end
     dirty = 0.3               -- debounce: QUEST_LOG_UPDATE fires in bursts
 end)
 ns.view:HookScript("OnShow", function() dirty = 0.1 end)
@@ -710,7 +785,7 @@ local function FillLoop(nf, cnt, r, g, b, a)
     return nf
 end
 
-ns.QuestAreasRepublish = function() Resolve() Publish() return shown end   -- for tests
+ns.QuestAreasRepublish = function() Resolve() Publish() return shown, want end   -- for tests
 
 -- true if the quest has an outline on screen (its pin is then hidden)
 function ns.HasQuestArea(questID)
@@ -752,6 +827,9 @@ end
 
 -- Quests of a combined outline that lie in one of its loops: a member counts when a point of its own outline
 -- is inside the loop (its blob is part of the union). Cached on the loop, which is rebuilt with each sampling.
+-- A combined outline can be older than its members' own outlines (it stays until its successor is sampled), so a
+-- member also counts when a point of the loop lies in its own area; if still none matches, the loop lists all
+-- quests of the outline: a drawn outline always has a tooltip.
 local function LoopQuests(loop, qids, st)
     if loop.qids then return loop.qids end
     local list = {}
@@ -764,8 +842,12 @@ local function LoopQuests(loop, qids, st)
             end
             if hit then break end
         end
+        for m = 1, own and not hit and #own.loops > 0 and #loop or 0, 2 do
+            if Inside(own, loop[m], loop[m + 1]) then hit = true break end
+        end
         if hit then list[#list + 1] = qid end
     end
+    if #list == 0 then return qids end
     loop.qids = list
     return list
 end

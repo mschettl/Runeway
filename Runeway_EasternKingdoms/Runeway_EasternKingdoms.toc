@@ -21,7 +21,7 @@
 ## Notes-zhCN: Runeway 地图数据（东部王国），按需加载
 ## Title-zhTW: Runeway - 東部王國
 ## Notes-zhTW: Runeway 地圖資料（東部王國），需要時載入
-## Version: 1.6
+## Version: 0.6.1
 ## Dependencies: Runeway
 ## LoadOnDemand: 1
 ## X-Runeway-Maps: 0

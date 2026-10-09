@@ -756,6 +756,52 @@ L.execute('''
     check("complete: blob not drawn, the others stay combined at once", not apart and combined("4242,4243")
         and not NS.HasQuestArea(4245))
     GetQuestPOIBlobCount = blobCount
+    -- random sequence (progress, completion, quest back in the log, combat, death, zoom with the neighbouring map):
+    -- a quest drawn in a combined outline is never drawn alone while it is still in a set with others
+    math.randomseed(7)
+    local prog = { [4242] = 0, [4243] = 0, [4245] = 0 }
+    C_QuestLog.GetQuestObjectives = function(q)
+        if q == 4245 then return { { numFulfilled = prog[q], finished = done45 } } end
+        return prog[q] and { { numFulfilled = prog[q] } } or {}
+    end
+    addQuest()
+    local combat = function() return true end
+    local was, broken, events = {}, nil, { 0, 0, 0, 0, 0, 0 }
+    for step = 1, 300 do
+        local r = math.random(6)
+        events[r] = events[r] + 1
+        if r == 1 then
+            local q = ({ 4242, 4243, 4245 })[math.random(3)]
+            prog[q] = prog[q] + 1
+        elseif r == 2 then
+            done45, BLOBS[4245] = true, nil                       -- completed: no blobs any more
+        elseif r == 3 then
+            done45, BLOBS[4245] = false, { 0.47, 0.6, 0.12 }     -- (again) in progress
+        elseif r == 4 then
+            InCombatLockdown = InCombatLockdown == lockdown and combat or lockdown
+        elseif r == 5 then
+            STATE.dead = not STATE.dead
+            if not STATE.dead then fire("PLAYER_UNGHOST") end
+        else
+            db.zoom = db.zoom == zoom0 and 0.2 or zoom0
+        end
+        fire("QUEST_LOG_UPDATE")
+        sampler(math.random(60))
+        local sh, wt = NS.QuestAreasRepublish()
+        local inSet, now = {}, {}
+        for _, g in ipairs(wt) do for _, q in ipairs(g.members) do inSet[q] = true end end
+        for _, e in ipairs(sh) do
+            if #e[2] == 1 and was[e[2][1]] and inSet[e[2][1]] then
+                broken = broken or ("step " .. step .. ", quest " .. e[2][1])
+            end
+            for _, q in ipairs(e[2]) do now[q] = #e[2] > 1 end
+        end
+        was = now
+    end
+    InCombatLockdown, STATE.dead, db.zoom = lockdown, false, zoom0
+    fire("PLAYER_UNGHOST")
+    check(("random: combined outlines never split (%s events)"):format(table.concat(events, "/"))
+        .. (broken and (" - " .. broken) or ""), not broken)
     table.remove(list1420)
     C_QuestLog.IsComplete = isComplete
     C_QuestLog.GetQuestObjectives = nil

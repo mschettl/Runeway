@@ -348,7 +348,17 @@ local function Publish()
     Resolve()
     pending, published = false, GetTime()
     publishedMerge = ns.db().questMerge  -- overlapping quests as one combined outline (option)
+    -- Combined outlines are only ever replaced, never split: while the new combined outline of a set is not sampled
+    -- yet (whatever the reason: objective progress in combat, a completed or abandoned member, another owner map),
+    -- the combined outline drawn before stays for its members, then the cached older groups of the set's map
+    -- (after /reload). Members without an outline do not block an old outline; a member that is drawn in another
+    -- set does. A quest that no longer overlaps any other is not in a set and gets its own outline.
+    local before = {}
+    for _, e in ipairs(shown) do
+        if #e[2] > 1 then before[#before + 1] = e end
+    end
     shown, shownQuest = {}, {}
+    local waiting = {}
     for _, g in ipairs(want) do
         local st = state[g.map]
         local area = st.groups[g.key]
@@ -356,27 +366,29 @@ local function Publish()
             for _, qid in ipairs(g.members) do shownQuest[qid] = true end
             shown[#shown + 1] = { area, area.members, st }
         else
-            -- not sampled yet (a member changed, e.g. in combat where nothing is sampled, or a member was completed
-            -- and has no outline any more): keep showing the older combined outlines of its members instead of
-            -- splitting the group into single outlines. Old members without an outline do not block it.
-            local isMember = {}
-            for _, qid in ipairs(g.members) do isMember[qid] = true end
-            for _, old in pairs(st.groups) do
-                local ok, list = #old.loops > 0, {}
-                for _, qid in ipairs(old.members) do
-                    local a = st.areas[qid]
-                    if isMember[qid] then
-                        ok = ok and not shownQuest[qid]
-                        list[#list + 1] = qid
-                    elseif a and #a.loops > 0 then
-                        ok = false          -- still drawn, but in another set
-                    end
+            waiting[#waiting + 1] = g
+        end
+    end
+    for _, g in ipairs(waiting) do
+        local st = state[g.map]
+        local isMember, old = {}, {}
+        for _, qid in ipairs(g.members) do isMember[qid] = true end
+        for _, e in ipairs(before) do old[#old + 1] = e end
+        for _, a in pairs(st.groups) do old[#old + 1] = { a, a.members, st } end
+        for _, e in ipairs(old) do
+            local ok, list = #e[1].loops > 0, {}
+            for _, qid in ipairs(e[2]) do
+                if isMember[qid] then
+                    ok = ok and not shownQuest[qid]
+                    list[#list + 1] = qid
+                elseif owner[qid] then
+                    ok = false          -- still drawn, but in another set or on its own
                 end
-                if ok and #list > 0 then
-                    for _, qid in ipairs(list) do shownQuest[qid] = true end
-                    for _, l in ipairs(old.loops) do l.qids = nil end   -- hover lists only the current members
-                    shown[#shown + 1] = { old, list, st }
-                end
+            end
+            if ok and #list > 0 then
+                for _, qid in ipairs(list) do shownQuest[qid] = true end
+                for _, l in ipairs(e[1].loops) do l.qids = nil end   -- hover lists only the current members
+                shown[#shown + 1] = { e[1], list, e[3] }
             end
         end
     end
@@ -773,7 +785,7 @@ local function FillLoop(nf, cnt, r, g, b, a)
     return nf
 end
 
-ns.QuestAreasRepublish = function() Resolve() Publish() return shown end   -- for tests
+ns.QuestAreasRepublish = function() Resolve() Publish() return shown, want end   -- for tests
 
 -- true if the quest has an outline on screen (its pin is then hidden)
 function ns.HasQuestArea(questID)

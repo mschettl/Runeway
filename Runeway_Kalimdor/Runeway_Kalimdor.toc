@@ -1,0 +1,29 @@
+## Interface: 16001
+## Title: Runeway - Kalimdor
+## Notes: Map data of Runeway (Kalimdor), loaded when needed
+## Title-deDE: Runeway - Kalimdor
+## Notes-deDE: Kartendaten von Runeway (Kalimdor), werden bei Bedarf geladen
+## Title-frFR: Runeway - Kalimdor
+## Notes-frFR: Données de carte de Runeway (Kalimdor), chargées si nécessaire
+## Title-esES: Runeway - Kalimdor
+## Notes-esES: Datos de mapa de Runeway (Kalimdor), se cargan cuando se necesitan
+## Title-esMX: Runeway - Kalimdor
+## Notes-esMX: Datos de mapa de Runeway (Kalimdor), se cargan cuando se necesitan
+## Title-itIT: Runeway - Kalimdor
+## Notes-itIT: Dati della mappa di Runeway (Kalimdor), caricati quando servono
+## Title-ptBR: Runeway - Kalimdor
+## Notes-ptBR: Dados de mapa do Runeway (Kalimdor), carregados quando necessário
+## Title-ruRU: Runeway - Калимдор
+## Notes-ruRU: Данные карты Runeway (Калимдор), загружаются по необходимости
+## Title-koKR: Runeway - 칼림도어
+## Notes-koKR: Runeway 지도 데이터(칼림도어), 필요할 때 불러옴
+## Title-zhCN: Runeway - 卡利姆多
+## Notes-zhCN: Runeway 地图数据（卡利姆多），按需加载
+## Title-zhTW: Runeway - 卡林多
+## Notes-zhTW: Runeway 地圖資料（卡林多），需要時載入
+## Version: 0.6.1
+## Dependencies: Runeway
+## LoadOnDemand: 1
+## X-Runeway-Maps: 1
+
+tiles\1\Tiles.lua

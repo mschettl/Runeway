@@ -89,7 +89,7 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `HEIGHT` | Height | Höhe |
 | `WIDTH` | Width | Breite |
 | `MAP_OPACITY` | Map opacity | Kartendeckkraft |
-| `ZOOM` | Zoom | Zoom |
+| `ZOOM` | Zoom (outdoors) | Zoom (Außenbereiche) |
 | `ZOOM_INSIDE` | Zoom (interiors) | Zoom (Innenbereiche) |
 | `ZOOM_INSIDE_TIP` | Zoom inside cities, caves and other interior maps. The mouse wheel changes the zoom of the area you are in. | Zoom in Städten, Höhlen und anderen Innenkarten. Das Mausrad ändert den Zoom des Bereichs, in dem du gerade bist. |
 | `NEIGHBOUR_ZONES` | Adjacent zones opacity | Deckkraft angrenzender Zonen |

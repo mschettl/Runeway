@@ -27,15 +27,15 @@ local STYLE = 6            -- bump when the default colours change: resets the s
 local LINE = { 0xD1 / 255, 0xDB / 255, 0xE3 / 255 }
 local defaults = {
     x = nil, y = nil, w = 800, h = 600, -- map width and height
-    zoom = 0.66, zoomInside = 0.8, alpha = 0.7, rotate = true, locked = false, shown = false,
+    zoom = 0.66, zoomInside = 0.8, alpha = 0.5, rotate = true, locked = false, shown = false,
     mode = "key",            -- "key" = own key binding, "mapkey" = map key (M) opens the overlay, "permanent"
     autoHide = { combat = false, instance = false, mounted = false, city = false },
     wheelZoom = true,        -- mouse wheel over the map zooms (off: the wheel goes to the game camera)
     shape = 0.5,             -- map shape: 0 rectangle, 0.5 oval, 1 circle (10 % steps)
     edgeSoft = 0.5,          -- soft edge: 0 hard, 1 widest fade (10 % steps)
-    arrowSize = 25, pinSize = 20, corpseSize = 25, taxiSize = 20, showTaxi = true, showArrow = true, showCorpse = true, showQuests = true, questClassic = false, questEdge = 0.8,   -- quest edge = width factor of the quest area outline
+    arrowSize = 20, pinSize = 20, corpseSize = 20, taxiSize = 20, showTaxi = true, showArrow = true, showCorpse = true, showQuests = true, questClassic = false, questEdge = 0.8,   -- quest edge = width factor of the quest area outline (0.5-1.5)
     questMerge = true,       -- overlapping quest areas as one combined outline
-    zoneDim = 0.3,           -- opacity factor of the adjacent zones (the player is not in)
+    zoneDim = 0.5,           -- opacity factor of the adjacent zones (the player is not in)
     colors = {               -- defaults as hex: fill #000000, hatch #CCD6E0, shade #000000, lines #D1DBE3,
         fill    = { r = 0, g = 0, b = 0, a = 0.10 },              -- roads #EBB748, quest areas #73C7FF
         hatch   = { r = 0xCC / 255, g = 0xD6 / 255, b = 0xE0 / 255, a = 0.20 },
@@ -1495,6 +1495,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
             db.edge = nil
         end
         ApplyDefaults(db, defaults)
+        db.questEdge = math.max(0.5, math.min(1.5, db.questEdge))   -- 1.6: range 0.5-1.5 (was up to 2.5)
         db.hover = nil                 -- option removed in 1.6
         SetZoom(db.zoom, "zoom")       -- zoom range changed in 1.6
         SetZoom(db.zoomInside, "zoomInside")
@@ -1658,7 +1659,7 @@ SlashCmdList.RUNEWAY = function(msg)
         ApplyLock()
         Print(db.locked and L.MSG_LOCKED or L.MSG_UNLOCKED)
     elseif cmd == "alpha" and n then
-        db.alpha = math.max(5, math.min(100, n)) / 100
+        db.alpha = math.max(0, math.min(100, n)) / 100
         canvas:SetAlpha(db.alpha)
         Print(L.MSG_OPACITY:format(db.alpha * 100))
     elseif cmd == "zoom" and n then

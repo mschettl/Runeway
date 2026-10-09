@@ -25,7 +25,7 @@ local COMMANDS = {
     { "/rnw", L.CMD_TOGGLE },
     { "/rnw config", L.CMD_CONFIG },
     { "/rnw lock  |  unlock", L.CMD_LOCK },
-    { "/rnw alpha 5-100", L.CMD_ALPHA },
+    { "/rnw alpha 0-100", L.CMD_ALPHA },
     { "/rnw zoom 0-100", L.CMD_ZOOM },
     { "/rnw size W [H]", L.CMD_SIZE },
     { "/rnw rotate", L.CMD_ROTATE },
@@ -215,7 +215,7 @@ local function Build()
     Slider("w", L.WIDTH, ns.SIZE_MIN, ns.SIZE_MAX, 10, Px, function() ns.ApplyAll() end)
 
     Page(L.HEADER_DISPLAY)
-    Slider("alpha", L.MAP_OPACITY, 0.05, 1, 0.01, Pct, function() ns.ApplyAll() end)
+    Slider("alpha", L.MAP_OPACITY, 0, 1, 0.01, Pct, function() ns.ApplyAll() end)
     Slider("zoom", L.ZOOM, ns.ZOOM_MIN, ns.ZOOM_MAX, (ns.ZOOM_MAX - ns.ZOOM_MIN) / 100,
         function(v) return ("%d %%"):format(ns.ZoomPct(v) + 0.5) end, function(v) ns.SetZoom(v, "zoom") end,
         L.ZOOM_TIP)
@@ -242,7 +242,7 @@ local function Build()
     Marker("showTaxi", "taxiSize", L.FLIGHT_MASTERS, function() ns.RefreshQuests() end)
     local quests = Marker("showQuests", "pinSize", L.QUEST_MARKS)
     local function QuestsShown() return ns.db().showQuests end
-    Slider("questEdge", L.QUEST_EDGE, 0.5, 2.5, 0.05, function(v) return ("%.2f x"):format(v) end, nil,
+    Slider("questEdge", L.QUEST_EDGE, 0.5, 1.5, 0.01, function(v) return Pct(v - 0.5) end, nil,   -- 0.5x = 0 %, 1.5x = 100 %
         L.QUEST_EDGE_TIP)
         :SetParentInitializer(quests, QuestsShown)
     Check("questMerge", L.QUEST_MERGE_LONG, L.QUEST_MERGE_TIP, nil, L.QUEST_MERGE):SetParentInitializer(quests, QuestsShown)

@@ -107,7 +107,7 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `w`, `h` | 800, 600 (Breite, Höhe; je 200–1400) |
 | `zoom` | 0.66 (0.1–1.5, in Optionen und `/rnw zoom` als 0–100 %; 0.66 = 40 %) |
 | `zoomInside` | 0.8 (= 50 %; eigener Zoom in Innenkarten/Tile-Sets wie Unterstadt, wie Blizzards Minimap drinnen; Mausrad und `/rnw zoom` ändern den Zoom der aktuellen Ebene, `ZoomKey()`) |
-| `alpha` | 0.7 (nur Kartenebenen; Pfeil, Marker und Questränder immer voll) |
+| `alpha` | 0.5 (0–100 %, nur Kartenebenen; Pfeil, Marker und Questränder immer voll) |
 | `rotate`, `locked`, `shown` | true, false, false |
 | `colors.fill` | #000000, a 0.10 |
 | `colors.hatch` | #CCD6E0, a 0.20 |
@@ -121,9 +121,9 @@ Kacheln sind weiß. Eingefärbt wird zur Laufzeit per `SetVertexColor`.
 | `wheelZoom` | true (Mausrad über der Karte zoomt) |
 | `shape` | 0.5 (Kartenform in 10-%-Schritten: 0 Rechteck, Superellipse mit Exponent 20 → 2 bis 50 % Oval, darüber schrumpft das Oval zur kürzeren Fensterseite = Kreis bei 100 %; `ShapeParams`/`ns.ShapeFn` für Questlinien, Hover und Leichnam) |
 | `edgeSoft` | 0.5 (weicher Rand in 10-%-Schritten: Verlaufsbreite = Wert × 0,75 des Radius; 0 = harte Kante, 100 % = frühere Stufe 5; alte Stufen 1–5 werden beim Laden umgerechnet) |
-| `arrowSize`, `pinSize`, `corpseSize`, `taxiSize`, `questEdge` | 25, 20, 25, 20, 0.8 (Faktor für die Breite der Questränder) |
+| `arrowSize`, `pinSize`, `corpseSize`, `taxiSize`, `questEdge` | 20, 20, 20, 20, 0.8 (Faktor für die Breite der Questränder, 0,5–1,5, in den Optionen als 0–100 %; Standard folgt von Mario) |
 | `questMerge` | true: überlappende Questbereiche bekommen einen gemeinsamen Umriss |
-| `zoneDim` | 0.3: Deckkraft-Faktor der angrenzenden Zonen (Option „Adjacent zones opacity“) |
+| `zoneDim` | 0.5: Deckkraft-Faktor der angrenzenden Zonen (Option „Adjacent zones opacity“) |
 | `questAreaCache` | `[mapID] = { areas, groups }`, Version über `questAreaCacheVersion` (2) |
 | `style` | 6. Migrationszähler: setzt bei Stiländerungen einzelne Farben einmalig zurück (siehe `ADDON_LOADED` in `Core.lua`) |
 

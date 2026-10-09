@@ -791,7 +791,7 @@ L.execute('''
     check("opacity and auto-hide write the db", db.colors.roads.a == 0.5 and db.autoHide.combat == true)
     for _, st in pairs(SETTINGS) do st:SetValue(st.default) end
     check("defaults restored", db.edgeSoft == 0.5 and db.shape == 0.5 and db.w == 800 and db.h == 600 and db.mode == "key" and db.colors.roads.a == 0.65
-        and math.abs(db.colors.fill.r) < 0.01 and db.zoom == 0.66 and db.questMerge == true and db.corpseSize == 25)
+        and math.abs(db.colors.fill.r) < 0.01 and db.zoom == 0.66 and db.questMerge == true and db.corpseSize == 20 and db.alpha == 0.5 and db.zoneDim == 0.5)
     view:GetScript("OnUpdate")(view, 0.05)
 ''')
 

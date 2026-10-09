@@ -48,7 +48,7 @@ Links steht der Befehl (bleibt in allen Sprachen gleich), rechts die übersetzte
 | `CMD_TOGGLE` | /rnw | Show or hide the overlay | Overlay ein- oder ausblenden |
 | `CMD_CONFIG` | /rnw config | Open these settings | Diese Einstellungen öffnen |
 | `CMD_LOCK` | /rnw lock \| unlock | Lock (clicks pass through) or unlock the map | Karte sperren (Klicks gehen durch) oder entsperren |
-| `CMD_ALPHA` | /rnw alpha 5-100 | Map opacity in percent | Kartendeckkraft in Prozent |
+| `CMD_ALPHA` | /rnw alpha 0-100 | Map opacity in percent | Kartendeckkraft in Prozent |
 | `CMD_ZOOM` | /rnw zoom 0-100 | Zoom | Zoom |
 | `CMD_SIZE` | /rnw size W [H] | Map width and height in pixels (200-1400) | Kartenbreite und -höhe in Pixeln (200-1400) |
 | `CMD_ROTATE` | /rnw rotate | Rotate with the player or north up | Mit dem Spieler drehen oder Norden oben |
@@ -178,7 +178,7 @@ Je Ebene eine Zeile: Name mit Häkchen, Farbfeld und Deckkraft-Regler. „… op
 | `MSG_VIEW_OFF` | Chat `/rnw view` | back to the player | zurück zum Spieler |
 | `MSG_VIEW_UNKNOWN` | Chat `/rnw view` | unknown area. Mapped areas: %s | Unbekanntes Gebiet. Kartierte Gebiete: %s |
 | `USAGE_COLOR` | Chat, Hilfe | /rnw color fill\|hatch\|shade\|terrain\|water\|roads\|questareas R G B [A]   (0-1) | (Befehl bleibt, nur ggf. „(0-1)“) |
-| `USAGE` | Chat, Hilfe | /rnw [toggle] \| config \| lock \| unlock \| alpha 5-100 \| zoom 0-100 \| size W [H] \| rotate \| edge 0-100 \| mode key\|mapkey\|permanent \| layer NAME \| color NAME R G B [A] \| keys \| pos \| view [ZONE \| N W] \| reset | (Befehle bleiben englisch) |
+| `USAGE` | Chat, Hilfe | /rnw [toggle] \| config \| lock \| unlock \| alpha 0-100 \| zoom 0-100 \| size W [H] \| rotate \| edge 0-100 \| mode key\|mapkey\|permanent \| layer NAME \| color NAME R G B [A] \| keys \| pos \| view [ZONE \| N W] \| reset | (Befehle bleiben englisch) |
 
 Das Leichnam-Symbol selbst zeigt keinen Text; das Symbol stammt aus dem Spiel.
 

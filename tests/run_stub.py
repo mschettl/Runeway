@@ -404,7 +404,31 @@ L.execute('''
     CURSOR[1], CURSOR[2] = 520, 400
     wipe(tipLines)
     view:GetScript("OnUpdate")(view, 0.05)
+    local spans, filled = 0, 0
+    for _, t in ipairs(ALL_TEX) do
+        local c = rawget(t, "_color")
+        if rawget(t, "_shown") and c and math.abs((c[4] or 1) - 0.15) < 1e-6 then
+            spans = spans + 1
+            filled = filled + rawget(t, "_w") * rawget(t, "_h")
+        end
+    end
+    local area, l = 0, A[4242].loops[1]            -- the combined outline is at least as large as 4242's
+    for m = 1, #l, 2 do
+        local j = (m + 1) % #l + 1
+        local x0, y0 = NS.ToScreen(l[m], l[m + 1])
+        local x1, y1 = NS.ToScreen(l[j], l[j + 1])
+        area = area + (x0 * y1 - x1 * y0) / 2
+    end
+    check(("hover: the hovered area is filled (%d spans, %.0f%% of 4242)"):format(spans, filled / math.abs(area) * 100),
+        spans > 10 and filled >= math.abs(area) * 0.95)
     POS[1], POS[2], CURSOR[1], CURSOR[2] = pn, pw, 500, 400
+    view:GetScript("OnUpdate")(view, 0.05)
+    local left = 0
+    for _, t in ipairs(ALL_TEX) do
+        local c = rawget(t, "_color")
+        if rawget(t, "_shown") and c and math.abs((c[4] or 1) - 0.15) < 1e-6 then left = left + 1 end
+    end
+    check("hover: fill hidden when the cursor leaves", left == 0)
     local col = GameTooltipTextLeft1._color
     check("hover: tooltip title in the normal font and quest title color", GameTooltipTextLeft1._font == GameTooltipText
         and col[1] == 1 and col[2] == 0.82 and col[3] == 0)

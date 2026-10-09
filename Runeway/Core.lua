@@ -110,6 +110,7 @@ ns.NoSnap = NoSnap
 local function Fade(tex)
     if fade and tex.AddMaskTexture then tex:AddMaskTexture(fade) end
 end
+ns.Fade = Fade
 ns.FadeWidth = function() return FADE_WIDTH[db.edge] or FADE_WIDTH[3] end
 
 local function ApplyEdge()

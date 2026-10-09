@@ -34,6 +34,8 @@ local queue = {}          -- quests to sample: { questID = , map = , x = , y = ,
 local job                 -- quest being sampled
 local dirty = 0           -- > 0: refresh the quest list after this many seconds
 local lines, shownLines = {}, 0
+local fills, shownFills = {}, 0   -- hovered area: horizontal spans that fill its loop
+local FILL_ALPHA, FILL_STEP = 0.15, 2
 ns.QuestAreaState = function()          -- for tests: areas and groups of the player's map
     local st = state[maps[1] or 0]
     if st then return st.areas, st.groups, state, owner end
@@ -639,6 +641,10 @@ lineParent:SetAllPoints()
 lineParent:SetFrameLevel(ns.view:GetFrameLevel() + 3)
 lineParent:SetClipsChildren(true)       -- hard edge if lines do not take the fade mask
 
+local fillParent = CreateFrame("Frame", nil, ns.view)
+fillParent:SetAllPoints()
+fillParent:SetFrameLevel(ns.view:GetFrameLevel() + 2)
+
 local function GetLine(i)
     local l = lines[i]
     if not l then
@@ -650,9 +656,58 @@ local function GetLine(i)
     return l
 end
 
+local px, py, qx, qy, qa = {}, {}, {}, {}, {}   -- reused buffers: screen points, subdivided points, fade
+local fillN = 0                                  -- fill spans used this frame
+
 function ns.HideQuestAreas()
     for i = 1, shownLines do lines[i]:Hide() end
-    shownLines = 0
+    for i = 1, shownFills do fills[i]:Hide() end
+    shownLines, shownFills = 0, 0
+end
+
+-- Mouse-over fill: a faint area colour inside a loop (screen points px/py), as spans of FILL_STEP px rows
+-- (even-odd per row). Adjacent spans meet exactly (no pixel snapping), the map's edge fade comes from its mask.
+local xs = {}
+local function FillLoop(nf, cnt, r, g, b, a)
+    local view = ns.view
+    local y0, y1 = math.huge, -math.huge
+    for i = 1, cnt do y0, y1 = math.min(y0, py[i]), math.max(y1, py[i]) end
+    local y = math.floor(y0 / FILL_STEP) * FILL_STEP
+    while y < y1 do
+        local yc, k = y + FILL_STEP / 2, 0
+        local jx, jy = px[cnt], py[cnt]
+        for i = 1, cnt do
+            local ix, iy = px[i], py[i]
+            if (iy > yc) ~= (jy > yc) then
+                k = k + 1
+                local x = ix + (yc - iy) * (jx - ix) / (jy - iy)
+                local m = k                       -- insertion sort: few crossings per row
+                while m > 1 and xs[m - 1] > x do xs[m] = xs[m - 1]; m = m - 1 end
+                xs[m] = x
+            end
+            jx, jy = ix, iy
+        end
+        for m = 1, k - 1, 2 do
+            if xs[m + 1] > xs[m] then
+                nf = nf + 1
+                local t = fills[nf]
+                if not t then
+                    t = fillParent:CreateTexture(nil, "BORDER")
+                    t:SetColorTexture(1, 1, 1, 1)
+                    ns.NoSnap(t)
+                    ns.Fade(t)
+                    fills[nf] = t
+                end
+                t:SetVertexColor(r, g, b, a)      -- not SetAlpha: it overwrites the vertex alpha
+                t:ClearAllPoints()
+                t:SetPoint("BOTTOMLEFT", view, "CENTER", xs[m], y)
+                t:SetSize(xs[m + 1] - xs[m], FILL_STEP)
+                t:Show()
+            end
+        end
+        y = y + FILL_STEP
+    end
+    return nf
 end
 
 ns.QuestAreasRepublish = function() Resolve() Publish() return shown end   -- for tests
@@ -661,8 +716,6 @@ ns.QuestAreasRepublish = function() Resolve() Publish() return shown end   -- fo
 function ns.HasQuestArea(questID)
     return shownQuest[questID] or false
 end
-
-local px, py, qx, qy, qa = {}, {}, {}, {}, {}   -- reused buffers: screen points, subdivided points, fade
 
 -- The outlines that are drawn: fn(area, questIDs, state) for every shown group or single quest area
 local function ForEachShown(fn)
@@ -775,6 +828,7 @@ local function DrawArea(a, n, pN, pW, reach, W2, H2, ew)
                 px[k], py[k] = x, y
             end
         end
+        if k >= 3 and hoverLoops[loop] then fillN = FillLoop(fillN, k, c.r, c.g, c.b, FILL_ALPHA) end
         if k >= 3 then
             -- zoomed in: Catmull-Rom subdivision, so the curve stays round instead of showing straight pieces
             local q = 0
@@ -823,6 +877,7 @@ end
 
 function ns.DrawQuestAreas()
     local n = 0
+    fillN = 0
     if ns.db().layers.questAreas and next(owner) then
         local pN, pW, k = ns.Player()
         local W, H = ns.view:GetSize()
@@ -832,5 +887,6 @@ function ns.DrawQuestAreas()
         ForEachShown(function(a) n = DrawArea(a, n, pN, pW, reach, W / 2, H / 2, ew) end)
     end
     for i = n + 1, shownLines do lines[i]:Hide() end
-    shownLines = n
+    for i = fillN + 1, shownFills do fills[i]:Hide() end
+    shownLines, shownFills = n, fillN
 end

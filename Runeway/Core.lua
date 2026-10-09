@@ -670,6 +670,7 @@ ns.NearbyMaps = NearbyMaps
 -- Discovered flight points: isUndiscovered of GetTaxiNodesForMap is always false in this client, so the
 -- nodes a flight master lists as known (taxi map, type ~= "NONE") are kept per character by name
 local UNDISCOVERED_ATLAS = "TaxiNode_Undiscovered"
+local KNOWN_ATLAS = "FlightMaster"     -- the minimap's flight master icon; else the node's world map atlas
 local function KnownTaxiNodes()
     db.taxiKnown = db.taxiKnown or {}
     local key = (UnitName("player") or "?") .. "-" .. (GetRealmName and GetRealmName() or "")
@@ -730,7 +731,7 @@ local function RefreshQuests()
             if n and own and not seenNode[t.nodeID] and not t.name:find("^zz") and ns.InChunks(inside, n, w) then
                 seenNode[t.nodeID] = true
                 local undiscovered = t.isUndiscovered or not known[t.name]
-                taxis[#taxis + 1] = { n, w, name = t.name, atlas = undiscovered and UNDISCOVERED_ATLAS or t.atlasName,
+                taxis[#taxis + 1] = { n, w, name = t.name, atlas = undiscovered and UNDISCOVERED_ATLAS or KNOWN_ATLAS, nodeAtlas = t.atlasName,
                                       undiscovered = undiscovered, faction = t.faction }
             end
         end
@@ -885,8 +886,12 @@ local function UpdateQuestPins()
     end
 end
 
--- Flight masters: Blizzard's world map icon of the node (discovered: flight point; not yet discovered: its own
--- icon), below the quest pins
+-- Flight masters, below the quest pins: discovered = the minimap's flight master icon (else the node's world map
+-- atlas), not yet discovered = Blizzard's undiscovered atlas (else the green taxi icon)
+local function TaxiAtlas(t)
+    if AtlasExists(t.atlas) then return t.atlas end
+    return not t.undiscovered and t.nodeAtlas or ""
+end
 local function UpdateTaxiPins()
     for i, t in ipairs(taxis) do
         local p = tpins[i]
@@ -896,9 +901,10 @@ local function UpdateTaxiPins()
             NoSnap(p.icon)
             tpins[i] = p
         end
-        if p.atlas ~= t.atlas or p.undiscovered ~= t.undiscovered then
-            p.atlas, p.undiscovered = t.atlas, t.undiscovered
-            SetAtlasOr(p.icon, t.atlas or "", t.undiscovered and "Interface\\TaxiFrame\\UI-Taxi-Icon-Green"
+        local atlas = TaxiAtlas(t)
+        if p.atlas ~= atlas or p.undiscovered ~= t.undiscovered then
+            p.atlas, p.undiscovered = atlas, t.undiscovered
+            SetAtlasOr(p.icon, atlas, t.undiscovered and "Interface\\TaxiFrame\\UI-Taxi-Icon-Green"
                 or "Interface\\TaxiFrame\\UI-Taxi-Icon-White")
         end
         local size = db.taxiSize * (hovered == p and HOVER_SCALE or 1)
@@ -1452,8 +1458,8 @@ SlashCmdList.RUNEWAY = function(msg)
             known, tostring(db.showTaxi)))
         for i = 1, math.min(5, #list) do
             local t = list[i][1]
-            Print(("  %s %.0f yd undiscovered=%s atlas=%s(%s)"):format(t.name, list[i][2], tostring(t.undiscovered),
-                tostring(t.atlas), AtlasExists(t.atlas or "") and "ok" or "missing"))
+            Print(("  %s %.0f yd undiscovered=%s atlas=%s(%s) icon=%s"):format(t.name, list[i][2], tostring(t.undiscovered),
+                tostring(t.atlas), AtlasExists(t.atlas or "") and "ok" or "missing", TaxiAtlas(t)))
         end
     elseif cmd == "view" then
         local vn, vw = arg:match("^(%-?[%d%.]+)%s+(%-?[%d%.]+)$")

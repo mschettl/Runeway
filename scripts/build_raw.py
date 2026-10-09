@@ -74,6 +74,10 @@ ZONE_FEATHER = 0.7         # chunks; soft transition between the zone parts of a
 # chunks per map; smaller land patches without an area ID (0) join the nearest built zone. Not yet for map 0
 # (would change the tested Eastern Kingdoms tiles: 3 patches of 264-467 chunks and 3 small ones)
 GAP_MAX = {1: 300}
+# larger patches that are playable anyway, given by one tile (col, row) inside them; they join the nearest zone too
+# (Kalimdor: A = Silithus behind the Scarab Wall 29_50, B = north of Winterspring 40_17, C = between Felwood,
+# Mount Hyjal and Ashenvale 37_25, D = between Feralas, Thousand Needles and Un'Goro 32_42; open, see status)
+GAP_JOIN = {1: []}
 EDGE_FADE = 160            # px (~165 yd); everything fades out towards the edge of the built zones
 
 
@@ -135,6 +139,8 @@ def fill_gaps(map_id, idx, zone_of, zones):
     k, lab, st, _ = cv2.connectedComponentsWithStats(land0, connectivity=8)
     small = np.zeros(k, bool)
     small[1:] = st[1:, cv2.CC_STAT_AREA] <= GAP_MAX[map_id]
+    for c, r in GAP_JOIN.get(map_id, ()):
+        small[np.unique(lab[r * 16:(r + 1) * 16, c * 16:(c + 1) * 16])[1:]] = True
     fill = small[lab]
     if not fill.any():
         return 0

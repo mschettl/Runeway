@@ -151,9 +151,9 @@ Zusätzlich gibt es den Knopf „Overlay“ auf der Weltkarte und den Knopf „K
 - **Mausrad:** zoomt gesperrt wie entsperrt, abschaltbar über „Zoom with the mouse wheel“ (`wheelZoom`, dann `EnableMouseWheel(false)` und das Mausrad steuert die Kamera). `EnableMouse` nur entsperrt.
 - **Nur entsperrt:**
   - Ziehen verschiebt die Karte.
-  - Der Griff unten rechts ändert Breite und Höhe unabhängig; die obere linke Ecke bleibt stehen.
+  - Der Griff unten rechts (6 px eingerückt, innerhalb der runden Rahmenecke) ändert Breite und Höhe unabhängig; die obere linke Ecke bleibt stehen.
   - Shift+Mausrad ändert die Größe.
-  - Beim Überfahren erscheint ein Rahmen (seit 1.6 immer, ohne Option): Rechteck mit runden Ecken (Radius 20 px), dünne weiche Linie (2 px, 55 %) über einem schwachen Glow (8 px, 10 %), helles Grau der Kartenlinien, Segmente mit `edge.tga`; statt der früheren harten 1-px-Linien.
+  - Beim Überfahren erscheint ein Rahmen (seit 1.6 immer, ohne Option): Rechteck mit runden Ecken (Radius 16 px), dünne weiche Linie (1 px, 55 %) über einem schwachen Glow (8 px, 10 %), helles Grau der Kartenlinien, Segmente mit `edge.tga`; statt der früheren harten 1-px-Linien.
 
 **Sichtbarkeit (`UpdateVisibility`):**
 - **Grundregel:** Angezeigt wird, wenn `mode == "permanent"` oder `shown` gesetzt ist und keine Bedingung zum automatischen Ausblenden greift.

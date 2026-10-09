@@ -130,9 +130,10 @@ local status = top:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 status:SetPoint("BOTTOM", 0, 6)
 
 -- Frame while the mouse is over the unlocked map: a thin soft line with rounded corners and a faint glow, in the
--- light grey of the map lines. Line segments with the soft edge texture of the quest outlines.
-local FRAME_RADIUS, FRAME_ARC = 20, 8                -- corner radius (px), segments per corner
-local FRAME_PASSES = { { 8, 0.10 }, { 2, 0.55 } }   -- { width, alpha }: glow, then the line
+-- light grey of the map lines. The glow uses the soft edge texture of the quest outlines.
+local FRAME_RADIUS, FRAME_ARC = 16, 8                -- corner radius (px), segments per corner
+-- { width, alpha, texture }: glow, then the line (solid: 1 px with the soft texture would fade away)
+local FRAME_PASSES = { { 8, 0.10, MEDIA .. "edge.tga" }, { 1, 0.55, "Interface\\Buttons\\WHITE8X8" } }
 local FRAME_COLOR = { 0.85, 0.88, 0.92 }
 local framePts, frameLines = {}, {}
 local function UpdateBorder()
@@ -159,7 +160,7 @@ local function UpdateBorder()
                 local l = frameLines[n]
                 if not l then
                     l = top:CreateLine(nil, "BORDER")
-                    l:SetTexture(MEDIA .. "edge.tga")
+                    l:SetTexture(pass[3])
                     NoSnap(l)
                     frameLines[n] = l
                 end
@@ -177,7 +178,7 @@ end
 -- Resize grip, bottom right (unlocked only); changes the size only, the zoom stays
 local grip = CreateFrame("Button", nil, top)
 grip:SetSize(16, 16)
-grip:SetPoint("BOTTOMRIGHT", -2, 2)
+grip:SetPoint("BOTTOMRIGHT", -6, 6)          -- inside the rounded corner of the frame
 grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
 grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
 grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")

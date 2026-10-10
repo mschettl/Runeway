@@ -58,7 +58,7 @@ def load_obj_groups(wmo_file):
     """Triangles (n, 3, 3) of all exported OBJ groups of a WMO, in model space (x, y, z up)."""
     stem = os.path.splitext(wmo_file)[0]
     tris = []
-    for f in glob.glob(stem + '_*.obj'):
+    for f in glob.glob(glob.escape(stem) + '_*.obj'):
         v, faces = [], []
         for line in open(f):
             if line.startswith('v '):

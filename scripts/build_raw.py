@@ -35,6 +35,7 @@ PACKS = {
         enUS='Kalimdor', deDE='Kalimdor', frFR='Kalimdor', esES='Kalimdor', esMX='Kalimdor', itIT='Kalimdor',
         ptBR='Kalimdor', ruRU='Калимдор', koKR='칼림도어', zhCN='卡利姆多', zhTW='卡林多')),
 }
+PACKS[2991] = PACKS[1]     # Zephras Isle (own map, start zone of the Skyborn) goes into the Kalimdor pack (Mario)
 PACK_NOTES = dict(
     enUS='Map data of Runeway (%s), loaded when needed', deDE='Kartendaten von Runeway (%s), werden bei Bedarf geladen',
     frFR='Données de carte de Runeway (%s), chargées si nécessaire',
@@ -72,7 +73,7 @@ ZONE_SOFT = 32             # px; rounds the chunk-based (33 yd) zone border
 ZONE_FEATHER = 0.7         # chunks; soft transition between the zone parts of a border tile
 # chunks per map; smaller land patches without an area ID (0) join the nearest built zone. Not yet for map 0
 # (would change the tested Eastern Kingdoms tiles: 3 patches of 264-467 chunks and 3 small ones)
-GAP_MAX = {1: 300}
+GAP_MAX = {1: 300, 2991: 300}
 # larger patches that are playable anyway, given by one tile (col, row) inside them; they join the nearest zone too
 # (Kalimdor: A = Silithus behind the Scarab Wall 29_50, B = north of Winterspring 40_17, C = between Felwood,
 # Mount Hyjal and Ashenvale 37_25, D = between Feralas, Thousand Needles and Un'Goro 32_42; all four stay out: not passable)
@@ -574,10 +575,10 @@ def write_pack_toc(map_id):
             suffix = '' if loc == 'enUS' else '-' + loc
             fh.write(f'## Title{suffix}: Runeway - {name}\n## Notes{suffix}: {PACK_NOTES[loc] % name}\n')
         fh.write(f'## Version: {meta("Version")}\n## Dependencies: Runeway\n## LoadOnDemand: 1\n'
-                 f'## X-Runeway-Maps: {map_id}\n\n')
-        # the map's tiles, then its interior sets (tiles/<map>-<uiMap>/, build_wmo.py)
+                 f'## X-Runeway-Maps: {" ".join(str(m) for m in sorted(PACKS) if PACKS[m][0] == pack)}\n\n')
+        # the maps' tiles, then their interior sets (tiles/<map>-<uiMap>/, build_wmo.py)
         sets = sorted(os.path.basename(os.path.dirname(f)) for f in glob.glob(os.path.join(ROOT, pack, 'tiles', '*', 'Tiles.lua')))
-        for s in sorted(sets, key=lambda s: s != str(map_id)):
+        for s in sorted(sets, key=lambda s: (not s.isdigit(), s)):
             fh.write(f'tiles\\{s}\\Tiles.lua\n')
 
 

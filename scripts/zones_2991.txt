@@ -1,0 +1,3 @@
+# Zones of map 2991 (Zephras Isle, own map, data in the Kalimdor pack) built by scripts/build_raw.py.
+# Zone number = line order; append new zones at the end.
+Zephras Isle

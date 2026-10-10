@@ -346,7 +346,8 @@ end
 -- Without its data the map stays hidden (no quest areas or player arrow on an empty map).
 -- Data packs that exist (map -> pack, continent uiMap for its name): a known pack that is not installed is
 -- reported like one that does not load; a map without a known pack has no data at all (NoMapData)
-local KNOWN_PACKS = { [0] = { "Runeway_EasternKingdoms", 1415 }, [1] = { "Runeway_Kalimdor", 1414 } }
+local KNOWN_PACKS = { [0] = { "Runeway_EasternKingdoms", 1415 }, [1] = { "Runeway_Kalimdor", 1414 },
+    [2991] = { "Runeway_Kalimdor", 1414 } }   -- Zephras Isle: own map, Kalimdor pack
 local function MissingPack()
     local inst = select(4, UnitPosition("player"))
     LoadPack(inst)

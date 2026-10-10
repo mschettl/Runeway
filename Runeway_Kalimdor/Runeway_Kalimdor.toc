@@ -24,6 +24,7 @@
 ## Version: 0.6.1
 ## Dependencies: Runeway
 ## LoadOnDemand: 1
-## X-Runeway-Maps: 1
+## X-Runeway-Maps: 1 2991
 
 tiles\1\Tiles.lua
+tiles\2991\Tiles.lua

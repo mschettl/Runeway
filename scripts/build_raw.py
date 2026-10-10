@@ -73,7 +73,7 @@ ZONE_SOFT = 32             # px; rounds the chunk-based (33 yd) zone border
 ZONE_FEATHER = 0.7         # chunks; soft transition between the zone parts of a border tile
 # chunks per map; smaller land patches without an area ID (0) join the nearest built zone. Not yet for map 0
 # (would change the tested Eastern Kingdoms tiles: 3 patches of 264-467 chunks and 3 small ones)
-GAP_MAX = {1: 300, 2991: 300}
+GAP_MAX = {1: 300}
 # larger patches that are playable anyway, given by one tile (col, row) inside them; they join the nearest zone too
 # (Kalimdor: A = Silithus behind the Scarab Wall 29_50, B = north of Winterspring 40_17, C = between Felwood,
 # Mount Hyjal and Ashenvale 37_25, D = between Feralas, Thousand Needles and Un'Goro 32_42; all four stay out: not passable)

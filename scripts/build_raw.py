@@ -78,6 +78,9 @@ GAP_MAX = {1: 300}
 # (Kalimdor: A = Silithus behind the Scarab Wall 29_50, B = north of Winterspring 40_17, C = between Felwood,
 # Mount Hyjal and Ashenvale 37_25, D = between Feralas, Thousand Needles and Un'Goro 32_42; all four stay out: not passable)
 GAP_JOIN = {1: []}
+# yd per map: chunks whose highest point lies below this are ground under a floating island (Zephras Isle at
+# ~550-1000 yd over flat ground at ~1 yd); they count like open sea and are left out, so the island gets a soft edge
+FLOOR = {2991: 50}
 EDGE_FADE = 160            # px (~165 yd); everything fades out towards the edge of the built zones
 
 
@@ -662,13 +665,22 @@ def main(map_id, zone_names):
     dry = cv2.resize(d, (len(cols) * 16, len(rows) * 16), interpolation=cv2.INTER_AREA) > 5   # > 2 % dry
     del d
     keep = np.zeros((len(rows) * 16, len(cols) * 16), bool)
+    floor = {}
+    if map_id in FLOOR:
+        src, name = map_dir(map_id)
+        for c, r in idx:
+            hi = read_root(os.path.join(src, f'{name}_{c}_{r}.adt'))['outer'][:128, :128].reshape(16, 8, 16, 8).max(axis=(1, 3))
+            floor[(c, r)] = hi < FLOOR[map_id]
     sea = np.zeros_like(keep)
     for (c, r), a in idx.items():
         if c in cols and r in rows:
             ys = slice((r - rows[0]) * 16, (r - rows[0] + 1) * 16)
             xs = slice((c - cols[0]) * 16, (c - cols[0] + 1) * 16)
-            keep[ys, xs] = land(a)
+            keep[ys, xs] = land(a) & ~floor.get((c, r), False)
             sea[ys, xs] = np.isin(a, list(seas))
+    if floor:          # floating island: only the island itself, no single spires standing on the ground
+        n, lab, st, _ = cv2.connectedComponentsWithStats(u8(keep), connectivity=8)
+        keep = lab == 1 + np.argmax(st[1:, cv2.CC_STAT_AREA]) if n > 1 else keep
     _, lab = cv2.connectedComponents(np.pad(u8(~(keep & dry)), 1, constant_values=1), connectivity=4)
     ocean = keep & ~dry & (lab[1:-1, 1:-1] == lab[0, 0])
     sea |= ocean

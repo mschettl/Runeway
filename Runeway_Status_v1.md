@@ -451,6 +451,12 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
 - Stormwind City hat (wie andere Städte außer Undercity) keine Gebäude-Wände; dafür braucht es den WMO-Export (siehe „Weitere Städte“).
 - Lava (MH2O-Typ Magma, Searing Gorge, Burning Steppes) wird übersprungen und zählt damit als Gelände; ggf. als nicht begehbar markieren.
 
+### Eigene Version nach 0.8 (Mario, 10.10.): Kartendetails Östliche Königreiche
+Nicht in 0.7 oder 0.8; Versionsnummer bei Start festlegen.
+1. **Lücken ohne Gebiets-ID (Area 0) schließen** wie in Kalimdor (`GAP_MAX` für Karte 0 setzen, Östliche Königreiche neu bauen und neu testen). Land-Flecken ohne Gebiets-ID (Chunks, Kachel der Mitte): 467 (29_42), 454 (42_25), 428 (30_45), 264 (36_55, Süden von Stranglethorn), 35 (41_23), 23 (39_33). Vorher je Fleck prüfen, ob begehbar (wie A–D in Kalimdor).
+2. **Brücken und Stege als Weg:** Wege kommen nur aus Bodentexturen („road“/„path“). Brücken sind Modelle (WMO/M2, z. B. `elwynnwidebridge.wmo`, `ironfootbridge.wmo`) ohne Bodentextur, daher bricht der Weg dort ab (Spieltest Tirisfal). Ansatz: Brücken-Modelle aus den Placement-CSVs (Name enthält „bridge“, ggf. „dock“/„pier“), Längsachse aus Bounding-Box und Drehung, als Wegstück einzeichnen und mit den Wegenden in der Nähe verbinden; die Fläche darunter zählt als begehbar über dem Wasser.
+3. **Kleine Gebäude und Ortschaften** (z. B. Brill, Zeppelinturm in Tirisfal): fehlen bisher ganz; nur Undercity (OBJ) und die Stadttürme (M2) sind eingezeichnet. Ansatz: Grundriss je platziertem WMO aus der Bounding-Box der Root-`.wmo` (Header MOHD, ohne OBJ-Export) plus Position und Drehung aus den Placement-CSVs als Umriss bzw. „nicht begehbar“ zeichnen; ausgewählte M2 (Türme, Zeppelinturm) über `M2_BLOCKERS`. Ggf. eigene Ebene „Gebäude“ (einfärbbar). Ortsnamen (wie auf der Minimap) gesondert prüfen: Quelle wären Blizzards Kartenbeschriftungen, nicht die Kacheln.
+
 ### Später
 - **Weitere Städte:**
   - WMO als OBJ exportieren (wow.export, „Split WMO Groups“, ohne Texturen) und auf `data` legen.

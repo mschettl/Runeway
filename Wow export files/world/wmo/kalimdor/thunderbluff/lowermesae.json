@@ -1,0 +1,13752 @@
+{
+	"fileType": "wmo",
+	"fileDataID": 113769,
+	"fileName": "world/wmo/kalimdor/thunderbluff/lowermesae.wmo",
+	"version": 17,
+	"counts": {
+		"material": 15,
+		"group": 4,
+		"portal": 0,
+		"light": 0,
+		"model": 29,
+		"doodad": 48,
+		"set": 1,
+		"lod": 0
+	},
+	"portalVertices": [],
+	"portalInfo": [],
+	"portalMapObjectRef": [],
+	"ambientColor": 4282400850,
+	"wmoID": 782,
+	"boundingBox1": [
+		-14.806879997253418,
+		-10.946111679077148,
+		-0.969416618347168
+	],
+	"boundingBox2": [
+		57.711181640625,
+		41.80978012084961,
+		41.638607025146484
+	],
+	"fog": [
+		{
+			"flags": 0,
+			"position": [
+				0,
+				0,
+				0
+			],
+			"radiusSmall": 0,
+			"radiusLarge": 0,
+			"fog": {
+				"end": 444.4444580078125,
+				"startScalar": 0.25,
+				"color": 4294967295
+			},
+			"underwaterFog": {
+				"end": 222.22222900390625,
+				"startScalar": -0.5,
+				"color": 4278190335
+			}
+		}
+	],
+	"flags": 0,
+	"groups": [
+		{
+			"groupName": "TaurenHut01",
+			"enabled": true,
+			"version": 17,
+			"flags": 2057,
+			"boundingBox1": [
+				-1.4225692749023438,
+				1.6776820421218872,
+				0.21720415353775024
+			],
+			"boundingBox2": [
+				20.377256393432617,
+				21.662425994873047,
+				12.205323219299316
+			],
+			"numPortals": 0,
+			"numBatchesA": 0,
+			"numBatchesB": 0,
+			"numBatchesC": 7,
+			"liquidType": 15,
+			"groupID": 1436,
+			"materialInfo": [
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 32,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 32,
+					"materialID": 6
+				},
+				{
+					"flags": 32,
+					"materialID": 6
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				}
+			],
+			"renderBatches": [
+				{
+					"possibleBox1": [
+						4,
+						12,
+						0
+					],
+					"possibleBox2": [
+						6,
+						14,
+						3
+					],
+					"firstFace": 0,
+					"numFaces": 312,
+					"firstVertex": 0,
+					"lastVertex": 72,
+					"flags": 0,
+					"materialID": 10
+				},
+				{
+					"possibleBox1": [
+						2,
+						1,
+						0
+					],
+					"possibleBox2": [
+						20,
+						17,
+						4
+					],
+					"firstFace": 312,
+					"numFaces": 528,
+					"firstVertex": 73,
+					"lastVertex": 213,
+					"flags": 0,
+					"materialID": 9
+				},
+				{
+					"possibleBox1": [
+						12,
+						3,
+						5
+					],
+					"possibleBox2": [
+						19,
+						13,
+						11
+					],
+					"firstFace": 840,
+					"numFaces": 6,
+					"firstVertex": 214,
+					"lastVertex": 219,
+					"flags": 0,
+					"materialID": 1
+				},
+				{
+					"possibleBox1": [
+						65534,
+						3,
+						0
+					],
+					"possibleBox2": [
+						19,
+						22,
+						6
+					],
+					"firstFace": 846,
+					"numFaces": 174,
+					"firstVertex": 220,
+					"lastVertex": 305,
+					"flags": 0,
+					"materialID": 2
+				},
+				{
+					"possibleBox1": [
+						65534,
+						2,
+						0
+					],
+					"possibleBox2": [
+						20,
+						22,
+						12
+					],
+					"firstFace": 1020,
+					"numFaces": 150,
+					"firstVertex": 306,
+					"lastVertex": 388,
+					"flags": 0,
+					"materialID": 0
+				},
+				{
+					"possibleBox1": [
+						65534,
+						2,
+						0
+					],
+					"possibleBox2": [
+						20,
+						22,
+						12
+					],
+					"firstFace": 1170,
+					"numFaces": 24,
+					"firstVertex": 389,
+					"lastVertex": 400,
+					"flags": 0,
+					"materialID": 6
+				},
+				{
+					"possibleBox1": [
+						65535,
+						1,
+						0
+					],
+					"possibleBox2": [
+						21,
+						22,
+						13
+					],
+					"firstFace": 1194,
+					"numFaces": 723,
+					"firstVertex": 401,
+					"lastVertex": 692,
+					"flags": 0,
+					"materialID": 7
+				}
+			]
+		},
+		{
+			"groupName": "Teepee20",
+			"enabled": true,
+			"version": 17,
+			"flags": 2057,
+			"boundingBox1": [
+				-9.5888090133667,
+				-10.946111679077148,
+				-0.4145393967628479
+			],
+			"boundingBox2": [
+				10.40406608581543,
+				9.280941009521484,
+				21.925254821777344
+			],
+			"numPortals": 0,
+			"numBatchesA": 0,
+			"numBatchesB": 0,
+			"numBatchesC": 9,
+			"liquidType": 15,
+			"groupID": 1437,
+			"materialInfo": [
+				{
+					"flags": 36,
+					"materialID": 13
+				},
+				{
+					"flags": 36,
+					"materialID": 13
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 32,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 32,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 32,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 32,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 4
+				},
+				{
+					"flags": 96,
+					"materialID": 4
+				},
+				{
+					"flags": 96,
+					"materialID": 4
+				},
+				{
+					"flags": 96,
+					"materialID": 4
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 5
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				}
+			],
+			"renderBatches": [
+				{
+					"possibleBox1": [
+						65529,
+						65527,
+						0
+					],
+					"possibleBox2": [
+						10,
+						3,
+						1
+					],
+					"firstFace": 0,
+					"numFaces": 6,
+					"firstVertex": 0,
+					"lastVertex": 5,
+					"flags": 0,
+					"materialID": 13
+				},
+				{
+					"possibleBox1": [
+						65527,
+						65525,
+						0
+					],
+					"possibleBox2": [
+						0,
+						65532,
+						4
+					],
+					"firstFace": 6,
+					"numFaces": 480,
+					"firstVertex": 6,
+					"lastVertex": 129,
+					"flags": 0,
+					"materialID": 9
+				},
+				{
+					"possibleBox1": [
+						65528,
+						65528,
+						6
+					],
+					"possibleBox2": [
+						9,
+						8,
+						18
+					],
+					"firstFace": 486,
+					"numFaces": 108,
+					"firstVertex": 130,
+					"lastVertex": 187,
+					"flags": 0,
+					"materialID": 12
+				},
+				{
+					"possibleBox1": [
+						65527,
+						65527,
+						6
+					],
+					"possibleBox2": [
+						9,
+						8,
+						12
+					],
+					"firstFace": 594,
+					"numFaces": 72,
+					"firstVertex": 188,
+					"lastVertex": 223,
+					"flags": 0,
+					"materialID": 11
+				},
+				{
+					"possibleBox1": [
+						65532,
+						65527,
+						65535
+					],
+					"possibleBox2": [
+						10,
+						8,
+						8
+					],
+					"firstFace": 666,
+					"numFaces": 12,
+					"firstVertex": 224,
+					"lastVertex": 231,
+					"flags": 0,
+					"materialID": 4
+				},
+				{
+					"possibleBox1": [
+						4,
+						65528,
+						65535
+					],
+					"possibleBox2": [
+						10,
+						2,
+						8
+					],
+					"firstFace": 678,
+					"numFaces": 87,
+					"firstVertex": 232,
+					"lastVertex": 258,
+					"flags": 0,
+					"materialID": 5
+				},
+				{
+					"possibleBox1": [
+						65527,
+						65527,
+						65535
+					],
+					"possibleBox2": [
+						4,
+						8,
+						8
+					],
+					"firstFace": 765,
+					"numFaces": 12,
+					"firstVertex": 259,
+					"lastVertex": 266,
+					"flags": 0,
+					"materialID": 0
+				},
+				{
+					"possibleBox1": [
+						65527,
+						65528,
+						65535
+					],
+					"possibleBox2": [
+						8,
+						8,
+						18
+					],
+					"firstFace": 777,
+					"numFaces": 87,
+					"firstVertex": 267,
+					"lastVertex": 311,
+					"flags": 0,
+					"materialID": 6
+				},
+				{
+					"possibleBox1": [
+						65526,
+						65525,
+						65535
+					],
+					"possibleBox2": [
+						11,
+						10,
+						22
+					],
+					"firstFace": 864,
+					"numFaces": 594,
+					"firstVertex": 312,
+					"lastVertex": 599,
+					"flags": 0,
+					"materialID": 7
+				}
+			]
+		},
+		{
+			"groupName": "BonnetHut06",
+			"enabled": true,
+			"version": 17,
+			"flags": 2057,
+			"boundingBox1": [
+				18.59071922302246,
+				7.469114780426025,
+				1.9205900430679321
+			],
+			"boundingBox2": [
+				57.891204833984375,
+				41.80978012084961,
+				34.4130859375
+			],
+			"numPortals": 0,
+			"numBatchesA": 0,
+			"numBatchesB": 0,
+			"numBatchesC": 26,
+			"liquidType": 15,
+			"groupID": 1438,
+			"materialInfo": [
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 96,
+					"materialID": 14
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 32,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 96,
+					"materialID": 10
+				},
+				{
+					"flags": 36,
+					"materialID": 13
+				},
+				{
+					"flags": 36,
+					"materialID": 13
+				},
+				{
+					"flags": 36,
+					"materialID": 13
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 32,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 9
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 1
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 2
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 32,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 32,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 32,
+					"materialID": 12
+				},
+				{
+					"flags": 32,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 32,
+					"materialID": 12
+				},
+				{
+					"flags": 32,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 32,
+					"materialID": 12
+				},
+				{
+					"flags": 32,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 12
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 32,
+					"materialID": 11
+				},
+				{
+					"flags": 32,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 11
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 32,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 32,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 32,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 32,
+					"materialID": 8
+				},
+				{
+					"flags": 32,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 32,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 32,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 32,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 32,
+					"materialID": 8
+				},
+				{
+					"flags": 32,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 32,
+					"materialID": 8
+				},
+				{
+					"flags": 32,
+					"materialID": 8
+				},
+				{
+					"flags": 32,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 8
+				},
+				{
+					"flags": 96,
+					"materialID": 3
+				},
+				{
+					"flags": 96,
+					"materialID": 3
+				},
+				{
+					"flags": 96,
+					"materialID": 3
+				},
+				{
+					"flags": 96,
+					"materialID": 3
+				},
+				{
+					"flags": 96,
+					"materialID": 3
+				},
+				{
+					"flags": 96,
+					"materialID": 3
+				},
+				{
+					"flags": 96,
+					"materialID": 3
+				},
+				{
+					"flags": 96,
+					"materialID": 3
+				},
+				{
+					"flags": 32,
+					"materialID": 4
+				},
+				{
+					"flags": 96,
+					"materialID": 4
+				},
+				{
+					"flags": 96,
+					"materialID": 4
+				},
+				{
+					"flags": 32,
+					"materialID": 4
+				},
+				{
+					"flags": 96,
+					"materialID": 4
+				},
+				{
+					"flags": 32,
+					"materialID": 4
+				},
+				{
+					"flags": 32,
+					"materialID": 4
+				},
+				{
+					"flags": 32,
+					"materialID": 4
+				},
+				{
+					"flags": 32,
+					"materialID": 4
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 32,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 0
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 6
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				}
+			],
+			"renderBatches": [
+				{
+					"possibleBox1": [
+						35,
+						14,
+						3
+					],
+					"possibleBox2": [
+						37,
+						16,
+						5
+					],
+					"firstFace": 0,
+					"numFaces": 75,
+					"firstVertex": 0,
+					"lastVertex": 18,
+					"flags": 0,
+					"materialID": 14
+				},
+				{
+					"possibleBox1": [
+						48,
+						26,
+						4
+					],
+					"possibleBox2": [
+						49,
+						28,
+						5
+					],
+					"firstFace": 75,
+					"numFaces": 3,
+					"firstVertex": 19,
+					"lastVertex": 21,
+					"flags": 0,
+					"materialID": 10
+				},
+				{
+					"possibleBox1": [
+						35,
+						14,
+						3
+					],
+					"possibleBox2": [
+						37,
+						16,
+						4
+					],
+					"firstFace": 78,
+					"numFaces": 30,
+					"firstVertex": 2,
+					"lastVertex": 30,
+					"flags": 0,
+					"materialID": 14
+				},
+				{
+					"possibleBox1": [
+						47,
+						26,
+						4
+					],
+					"possibleBox2": [
+						49,
+						27,
+						5
+					],
+					"firstFace": 108,
+					"numFaces": 24,
+					"firstVertex": 19,
+					"lastVertex": 38,
+					"flags": 0,
+					"materialID": 10
+				},
+				{
+					"possibleBox1": [
+						35,
+						14,
+						3
+					],
+					"possibleBox2": [
+						37,
+						16,
+						4
+					],
+					"firstFace": 132,
+					"numFaces": 24,
+					"firstVertex": 1,
+					"lastVertex": 30,
+					"flags": 0,
+					"materialID": 14
+				},
+				{
+					"possibleBox1": [
+						47,
+						26,
+						3
+					],
+					"possibleBox2": [
+						49,
+						28,
+						5
+					],
+					"firstFace": 156,
+					"numFaces": 90,
+					"firstVertex": 20,
+					"lastVertex": 65,
+					"flags": 0,
+					"materialID": 10
+				},
+				{
+					"possibleBox1": [
+						35,
+						14,
+						3
+					],
+					"possibleBox2": [
+						37,
+						15,
+						5
+					],
+					"firstFace": 246,
+					"numFaces": 6,
+					"firstVertex": 15,
+					"lastVertex": 18,
+					"flags": 0,
+					"materialID": 14
+				},
+				{
+					"possibleBox1": [
+						47,
+						26,
+						4
+					],
+					"possibleBox2": [
+						49,
+						28,
+						5
+					],
+					"firstFace": 252,
+					"numFaces": 15,
+					"firstVertex": 66,
+					"lastVertex": 72,
+					"flags": 0,
+					"materialID": 10
+				},
+				{
+					"possibleBox1": [
+						35,
+						14,
+						3
+					],
+					"possibleBox2": [
+						37,
+						16,
+						5
+					],
+					"firstFace": 267,
+					"numFaces": 3,
+					"firstVertex": 13,
+					"lastVertex": 18,
+					"flags": 0,
+					"materialID": 14
+				},
+				{
+					"possibleBox1": [
+						47,
+						26,
+						3
+					],
+					"possibleBox2": [
+						49,
+						28,
+						5
+					],
+					"firstFace": 270,
+					"numFaces": 45,
+					"firstVertex": 39,
+					"lastVertex": 79,
+					"flags": 0,
+					"materialID": 10
+				},
+				{
+					"possibleBox1": [
+						35,
+						14,
+						2
+					],
+					"possibleBox2": [
+						46,
+						16,
+						5
+					],
+					"firstFace": 315,
+					"numFaces": 156,
+					"firstVertex": 27,
+					"lastVertex": 114,
+					"flags": 0,
+					"materialID": 14
+				},
+				{
+					"possibleBox1": [
+						47,
+						26,
+						4
+					],
+					"possibleBox2": [
+						49,
+						28,
+						5
+					],
+					"firstFace": 471,
+					"numFaces": 57,
+					"firstVertex": 31,
+					"lastVertex": 131,
+					"flags": 0,
+					"materialID": 10
+				},
+				{
+					"possibleBox1": [
+						35,
+						14,
+						2
+					],
+					"possibleBox2": [
+						45,
+						16,
+						5
+					],
+					"firstFace": 528,
+					"numFaces": 102,
+					"firstVertex": 22,
+					"lastVertex": 142,
+					"flags": 0,
+					"materialID": 14
+				},
+				{
+					"possibleBox1": [
+						39,
+						11,
+						2
+					],
+					"possibleBox2": [
+						49,
+						28,
+						5
+					],
+					"firstFace": 630,
+					"numFaces": 390,
+					"firstVertex": 46,
+					"lastVertex": 219,
+					"flags": 0,
+					"materialID": 10
+				},
+				{
+					"possibleBox1": [
+						18,
+						14,
+						3
+					],
+					"possibleBox2": [
+						58,
+						21,
+						5
+					],
+					"firstFace": 1020,
+					"numFaces": 9,
+					"firstVertex": 220,
+					"lastVertex": 228,
+					"flags": 0,
+					"materialID": 13
+				},
+				{
+					"possibleBox1": [
+						25,
+						13,
+						2
+					],
+					"possibleBox2": [
+						57,
+						28,
+						6
+					],
+					"firstFace": 1029,
+					"numFaces": 1008,
+					"firstVertex": 229,
+					"lastVertex": 492,
+					"flags": 0,
+					"materialID": 9
+				},
+				{
+					"possibleBox1": [
+						42,
+						11,
+						9
+					],
+					"possibleBox2": [
+						56,
+						30,
+						34
+					],
+					"firstFace": 2037,
+					"numFaces": 126,
+					"firstVertex": 493,
+					"lastVertex": 548,
+					"flags": 0,
+					"materialID": 1
+				},
+				{
+					"possibleBox1": [
+						23,
+						7,
+						2
+					],
+					"possibleBox2": [
+						56,
+						32,
+						29
+					],
+					"firstFace": 2163,
+					"numFaces": 120,
+					"firstVertex": 549,
+					"lastVertex": 602,
+					"flags": 0,
+					"materialID": 2
+				},
+				{
+					"possibleBox1": [
+						23,
+						10,
+						10
+					],
+					"possibleBox2": [
+						39,
+						28,
+						19
+					],
+					"firstFace": 2283,
+					"numFaces": 120,
+					"firstVertex": 603,
+					"lastVertex": 663,
+					"flags": 0,
+					"materialID": 12
+				},
+				{
+					"possibleBox1": [
+						23,
+						10,
+						10
+					],
+					"possibleBox2": [
+						39,
+						21,
+						19
+					],
+					"firstFace": 2403,
+					"numFaces": 39,
+					"firstVertex": 664,
+					"lastVertex": 690,
+					"flags": 0,
+					"materialID": 11
+				},
+				{
+					"possibleBox1": [
+						27,
+						15,
+						3
+					],
+					"possibleBox2": [
+						50,
+						42,
+						35
+					],
+					"firstFace": 2442,
+					"numFaces": 279,
+					"firstVertex": 691,
+					"lastVertex": 802,
+					"flags": 0,
+					"materialID": 8
+				},
+				{
+					"possibleBox1": [
+						23,
+						16,
+						2
+					],
+					"possibleBox2": [
+						37,
+						31,
+						11
+					],
+					"firstFace": 2721,
+					"numFaces": 24,
+					"firstVertex": 803,
+					"lastVertex": 818,
+					"flags": 0,
+					"materialID": 3
+				},
+				{
+					"possibleBox1": [
+						22,
+						7,
+						8
+					],
+					"possibleBox2": [
+						55,
+						32,
+						27
+					],
+					"firstFace": 2745,
+					"numFaces": 27,
+					"firstVertex": 819,
+					"lastVertex": 832,
+					"flags": 0,
+					"materialID": 4
+				},
+				{
+					"possibleBox1": [
+						22,
+						16,
+						2
+					],
+					"possibleBox2": [
+						54,
+						39,
+						17
+					],
+					"firstFace": 2772,
+					"numFaces": 273,
+					"firstVertex": 833,
+					"lastVertex": 964,
+					"flags": 0,
+					"materialID": 0
+				},
+				{
+					"possibleBox1": [
+						23,
+						15,
+						2
+					],
+					"possibleBox2": [
+						55,
+						41,
+						16
+					],
+					"firstFace": 3045,
+					"numFaces": 156,
+					"firstVertex": 965,
+					"lastVertex": 1019,
+					"flags": 0,
+					"materialID": 6
+				},
+				{
+					"possibleBox1": [
+						21,
+						9,
+						1
+					],
+					"possibleBox2": [
+						57,
+						42,
+						35
+					],
+					"firstFace": 3201,
+					"numFaces": 1845,
+					"firstVertex": 1020,
+					"lastVertex": 1801,
+					"flags": 0,
+					"materialID": 7
+				}
+			]
+		},
+		{
+			"groupName": "LowerMesaE01",
+			"enabled": true,
+			"version": 17,
+			"flags": 2057,
+			"boundingBox1": [
+				-28.953533172607422,
+				-3.5727996826171875,
+				-0.969416618347168
+			],
+			"boundingBox2": [
+				5.231392860412598,
+				32.362613677978516,
+				57.087379455566406
+			],
+			"numPortals": 0,
+			"numBatchesA": 0,
+			"numBatchesB": 0,
+			"numBatchesC": 2,
+			"liquidType": 15,
+			"groupID": 1439,
+			"materialInfo": [
+				{
+					"flags": 36,
+					"materialID": 13
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 96,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				},
+				{
+					"flags": 32,
+					"materialID": 7
+				}
+			],
+			"renderBatches": [
+				{
+					"possibleBox1": [
+						65524,
+						15,
+						41
+					],
+					"possibleBox2": [
+						65525,
+						16,
+						42
+					],
+					"firstFace": 0,
+					"numFaces": 3,
+					"firstVertex": 0,
+					"lastVertex": 2,
+					"flags": 0,
+					"materialID": 13
+				},
+				{
+					"possibleBox1": [
+						65521,
+						13,
+						65535
+					],
+					"possibleBox2": [
+						65528,
+						23,
+						32
+					],
+					"firstFace": 3,
+					"numFaces": 30,
+					"firstVertex": 3,
+					"lastVertex": 14,
+					"flags": 0,
+					"materialID": 7
+				}
+			]
+		}
+	],
+	"groupNames": [
+		"TaurenHut01",
+		"Teepee20",
+		"BonnetHut06",
+		"LowerMesaE01"
+	],
+	"groupInfo": [
+		{
+			"flags": 8,
+			"boundingBox1": [
+				-1.4225692749023438,
+				1.6776820421218872,
+				0.21720415353775024
+			],
+			"boundingBox2": [
+				20.377256393432617,
+				21.662425994873047,
+				12.205323219299316
+			],
+			"nameIndex": -1
+		},
+		{
+			"flags": 8,
+			"boundingBox1": [
+				-9.5888090133667,
+				-10.946111679077148,
+				-0.4145393967628479
+			],
+			"boundingBox2": [
+				10.40406608581543,
+				9.280941009521484,
+				21.925254821777344
+			],
+			"nameIndex": -1
+		},
+		{
+			"flags": 8,
+			"boundingBox1": [
+				18.59071922302246,
+				7.469114780426025,
+				1.9205900430679321
+			],
+			"boundingBox2": [
+				57.891204833984375,
+				41.80978012084961,
+				34.4130859375
+			],
+			"nameIndex": 2
+		},
+		{
+			"flags": 8,
+			"boundingBox1": [
+				-28.953533172607422,
+				-3.5727996826171875,
+				-0.969416618347168
+			],
+			"boundingBox2": [
+				5.231392860412598,
+				32.362613677978516,
+				57.087379455566406
+			],
+			"nameIndex": 14
+		}
+	],
+	"textures": [
+		{
+			"fileDataID": 129756,
+			"fileNameInternal": "dungeons/textures/walls/bm_thunder_wall_04.blp"
+		},
+		{
+			"fileDataID": 128661,
+			"fileNameInternal": "dungeons/textures/roof/bm_thunder_roof_01.blp"
+		},
+		{
+			"fileDataID": 128662,
+			"fileNameInternal": "dungeons/textures/roof/bm_thunder_roof_02.blp"
+		},
+		{
+			"fileDataID": 129753,
+			"fileNameInternal": "dungeons/textures/walls/bm_thunder_wall_01.blp"
+		},
+		{
+			"fileDataID": 129754,
+			"fileNameInternal": "dungeons/textures/walls/bm_thunder_wall_02.blp"
+		},
+		{
+			"fileDataID": 129755,
+			"fileNameInternal": "dungeons/textures/walls/bm_thunder_wall_03.blp"
+		},
+		{
+			"fileDataID": 129757,
+			"fileNameInternal": "dungeons/textures/walls/bm_thunder_wall_05.blp"
+		},
+		{
+			"fileDataID": 130258,
+			"fileNameInternal": "dungeons/textures/wood/bm_thunder_logs_01.blp"
+		},
+		{
+			"fileDataID": 129115,
+			"fileNameInternal": "dungeons/textures/trim/bm_thunder_rope_01.blp"
+		},
+		{
+			"fileDataID": 127524,
+			"fileNameInternal": "dungeons/textures/doodads/wovenbasket01.blp"
+		},
+		{
+			"fileDataID": 127519,
+			"fileNameInternal": "dungeons/textures/doodads/taurengrainsack01.blp"
+		},
+		{
+			"fileDataID": 128664,
+			"fileNameInternal": "dungeons/textures/roof/bm_thunder_roof_blue02.blp"
+		},
+		{
+			"fileDataID": 128663,
+			"fileNameInternal": "dungeons/textures/roof/bm_thunder_roof_blue01.blp"
+		},
+		{
+			"fileDataID": 127521,
+			"fileNameInternal": "dungeons/textures/doodads/thunderbluffropebridge/thunderbluffbridge.blp"
+		}
+	],
+	"materials": [
+		{
+			"flags": 0,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 129756,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 0,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 128661,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 0,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 128662,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 0,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 129753,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 0,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 129754,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 0,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 129755,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 0,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 129757,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 0,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 130258,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 0,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 129115,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 192,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 127524,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 192,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 127519,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 0,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 128664,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 0,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 128663,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 4,
+			"shader": 0,
+			"blendMode": 1,
+			"texture1": 127521,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4286545791,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"flags": 192,
+			"shader": 0,
+			"blendMode": 0,
+			"texture1": 127519,
+			"color1": 4278190080,
+			"color1b": 0,
+			"texture2": 0,
+			"color2": 4287993237,
+			"groupType": 10,
+			"texture3": 0,
+			"color3": 0,
+			"flags3": 0,
+			"runtimeData": [
+				0,
+				0,
+				0,
+				0
+			]
+		}
+	],
+	"doodadSets": [
+		{
+			"name": "Set_$DefaultGlobal",
+			"firstInstanceIndex": 0,
+			"doodadCount": 47,
+			"unused": 0
+		}
+	],
+	"fileDataIDs": [
+		200396,
+		199252,
+		0,
+		199254,
+		0,
+		200402,
+		0,
+		200403,
+		0,
+		200395,
+		0,
+		198649,
+		0,
+		199430,
+		199434,
+		0,
+		199432,
+		0,
+		199436,
+		0,
+		199438,
+		0,
+		199439,
+		0,
+		199446,
+		0,
+		199448,
+		0,
+		197406,
+		0,
+		200403,
+		0,
+		200402,
+		0,
+		200398,
+		0,
+		200549,
+		0,
+		198125,
+		198167,
+		0,
+		199179,
+		0,
+		199184,
+		199182,
+		200397,
+		200399,
+		0,
+		189705,
+		0,
+		200617,
+		0
+	],
+	"doodads": [
+		{
+			"offset": 0,
+			"flags": 0,
+			"position": [
+				17.313241958618164,
+				6.986302852630615,
+				6.3162007331848145
+			],
+			"rotation": [
+				5.504881351712234e-17,
+				-5.397883686593928e-16,
+				-0.9600498676300049,
+				-0.2798289656639099
+			],
+			"scale": 1.686982274055481,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 1,
+			"flags": 0,
+			"position": [
+				13.922829627990723,
+				4.430635929107666,
+				0.6947701573371887
+			],
+			"rotation": [
+				-0.03296929597854614,
+				-0.07301811873912811,
+				-0.36365365982055664,
+				0.9280826449394226
+			],
+			"scale": 3.391921281814575,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 3,
+			"flags": 0,
+			"position": [
+				13.637815475463867,
+				12.606338500976562,
+				0.7884067296981812
+			],
+			"rotation": [
+				-0.08811026066541672,
+				-0.11140226572751999,
+				-0.7453032732009888,
+				0.6514208316802979
+			],
+			"scale": 2.7530996799468994,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 5,
+			"flags": 0,
+			"position": [
+				7.704710483551025,
+				16.70403480529785,
+				0.43931958079338074
+			],
+			"rotation": [
+				-1.5812534937911815e-15,
+				-1.8918449113189276e-15,
+				-0.7372772693634033,
+				0.6755902171134949
+			],
+			"scale": 0.9999998807907104,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 7,
+			"flags": 0,
+			"position": [
+				9.041998863220215,
+				16.491012573242188,
+				0.4532258212566376
+			],
+			"rotation": [
+				-2.135679491751635e-16,
+				8.124233795528366e-17,
+				-0.7372773289680481,
+				0.6755902171134949
+			],
+			"scale": 0.982905924320221,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 9,
+			"flags": 0,
+			"position": [
+				9.44955062866211,
+				1.1191965341567993,
+				1.8675611019134521
+			],
+			"rotation": [
+				-3.273650580486352e-30,
+				1.798586478453052e-30,
+				0.17364822328090668,
+				0.9848077297210693
+			],
+			"scale": 1.4872997999191284,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 11,
+			"flags": 0,
+			"position": [
+				-5.0989670753479,
+				2.6620795726776123,
+				2.484645128250122
+			],
+			"rotation": [
+				-0.41617846488952637,
+				0.5541346073150635,
+				0.316964328289032,
+				0.6475059390068054
+			],
+			"scale": 1.7899999618530273,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 11,
+			"flags": 0,
+			"position": [
+				-5.0684943199157715,
+				-3.329307794570923,
+				2.484645128250122
+			],
+			"rotation": [
+				0.6350921988487244,
+				-0.2773582339286804,
+				-0.594718873500824,
+				-0.40747982263565063
+			],
+			"scale": 1.7899999618530273,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 13,
+			"flags": 0,
+			"position": [
+				-5.5351176261901855,
+				-0.11914501339197159,
+				0.15679985284805298
+			],
+			"rotation": [
+				-0.013624281622469425,
+				-0.0772671177983284,
+				-0.17311283946037292,
+				0.9817719459533691
+			],
+			"scale": 2,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 14,
+			"flags": 0,
+			"position": [
+				-4.7798566818237305,
+				0.5063551068305969,
+				0.15679985284805298
+			],
+			"rotation": [
+				0.02086576074361801,
+				-0.076129250228405,
+				-0.2249162197113037,
+				0.9711754322052002
+			],
+			"scale": 1.4500000476837158,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 16,
+			"flags": 0,
+			"position": [
+				-6.010769367218018,
+				0.8440957069396973,
+				0.15679985284805298
+			],
+			"rotation": [
+				-0.019505711272358894,
+				-0.055365610867738724,
+				-0.34870368242263794,
+				0.9353929162025452
+			],
+			"scale": 1.1899999380111694,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 13,
+			"flags": 0,
+			"position": [
+				-3.6837666034698486,
+				3.636357545852661,
+				0.15679985284805298
+			],
+			"rotation": [
+				-0.03982100635766983,
+				-0.06760263442993164,
+				-0.505973756313324,
+				0.8589730858802795
+			],
+			"scale": 2.179999828338623,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 14,
+			"flags": 0,
+			"position": [
+				-1.5344504117965698,
+				3.8636882305145264,
+				0.15679985284805298
+			],
+			"rotation": [
+				-0.1771393120288849,
+				0.009314198978245258,
+				0.756567120552063,
+				0.6293973922729492
+			],
+			"scale": 1.5804998874664307,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 18,
+			"flags": 0,
+			"position": [
+				-0.1934945434331894,
+				-3.5306529998779297,
+				-0.12250673770904541
+			],
+			"rotation": [
+				0.10181467980146408,
+				0.11923637986183167,
+				-0.9454703330993652,
+				0.285486102104187
+			],
+			"scale": 1.7018003463745117,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 20,
+			"flags": 0,
+			"position": [
+				0.1527668535709381,
+				-3.804126024246216,
+				-0.08441855013370514
+			],
+			"rotation": [
+				0.1411058008670807,
+				0.06134871020913124,
+				-0.7035289406776428,
+				0.6938101649284363
+			],
+			"scale": 1.7152000665664673,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 22,
+			"flags": 0,
+			"position": [
+				0.6269413232803345,
+				-4.216052055358887,
+				-0.22587688267230988
+			],
+			"rotation": [
+				0.08223681896924973,
+				0.048277027904987335,
+				-0.9666873216629028,
+				-0.23753319680690765
+			],
+			"scale": 1.9564000368118286,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 24,
+			"flags": 0,
+			"position": [
+				4.761303901672363,
+				-8.001033782958984,
+				-0.16777701675891876
+			],
+			"rotation": [
+				-0.1854434609413147,
+				-0.18005971610546112,
+				-0.31421148777008057,
+				0.9134880304336548
+			],
+			"scale": 2.2140004634857178,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 26,
+			"flags": 0,
+			"position": [
+				3.8241429328918457,
+				-8.2420072555542,
+				-0.15104667842388153
+			],
+			"rotation": [
+				-0.1242285966873169,
+				-0.21149520576000214,
+				-0.7074024081230164,
+				0.6628867983818054
+			],
+			"scale": 1.9000000953674316,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 24,
+			"flags": 0,
+			"position": [
+				2.806241512298584,
+				-8.38206958770752,
+				-0.16777701675891876
+			],
+			"rotation": [
+				-0.14801153540611267,
+				0.25557854771614075,
+				0.6388694047927856,
+				0.7103646993637085
+			],
+			"scale": 2.2139999866485596,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 24,
+			"flags": 0,
+			"position": [
+				1.969809651374817,
+				3.4909026622772217,
+				0.03330564126372337
+			],
+			"rotation": [
+				-0.14801153540611267,
+				0.25557854771614075,
+				0.6388694047927856,
+				0.7103646993637085
+			],
+			"scale": 2.2139999866485596,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 26,
+			"flags": 0,
+			"position": [
+				2.9888756275177,
+				3.359318733215332,
+				0.0500359833240509
+			],
+			"rotation": [
+				-0.1242285966873169,
+				-0.21149520576000214,
+				-0.7074024081230164,
+				0.6628867983818054
+			],
+			"scale": 1.9000000953674316,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 24,
+			"flags": 0,
+			"position": [
+				3.955193042755127,
+				4.112236976623535,
+				0.03330564126372337
+			],
+			"rotation": [
+				-0.1854434609413147,
+				-0.18005971610546112,
+				-0.31421148777008057,
+				0.9134880304336548
+			],
+			"scale": 2.2140004634857178,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 28,
+			"flags": 0,
+			"position": [
+				-5.91689395904541,
+				-2.0786430835723877,
+				1.4569157361984253
+			],
+			"rotation": [
+				-0.7509243488311768,
+				0.09492920339107513,
+				-0.2408214509487152,
+				0.6075410842895508
+			],
+			"scale": 1.528800129890442,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 11,
+			"flags": 0,
+			"position": [
+				-5.027525901794434,
+				1.7781134843826294,
+				3.1344616413116455
+			],
+			"rotation": [
+				-0.24165736138820648,
+				0.6495163440704346,
+				0.12001002579927444,
+				0.7108641862869263
+			],
+			"scale": 2.3269999027252197,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 13,
+			"flags": 0,
+			"position": [
+				-2.6478676795959473,
+				3.446842908859253,
+				0.15679985284805298
+			],
+			"rotation": [
+				-0.04387377202510834,
+				-0.06504553556442261,
+				-0.5574690699577332,
+				0.8264819383621216
+			],
+			"scale": 2.8122000694274902,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 24,
+			"flags": 0,
+			"position": [
+				-2.707481861114502,
+				-2.556668758392334,
+				0.04269417002797127
+			],
+			"rotation": [
+				0.17431265115737915,
+				-0.1908557116985321,
+				0.2380886673927307,
+				0.9362174272537231
+			],
+			"scale": 2.6789398193359375,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 26,
+			"flags": 0,
+			"position": [
+				-1.48159921169281,
+				-3.2454893589019775,
+				0.06293824315071106
+			],
+			"rotation": [
+				0.12382800877094269,
+				-0.2117300033569336,
+				0.2327142059803009,
+				0.9411063194274902
+			],
+			"scale": 2.2990005016326904,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 24,
+			"flags": 0,
+			"position": [
+				-1.0324922800064087,
+				-4.571640968322754,
+				0.04269417002797127
+			],
+			"rotation": [
+				0.29531288146972656,
+				0.004258337896317244,
+				-0.9319555759429932,
+				0.2103116512298584
+			],
+			"scale": 2.6789400577545166,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 3,
+			"flags": 0,
+			"position": [
+				-0.6531753540039062,
+				4.484714984893799,
+				0.03335803747177124
+			],
+			"rotation": [
+				-0.06413138657808304,
+				-0.12673218548297882,
+				-0.600468635559082,
+				0.7869329452514648
+			],
+			"scale": 2.7530996799468994,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 30,
+			"flags": 0,
+			"position": [
+				19.127262115478516,
+				14.946040153503418,
+				1.9928580522537231
+			],
+			"rotation": [
+				-3.6493705142358205e-16,
+				1.6575468630811196e-16,
+				0.7071067690849304,
+				0.7071067690849304
+			],
+			"scale": 1.000000238418579,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 32,
+			"flags": 0,
+			"position": [
+				20.863262176513672,
+				14.779837608337402,
+				1.9909272193908691
+			],
+			"rotation": [
+				-3.193890722948437e-16,
+				2.114512535446444e-16,
+				0.7071067690849304,
+				0.7071067690849304
+			],
+			"scale": 1.6000003814697266,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 34,
+			"flags": 0,
+			"position": [
+				31.46564483642578,
+				10.559269905090332,
+				11.984763145446777
+			],
+			"rotation": [
+				-3.7831305161948714e-16,
+				-2.9055172972645266e-16,
+				-0.4733196794986725,
+				0.8808907270431519
+			],
+			"scale": 1.2300000190734863,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 36,
+			"flags": 0,
+			"position": [
+				33.6849250793457,
+				24.5804386138916,
+				3.3180325031280518
+			],
+			"rotation": [
+				-4.0526678481908675e-17,
+				-1.5795646424432544e-16,
+				-0.9945219159126282,
+				0.10452833771705627
+			],
+			"scale": 1.9092000722885132,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 38,
+			"flags": 0,
+			"position": [
+				26.142868041992188,
+				28.52241325378418,
+				4.256601333618164
+			],
+			"rotation": [
+				0.6421542167663574,
+				0.29603713750839233,
+				0.6421542167663574,
+				-0.29603713750839233
+			],
+			"scale": 1.7181997299194336,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 39,
+			"flags": 0,
+			"position": [
+				26.6444034576416,
+				29.01038932800293,
+				2.9091312885284424
+			],
+			"rotation": [
+				6.914861991006848e-17,
+				-3.6215775103518348e-16,
+				-2.7280078640501415e-8,
+				1
+			],
+			"scale": 2.2506000995635986,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 41,
+			"flags": 0,
+			"position": [
+				27.817304611206055,
+				26.682466506958008,
+				2.9279496669769287
+			],
+			"rotation": [
+				-1.6738726290460582e-16,
+				-1.4106293474182025e-16,
+				-2.7280080416858254e-8,
+				1
+			],
+			"scale": 1.5795000791549683,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 43,
+			"flags": 0,
+			"position": [
+				32.92396926879883,
+				22.09600830078125,
+				2.9267241954803467
+			],
+			"rotation": [
+				6.914864637984808e-17,
+				-3.6215772456540387e-16,
+				-2.7280080416858254e-8,
+				1
+			],
+			"scale": 2.3000001907348633,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 41,
+			"flags": 0,
+			"position": [
+				33.50394058227539,
+				21.030176162719727,
+				2.9188292026519775
+			],
+			"rotation": [
+				-1.6738726290460582e-16,
+				-1.4106293474182025e-16,
+				-2.7280080416858254e-8,
+				1
+			],
+			"scale": 1.5795000791549683,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 44,
+			"flags": 0,
+			"position": [
+				32.662418365478516,
+				20.921945571899414,
+				2.8932979106903076
+			],
+			"rotation": [
+				-1.6738726290460582e-16,
+				-1.4106293474182025e-16,
+				-2.7280080416858254e-8,
+				1
+			],
+			"scale": 1.8000000715255737,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 45,
+			"flags": 0,
+			"position": [
+				55.05946731567383,
+				16.591360092163086,
+				10.448783874511719
+			],
+			"rotation": [
+				-1.4160130358913917e-16,
+				-1.177616539328955e-16,
+				-0.4186597466468811,
+				0.908143162727356
+			],
+			"scale": 0.9669424295425415,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 46,
+			"flags": 0,
+			"position": [
+				41.88698196411133,
+				16.787866592407227,
+				4.34319543838501
+			],
+			"rotation": [
+				1.0904563196608954e-16,
+				-2.1196848627295136e-16,
+				-0.9930684566497803,
+				0.11753734946250916
+			],
+			"scale": 0.8441559672355652,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 32,
+			"flags": 0,
+			"position": [
+				56.11502456665039,
+				19.057966232299805,
+				2.929382562637329
+			],
+			"rotation": [
+				-6.051066791121977e-16,
+				3.0289808858307624e-17,
+				-0.2798289358615875,
+				0.9600498676300049
+			],
+			"scale": 1.5999999046325684,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 32,
+			"flags": 0,
+			"position": [
+				56.09404754638672,
+				21.695810317993164,
+				2.9293830394744873
+			],
+			"rotation": [
+				-2.117879756109576e-16,
+				3.819032007664245e-17,
+				-0.2798289656639099,
+				0.9600498676300049
+			],
+			"scale": 1.344537615776062,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 30,
+			"flags": 0,
+			"position": [
+				57.18795394897461,
+				20.432777404785156,
+				2.857975482940674
+			],
+			"rotation": [
+				-2.5650179934021784e-16,
+				1.3981033183150875e-16,
+				-0.2798289954662323,
+				0.9600498676300049
+			],
+			"scale": 0.9999998807907104,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 36,
+			"flags": 0,
+			"position": [
+				44.618221282958984,
+				21.63060760498047,
+				3.8422157764434814
+			],
+			"rotation": [
+				3.190483268220311e-16,
+				-1.9461254295569433e-16,
+				-0.24615325033664703,
+				0.9692308902740479
+			],
+			"scale": 1.5938712358474731,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 36,
+			"flags": 0,
+			"position": [
+				53.07351303100586,
+				21.531700134277344,
+				3.996265411376953
+			],
+			"rotation": [
+				-6.034158822354699e-17,
+				6.852133377911154e-16,
+				-0.9876883625984192,
+				0.15643435716629028
+			],
+			"scale": 1.539677381515503,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		},
+		{
+			"offset": 50,
+			"flags": 0,
+			"position": [
+				-11.583687782287598,
+				16.194547653198242,
+				31.351966857910156
+			],
+			"rotation": [
+				0.05324042588472366,
+				0.04507134109735489,
+				-0.7613732814788818,
+				0.6445500254631042
+			],
+			"scale": 0.7032800316810608,
+			"color": [
+				82,
+				64,
+				64,
+				255
+			]
+		}
+	],
+	"groupIDs": [
+		113770,
+		113771,
+		113772,
+		113773
+	]
+}

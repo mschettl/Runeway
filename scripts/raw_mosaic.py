@@ -1,11 +1,11 @@
 # Assembles ADT data of a tile range into world-aligned rasters (row = north->south, col = west->east).
 import os
+import re
 import numpy as np
 import cv2
 from adt import read_root, read_tex0, layer_weights, U
 
 MAPS = os.path.join(os.path.dirname(__file__), '..', 'Wow export files', 'maps')
-SRC = os.path.join(MAPS, 'azeroth')
 LISTFILE = os.environ.get('RUNEWAY_LISTFILE', os.path.join(os.path.dirname(__file__), '..', 'listfile.csv'))
 
 
@@ -18,13 +18,25 @@ def load_listfile(path=LISTFILE):
     return lf
 
 
+def map_dir(map_id):
+    """wow.export folder of a map ("[0] Eastern Kingdoms") and the prefix of its files ("azeroth" in azeroth_32_32.adt,
+    taken from the .wdt)."""
+    for d in sorted(os.listdir(MAPS)):
+        if d.startswith(f'[{map_id}] '):
+            src = os.path.join(MAPS, d)
+            wdt = [f for f in os.listdir(src) if re.fullmatch(r'[^_]+\.wdt', f)]
+            if wdt:
+                return src, wdt[0][:-4]
+    raise SystemExit(f'no wow.export folder "[{map_id}] <name>" with a .wdt in {MAPS}')
+
+
 class Mosaic:
-    """Tile range c0..c1 / r0..r1 of a map (wow.export folder name, e.g. azeroth) at P pixels per tile
+    """Tile range c0..c1 / r0..r1 of a map (map ID, see map_dir) at P pixels per tile
     (P = 512 -> ~1.04 yd/px)."""
 
-    def __init__(self, cols, rows, P=512, name='azeroth'):
-        self.cols, self.rows, self.P, self.name = list(cols), list(rows), P, name
-        self.src = os.path.join(MAPS, name)
+    def __init__(self, cols, rows, P=512, map_id=0):
+        self.cols, self.rows, self.P = list(cols), list(rows), P
+        self.src, self.name = map_dir(map_id)
         self.H, self.W = len(self.rows) * P, len(self.cols) * P
         self.present = np.zeros((self.H, self.W), bool)
 

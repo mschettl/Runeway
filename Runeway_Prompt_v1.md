@@ -17,7 +17,7 @@ Zielclient ist **WoW Forever** (das neue Classic, Interface `16001`). Die API or
 Mein PC ist über den Claude Desktop-App-Link verbunden. Dateien unter `C:\Users\MarioSchettler\wow.export\` und `C:\Projekte\Runeway\` kannst du selbst holen (Ordnerzugriff anfragen).
 
 **Benötigte Eingangsdaten (Voraussetzung für Abschnitt 3.1):**
-- Minimap-Kacheln (bereits vorhanden, Tirisfal): `C:\Users\MarioSchettler\wow.export\maps\azeroth\minimap\map<spalte>_<zeile>.png`
+- Minimap-Kacheln (bereits vorhanden, Tirisfal): `C:\Users\MarioSchettler\wow.export\maps\azeroth\minimap\map<spalte>_<zeile>.png` (auf `data` heute unter `maps\[0] Eastern Kingdoms\minimap\`)
 - **RAW-Kacheln (ADT) der Östlichen Königreiche:** `C:\Projekte\Runeway\Wow export files` (Unterordner je nach wow.export-Struktur selbst ermitteln, Ordnerzugriff anfragen). Ohne diese Daten mit 3.1 nicht beginnen, sondern danach fragen. Bis dahin können 3.2 (Ebenen-Trennung auf Basis der Minimap-Pipeline) und 3.4 (Konfiguration) vorgezogen werden.
 - Heightmaps 512×512 und die CSVs `QuestPOIBlob` / `QuestPOIPoint`: optional, ebenfalls unter `C:\Projekte\Runeway\Wow export files`.
 

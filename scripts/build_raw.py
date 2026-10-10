@@ -18,7 +18,7 @@ from collections import defaultdict
 from PIL import Image
 from skimage.morphology import skeletonize
 from adt import read_area, read_root
-from raw_mosaic import Mosaic, load_listfile, MAPS, LISTFILE
+from raw_mosaic import Mosaic, load_listfile, map_dir, MAPS, LISTFILE
 from roads import prune
 import structures
 
@@ -46,7 +46,6 @@ PACK_NOTES = dict(
     zhCN='Runeway 地图数据（%s），按需加载', zhTW='Runeway 地圖資料（%s），需要時載入')
 BUILD = os.path.join(ROOT, 'build')                      # cache and previews (not in git)
 AREATABLE = os.path.join(MAPS, '..', 'AreaTable.csv')
-MAP_NAMES = {0: 'azeroth', 1: 'kalimdor'}                # map ID (= instance ID of UnitPosition) -> wow.export folder
 BLOCK = 8                  # tiles per block side
 MARGIN = 1                 # tiles of overlap around a block; every local filter reaches less than one tile
 LISTFILE_URL = 'https://github.com/wowdev/wow-listfile/releases/latest/download/community-listfile.csv'
@@ -100,13 +99,13 @@ def zone_of_area(map_id):
 
 def area_index(map_id):
     """Area IDs of all ADT chunks of a map, cached: {(c, r): 16x16 array}."""
-    name = MAP_NAMES[map_id]
+    src, name = map_dir(map_id)
     cache = os.path.join(BUILD, f'area_index_{map_id}.npz')
     if os.path.exists(cache):
         d = np.load(cache)
         return {tuple(map(int, k.split('_'))): d[k] for k in d.files}
     idx = {}
-    for p in glob.glob(os.path.join(MAPS, name, f'{name}_*_*.adt')):
+    for p in glob.glob(os.path.join(glob.escape(src), f'{name}_*_*.adt')):
         mt = re.search(rf'{name}_(\d+)_(\d+)\.adt$', p)
         if mt:
             idx[(int(mt[1]), int(mt[2]))] = read_area(p)
@@ -120,11 +119,11 @@ def fill_gaps(map_id, idx, zone_of, zones):
     as holes: they get the area ID of the nearest built zone. Large ones (unused terrain) stay out."""
     if map_id not in GAP_MAX:
         return 0
-    name = MAP_NAMES[map_id]
+    src, name = map_dir(map_id)
     gap = {}
     for (c, r), a in idx.items():
         if (a == 0).any():
-            top = read_root(os.path.join(MAPS, name, f'{name}_{c}_{r}.adt'))['inner'].reshape(16, 8, 16, 8).max(axis=(1, 3))
+            top = read_root(os.path.join(src, f'{name}_{c}_{r}.adt'))['inner'].reshape(16, 8, 16, 8).max(axis=(1, 3))
             gap[(c, r)] = (a == 0) & (top > -100)        # the empty sea floor lies at about -520
     if not gap:
         return 0
@@ -203,7 +202,7 @@ def smooth(m, sigma, strip=2048):
     return out
 
 
-def raw_masks(name, cols, rows):
+def raw_masks(map_id, cols, rows):
     """Per-pixel masks of the mosaic from the ADT data, computed block by block: present, water (MH2O surface
     above terrain, smoothed), steep (slope only), road (road texture weight, smoothed), built (structures)."""
     shape = (len(rows) * P, len(cols) * P)
@@ -211,7 +210,7 @@ def raw_masks(name, cols, rows):
     lf = load_listfile()
     names = sorted({n for n in lf.values() if any(k in n for k in ROAD_KEYS)})
     for inner, win in blocks(len(cols), len(rows)):
-        m = Mosaic(cols[win[0]:win[1]], rows[win[2]:win[3]], P, name)
+        m = Mosaic(cols[win[0]:win[1]], rows[win[2]:win[3]], P, map_id)
         if not any(True for _ in m.tiles()):
             continue
         m.build_terrain()
@@ -599,9 +598,9 @@ def compose(layers, base=None):
     return out.clip(0, 255).astype(np.uint8)
 
 
-def minimap(name, cols, rows):
+def minimap(map_id, cols, rows):
     img = np.zeros((len(rows) * P, len(cols) * P, 3), np.uint8)
-    for f in glob.glob(os.path.join(MAPS, name, 'minimap', 'map*.png')):
+    for f in glob.glob(os.path.join(glob.escape(map_dir(map_id)[0]), 'minimap', 'map*.png')):
         c, r = map(int, re.findall(r'map(\d+)_(\d+)', f)[0])
         if c in cols and r in rows:
             t = cv2.imread(f)
@@ -612,7 +611,6 @@ def minimap(name, cols, rows):
 
 
 def main(map_id, zone_names):
-    name = MAP_NAMES[map_id]
     if not os.path.exists(LISTFILE):
         print('downloading listfile ...')
         urllib.request.urlretrieve(LISTFILE_URL, LISTFILE)
@@ -653,7 +651,7 @@ def main(map_id, zone_names):
     nearest[lab[ys, xs]] = zgrid[ys, xs]
     zgrid = nearest[lab]
 
-    L = masks(raw_masks(name, cols, rows))
+    L = masks(raw_masks(map_id, cols, rows))
     print('masks done', flush=True)
     # zone mask per chunk: zone land, plus sea chunks next to it (the coast belongs to the zone). Open water
     # chunks of a zone (no dry ground, connected to the mosaic border) count as sea, so the zone's ocean is
@@ -697,7 +695,7 @@ def main(map_id, zone_names):
         flat = dict(layers[P], fill=layers['fill'], blocked=layers['blocked'])
         dst = px(inner, P // 2)
         pv[dst] = half(compose(flat))
-        pm[dst] = half(compose(flat, (minimap(name, cols[inner[0]:inner[1]], rows[inner[2]:inner[3]]) * 0.45).astype(np.uint8)))
+        pm[dst] = half(compose(flat, (minimap(map_id, cols[inner[0]:inner[1]], rows[inner[2]:inner[3]]) * 0.45).astype(np.uint8)))
     write_tiles_lua(os.path.join(out_dir, 'Tiles.lua'), map_id, zone_names, state)
     write_pack_toc(map_id)
     os.makedirs(BUILD, exist_ok=True)

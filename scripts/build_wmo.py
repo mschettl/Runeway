@@ -17,7 +17,7 @@ from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
 import build_raw as B
 import structures
-from raw_mosaic import MAPS
+from raw_mosaic import MAPS, map_dir
 
 T = structures.T
 P = B.P
@@ -43,10 +43,10 @@ MIN_GAP = 30               # px; smaller holes in the floor are closed
 ENVELOPE = 96              # px around the floor plan that belong to the set (hatch, then fade out)
 
 
-def placement(wmo):
-    """ModelPlacementInformation row of the WMO (first ADT that places it)."""
+def placement(wmo, map_id):
+    """ModelPlacementInformation row of the WMO (first ADT of the map that places it)."""
     name = os.path.basename(wmo) + '.wmo'
-    for f in sorted(glob.glob(os.path.join(MAPS, '*', 'adt_*_ModelPlacementInformation.csv'))):
+    for f in sorted(glob.glob(os.path.join(glob.escape(map_dir(map_id)[0]), 'adt_*_ModelPlacementInformation.csv'))):
         for row in csv.DictReader(open(f, encoding='utf8'), delimiter=';'):
             if row['Type'] == 'wmo' and row['ModelFile'].replace('\\', '/').endswith('/' + name):
                 return row
@@ -140,7 +140,7 @@ def reachable_top(faces, to_px, H, W, all_networks=False):
 
 
 def build(set_id, cfg):
-    row = placement(cfg['wmo'])
+    row = placement(cfg['wmo'], cfg['map'])
     xf = structures.world_xform(row)
     floors, liquid = load_groups(cfg['wmo'], cfg.get('skip', ()), cfg.get('only'))
     fw = xf(floors.reshape(-1, 3)).reshape(-1, 3, 3)

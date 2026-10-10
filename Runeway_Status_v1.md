@@ -38,16 +38,27 @@ Runeway ist ein spielerzentriertes, mitdrehendes Karten-Overlay für **WoW Forev
 
 | Branch | Inhalt |
 |---|---|
-| `main` | Freigegebener Stand, je Version ein PR (zuletzt 0.5). |
+| `main` | Freigegebener Stand, je Version ein PR (zuletzt 0.6.1, PR #11). |
 | `dev` | Entwicklungsbranch (Addon, Build-Skripte, Tests, diese Datei). |
-| `data` (orphan) | Rohdaten aus wow.export, nie auf `main`. ~1,6 GB. |
+| `bugfix` | Fehlerbehebungen auf dem Stand von `main` (vor jedem Bugfix auf `origin/main` zurückgesetzt). |
+| `data` (orphan) | Rohdaten aus wow.export, nie auf `main`/`dev`. Seit Commit `6fe942b5` byte-genau Marios kompletter wow.export-Ordner: 25 868 Dateien, ~4,7 GB. |
 
-**Inhalt von `data`** (Ordner `Wow export files/`):
-- `maps/[<Karten-ID>] <Name>/` (Ordnername wie in wow.export, seit 10.10.; vorher `azeroth`/`kalimdor`): `[0] Eastern Kingdoms` (736 Kacheln, Minimap-PNGs von Tirisfal 26–34 / 26–29), `[1] Kalimdor` (988 Kacheln), `[2991] Zephras Isle`. Je Kachel Root, `_tex0`, `_obj0/1`, `_lod`, dazu WDT/WDL und `adt_<c>_<r>_ModelPlacementInformation.csv` (Modellplatzierungen). Die Dateien behalten die Präfixe von wow.export (`azeroth_32_32.adt`, `kalimdor_…`, `2991_…`); die Pipeline findet den Ordner über die Karten-ID und das Präfix über die `.wdt` (`map_dir` in `raw_mosaic.py`).
-- `AreaTable.csv`, `QuestPOIBlob.csv`, `QuestPOIPoint.csv`. Die beiden QuestPOI-Tabellen sind für Questbereiche unbrauchbar, siehe Abschnitt 6.
-- `world/`: kompletter `world`-Ordner (WMO, M2, BLP). Genutzt werden bisher nur:
-  - `world/wmo/autogen-names/undercity/` (OBJ-Export mit „Split WMO Groups“, 215 Gruppen, plus `20736.json`)
+**Größe:** Mit ~4,7 GB liegt das Repo nahe an GitHubs empfohlener Grenze von etwa 5 GB. Vor weiteren großen Exporten (z. B. ein weiterer Kontinent) mit Mario abstimmen.
+
+**Inhalt von `data`** (Ordner `Wow export files/`; „genutzt“ = von den Build-Skripten gelesen):
+- `maps/[<Karten-ID>] <Name>/` (Ordnername wie in wow.export, Karten-ID = Instanz-ID aus `UnitPosition`; vor dem 10.10. `azeroth`/`kalimdor`), **genutzt**:
+  - `[0] Eastern Kingdoms`: 736 Kacheln, Minimap-PNGs von Tirisfal (26–34 / 26–29), Datei-Präfix `azeroth`
+  - `[1] Kalimdor`: 988 Kacheln, ohne Minimap-PNGs, Präfix `kalimdor`
+  - `[2991] Zephras Isle`: 72 Kacheln, Präfix `2991`
+  - je Kachel Root, `_tex0`, `_obj0/1`, `_lod`, dazu WDT/WDL und `adt_<c>_<r>_ModelPlacementInformation.csv` (Modellplatzierungen). Die Pipeline findet den Ordner über die Karten-ID und das Präfix über die `.wdt` (`map_dir` in `raw_mosaic.py`), neue Karten brauchen also keine Codeänderung.
+- `AreaTable.csv` (**genutzt**: Zonen), `QuestPOIBlob.csv`, `QuestPOIPoint.csv` (für Questbereiche unbrauchbar, siehe Abschnitt 6).
+- `world/`: WMO, M2, BLP, seit `6fe942b5` auch OBJ-Exporte („Split WMO Groups“, mit `<wmo>.json`) der Städte. **Genutzt** bisher nur:
+  - `world/wmo/autogen-names/undercity/` (20736, 215 Gruppen)
   - `world/generic/undead/passivedoodads/lordaerontowers/*.m2` (Türme der Stadtmauer)
+  - **Bereit für die Städte (noch nicht genutzt):** Stormwind `autogen-names/stormwindcity/21138` (289 Gruppen), Ironforge `autogen-names/ironforge/20884` (104), Orgrimmar `autogen-names/orgrimmar/21142` (138), Darnassus `wmo/kalimdor/darnassis/darnassis` (104), Thunder Bluff `wmo/kalimdor/thunderbluff/*` (Mesas, Totem usw., je eigene `.json`); außerdem Exporte einzelner Gebäude und Dungeon-WMOs (`wmo/dungeon/kl_*`, `md_*`).
+- `tileset/` (~585 MB): Bodentexturen der Zonen (BLP/PNG). Nicht genutzt; die Pipeline liest nur die Texturnamen aus `_tex0` über die Listfile.
+- `dungeons/` (~448 MB): Dungeon-Texturen und ein Mikro-Dungeon (`micro_dungeons`). Nicht genutzt (später Dungeons).
+- `models/` (~19 MB), `zones/` (z. B. `Zone_85_Tirisfal_Glades_TirisfalGlades.png`), `interface/` (z. B. `minimap/objecticonsatlas.png`, Quelle der Questsymbole), `unknown/`, `textures/`, `item/`, `spells/`, `creature/`, `xtextures/`: nicht genutzt, nur Referenz.
 
 **Daten holen** (in einem Checkout des Entwicklungsbranchs):
 ```bash
@@ -360,7 +371,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
   | Dungeons, Raids | meist reine WMO-Karten, oft mehrstöckig | WMO-Grundriss mit Etagen |
 - **Etagen und Innenräume:** umschaltbare Ebenen. Erkennung über `C_Map.GetBestMapForUnit`: Minen, Höhlen und Dungeon-Etagen haben eigene uiMap-IDs. Verallgemeinerung des Undercity-Prototyps.
 - **Daten-Addons nach Bedarf laden:** Kern-Addon `Runeway` (Code) plus Datenpakete mit `## LoadOnDemand: 1`, z. B. `Runeway_EasternKingdoms`, `Runeway_Kalimdor`, `Runeway_Dungeons`, geladen beim Betreten per `C_AddOns.LoadAddOn`. Gesamtgröße für alles grob 1 GB oder mehr.
-- **Rohdaten:** Kalimdor-ADTs, Instanz-WDTs und WMO-Exporte etappenweise per wow.export auf `data`. Größe des `data`-Branchs im Blick behalten (heute ~1,6 GB).
+- **Rohdaten:** Kalimdor-ADTs, Instanz-WDTs und WMO-Exporte etappenweise per wow.export auf `data`. Größe des `data`-Branchs im Blick behalten (heute ~4,7 GB, nahe der GitHub-Empfehlung von ~5 GB; große Exporte vorher mit Mario abstimmen).
 
 **Reihenfolge:**
 1. **Fundament:** Block-Build mit Überlappung, Schraffur in Weltkoordinaten, Kachelliste pro Karten-ID im Addon. **Erledigt**, siehe unten.
@@ -414,7 +425,7 @@ Das schreibt `<Paket>/tiles/<id>/…` samt `Tiles.lua` und `<Paket>/<Paket>.toc`
   - **Zephras Isle** (Startzone der Himmelsgeborenen, Area 16593, eigene Karte 2991): im Paket `Runeway_Kalimdor` (Mario), `PACKS[2991] = PACKS[1]`, `zones_2991.txt`, `KNOWN_PACKS[2991]` (Name über Kalimdor-uiMap 1414); die Paket-`.toc` listet alle Karten des Pakets (`X-Runeway-Maps: 1 2991`, `tiles\1\…`, `tiles\2991\…`). Build: 72 Kacheln, 4,7 MB. Schwebende Insel ohne Wasser: Die ganze Karte gehört zur Zone, daher bleibt auch der Boden unter der Insel (mit einzelnen geraden Steilkanten-Strichen) sichtbar; im Spiel prüfen. Fehlt noch: uiMap-ID der Insel (für Questbereiche/Flugmeister über `NearbyMaps` nicht nötig, kommt aus `C_Map.GetBestMapForUnit`).
   - Orgrimmar zeigt wie Stormwind nur Lochkanten statt Mauern (WMO-Pipeline, Schritt 5).
   - Spieltest (Beta): Runeway-Karte in Orgrimmar ok. Die Blizzard-Minimap zeigt in Orgrimmar nur Grau mit schwarzen Umrissen, auch ohne Runeway (Client/Beta, nicht unser Fehler; Runeway fasst die Minimap nicht an).
-  - **Datenbedarf (Liste an Mario, 10.10.):** Gelände: Zephras Isle (Karte 2991, RAW wie Kalimdor); weitere Forever-Karten aus der AreaTable zu klären (z. B. 2997 Darkspear Islands). Städte (WMO als OBJ, „Split WMO Groups“, mit Meta-JSON wie Undercity `20736.json`): Stormwind `world/wmo/autogen-names/stormwindcity/21138.wmo`, Ironforge `…/ironforge/20884.wmo` (auf `data` nur als .wmo), Orgrimmar `…/orgrimmar/21142.wmo`, Darnassus `world/wmo/kalimdor/darnassis/darnassis.wmo`, Thunder Bluff `world/wmo/kalimdor/thunderbluff/*.wmo` (fehlen auf `data`). Östliche Königreiche: Gelände vollständig.
+  - **Datenbedarf (Liste an Mario, 10.10.):** Gelände: Zephras Isle (Karte 2991, RAW wie Kalimdor); weitere Forever-Karten aus der AreaTable zu klären (z. B. 2997 Darkspear Islands). Städte (WMO als OBJ, „Split WMO Groups“, mit Meta-JSON wie Undercity `20736.json`): Stormwind `world/wmo/autogen-names/stormwindcity/21138.wmo`, Ironforge `…/ironforge/20884.wmo` (auf `data` nur als .wmo), Orgrimmar `…/orgrimmar/21142.wmo`, Darnassus `world/wmo/kalimdor/darnassis/darnassis.wmo`, Thunder Bluff `world/wmo/kalimdor/thunderbluff/*.wmo`. Östliche Königreiche: Gelände vollständig. **Stand:** Zephras Isle gebaut; alle fünf Städte liegen seit `data` `6fe942b5` als OBJ mit JSON vor (Abschnitt 2).
   - Zonenwahl: Top-Level-Gebiete, die in anderen liegen, sind eigene Zonen, sonst blieben dort Löcher: `Southfury River` (Fluss zwischen Durotar und Brachland), `Caverns of Time` (Tanaris), `Gates of Ahn'Qiraj` (Silithus); Städte Orgrimmar, Thunder Bluff, Darnassus wie Stormwind City. `Shen'dralas` ist Forever-spezifisch (Unterzonen aus Desolace/Feralas). Mount Hyjal gehört zu Forever (Mario: Forever ist nicht reines Classic, sondern bringt neue Gebiete; Zonenlisten daher aus den Chunk-Zahlen der AreaTable-Hauptzonen ableiten, nie aus einer Classic-Liste). Southfury River und Caverns of Time haben keine eigenen Gelände-Chunks und entfallen. Nicht gebaut: GM Island, UNUSEDAlcaz Island. Nach dem ersten Lauf Chunk-Zahlen je Gebiet prüfen (wie Tabelle oben) und die Liste ggf. anpassen.
 
 **Etappen** (Gruppen von Nord nach Süd; immer alle Zonen aus `zones_0.txt` zusammen bauen, neue Zonen unten anhängen, weil die Zeilennummer die Zonennummer ist):

@@ -426,6 +426,15 @@ L.execute('''
     SlashCmdList.RUNEWAY("view")
     view:GetScript("OnUpdate")(view, 0.05)
     check("view: second /rnw view returns", select(1, NS.Player()) == POS[1])
+    -- a zone on another map of a known pack (Zephras Isle, map 2991 in the Kalimdor pack) shows that map's tiles
+    local from = #TEXTURES
+    SlashCmdList.RUNEWAY("view zephras")
+    for _ = 1, 40 do debugprofilestop(); view:GetScript("OnUpdate")(view, 0.05) end
+    local seen = false
+    for i = from + 1, #TEXTURES do if (TEXTURES[i] or ""):find("tiles" .. string.char(92) .. "2991" .. string.char(92), 1, true) then seen = true end end
+    check("view: zone on another map shows its tiles", seen and select(1, NS.Player()) > 3000)
+    SlashCmdList.RUNEWAY("view")
+    view:GetScript("OnUpdate")(view, 0.05)
     for _ = 1, 400 do debugprofilestop(); view:GetScript("OnUpdate")(view, 0.05) end
     local tg = NS.ToggleButton
     EVENT_CALLBACKS["Settings.CategoryChanged"]({ GetID = function() return 1 end })

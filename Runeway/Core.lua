@@ -1133,7 +1133,7 @@ view:SetScript("OnUpdate", function(self, e)
         local s = view:GetEffectiveScale() * Zoom()
         viewAt.n, viewAt.w = pan.n - (cy - pan.y) / s, pan.w + (cx - pan.x) / s
     end
-    if viewAt then n, w = viewAt.n, viewAt.w end
+    if viewAt then n, w, inst = viewAt.n, viewAt.w, viewAt.inst or inst end   -- view mode may show another map
     pN, pW, k = n, w, Zoom()
 
     local facing = GetPlayerFacing() or 0
@@ -1567,7 +1567,7 @@ end)
 ---------------------------------------------------------------------------
 -- Centre (north, west) of a mapped zone whose name contains `name` (lower case), or nil and the list of
 -- mapped zones
-local function ZoneCentre(inst, name)
+local function ZoneCentreOn(inst, name)
     LoadPack(inst)
     local zones = RunewayZones and RunewayZones[inst]
     if not zones then return end
@@ -1584,6 +1584,23 @@ local function ZoneCentre(inst, name)
         end
     end
     return nil, nil, table.concat(zones.names, ", ")
+end
+
+-- Centre of a mapped zone (name part): on the player's map first, then on the other maps of the known packs
+-- (view mode can show another map, e.g. Zephras Isle from Kalimdor). Returns n, w, zone name, map.
+local function ZoneCentre(inst, name)
+    local maps = { inst }
+    for m in pairs(KNOWN_PACKS) do
+        if m ~= inst then maps[#maps + 1] = m end
+    end
+    table.sort(maps, function(a, b) return (a == inst) ~= (b == inst) and a == inst or a < b end)
+    local names = {}
+    for _, m in ipairs(maps) do
+        local n, w, zn = ZoneCentreOn(m, name)
+        if n then return n, w, zn, m end
+        if zn then names[#names + 1] = zn end
+    end
+    return nil, nil, #names > 0 and table.concat(names, ", ") or nil
 end
 
 -- Layer key from a lower-cased slash argument ("questareas" -> "questAreas")
@@ -1745,10 +1762,10 @@ SlashCmdList.RUNEWAY = function(msg)
             viewAt = { n = tonumber(vn), w = tonumber(vw) }
             Print(L.MSG_VIEW:format(("%.0f %.0f"):format(viewAt.n, viewAt.w)))
         else
-            local name
-            vn, vw, name = ZoneCentre(select(4, UnitPosition("player")), arg)
+            local name, map
+            vn, vw, name, map = ZoneCentre(select(4, UnitPosition("player")), arg)
             if vn then
-                viewAt = { n = vn, w = vw }
+                viewAt = { n = vn, w = vw, inst = map }
                 Print(L.MSG_VIEW:format(name))
             else
                 Print(L.MSG_VIEW_UNKNOWN:format(name or "-"))

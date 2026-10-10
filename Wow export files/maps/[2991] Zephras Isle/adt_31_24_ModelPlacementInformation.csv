@@ -1,0 +1,5 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\expansion03\doodads\skywall\skywall_chains.m2;16692.9921875;1033.2904052734375;13180.3017578125;0;89.49990844726562;0;;0.849609375;65915865;m2;436803;0;
+..\..\world\expansion03\doodads\skywall\skywall_chains.m2;16705.158203125;1029.76220703125;13196.3369140625;0;169.49993896484375;0;;0.849609375;65915847;m2;436803;0;
+..\..\world\wmo\dungeon\md_mountaincave\md_mushroomcave07.wmo;16379.01171875;811.0137939453125;13459.083984375;0;343.00006103515625;0;0;1;65890340;wmo;111226;0;Set_$DefaultGlobal
+..\..\world\wmo\dungeon\skywall\kl_skywall_entrance_building_01.wmo;16708.314453125;1074.1221923828125;13182.232421875;0;322.99993896484375;0;0;1;65915893;wmo;427314;0;Set_$DefaultGlobal

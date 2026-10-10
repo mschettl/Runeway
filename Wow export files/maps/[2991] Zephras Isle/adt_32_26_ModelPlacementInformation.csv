@@ -1,0 +1,2 @@
+ModelFile;PositionX;PositionY;PositionZ;RotationX;RotationY;RotationZ;RotationW;ScaleFactor;ModelId;Type;FileDataID;DoodadSetIndexes;DoodadSetNames
+..\..\world\wmo\dungeon\skywall\kl_skywall_entrance.wmo;17000.01953125;1163.4459228515625;14076.7978515625;0;245.5;0;0;1;65601776;wmo;387612;0;Set_$DefaultGlobal
